@@ -3,22 +3,34 @@ The game
 
 # Build
 ## Requirements:
-| Tool | Description |
-| -----| ------------|
+| Tool            | Description                                                               |
+| --------------- | ------------------------------------------------------------------------- |
 | `Powershell`    | need to enable scripts with `Set-ExecutionPolicy RemoteSigned`.           |
 | `CMake`         | need to be in the path, version 3.12 at least.                            |
 | `Visual Studio` | with MSbuild 2022 (can be changed but cross your fingers, it's untested). |
 
-## How to:
+## How to build:
 Use the command `./generate.ps1` and hope for the best.
+
+Available arguments are:
+| Argument   | Description                           |
+| ---------- | ------------------------------------- |
+| -Cleanup   | Clean generated files                 |
+| -NoBuild   | Don't build executables and libraries |
+| -NoInstall | Don't install resources               |
+
+-Cleanup -NoBuild -NoInstall
+    [switch] $Cleanup,   # Clean generated files
+    [switch] $NoBuild,   # Don't build executables
+    [switch] $NoInstall  # Don't install resources
 
 ## Generation:
 - Visual Studio solution in `./_solution/Game.sln`.
 - Build results are in `./_output/[bin|lib]/[debug|release]/{binaries}`.
 
 # Dependencies:
-| Library | Description |
-| --------| ------------|
+| Library                                                | Description                                             |
+| ------------------------------------------------------ | ------------------------------------------------------- |
 | `GLM`  (OpenGL Mathematics)                            | Clone: https://github.com/g-truc/glm                    |
 | `Glad` (Get entry points for `opengl32.dll`'s methods) | Generated at: https://glad.dav1d.de                     |
 | `Glfw` (Windows and inputs helper)                     | Official website: https://www.glfw.org                  |

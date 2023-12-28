@@ -1,12 +1,18 @@
+ param (
+    [switch] $Cleanup,   # Clean generated files
+    [switch] $NoBuild,   # Don't build binaries
+    [switch] $NoInstall  # Don't install resources
+ )
+
 function clearPrevious() 
 {
-    # Delete temporary folder
+    Write-Host "Deleting ./_solution." -ForegroundColor DarkRed 
     if (Test-Path -Path "./_solution")
     {
         Remove-Item -Path "./_solution" -Recurse -Force
     }
 
-    # Delete previous build
+    Write-Host "Deleting ./_output." -ForegroundColor DarkRed 
     if (Test-Path -Path "./_output")
     {
         Remove-Item -Path "./_output" -Recurse -Force
@@ -15,7 +21,7 @@ function clearPrevious()
 
 function generateSolution() 
 {
-    # Create temporary folder
+    Write-Host "Creating ./_solution." -ForegroundColor DarkGreen 
     if (-Not(Test-Path -Path "./_solution")) 
     {
         New-Item -ItemType Directory -Path "./_solution"
@@ -23,7 +29,7 @@ function generateSolution()
 
     Push-Location -Path  "./_solution"
 
-    # Generate solution
+    Write-Host "Generating Visual Studio solution." -ForegroundColor DarkGreen 
     cmake .. -G "Visual Studio 17 2022" -A x64
 
     Pop-Location
@@ -34,9 +40,11 @@ function compileProject()
     Push-Location -Path  "./_solution"
 
     # Compile for Debug
+    Write-Host "Compile for Debug." -ForegroundColor DarkYellow 
     cmake --build . --config Debug
 
     # Compile for Release
+    Write-Host "Compile for Release." -ForegroundColor DarkYellow 
     cmake --build . --config Release
 
     Pop-Location
@@ -44,6 +52,8 @@ function compileProject()
 
 function installResources()
 {
+    Write-Host "Installing resources." -ForegroundColor DarkMagenta 
+
     # Install for Debug
     Copy-Item -Path "$PSScriptRoot/Resources" -Destination "$PSScriptRoot/_output/bin/debug/Resources" -Recurse -Force
 
@@ -52,7 +62,26 @@ function installResources()
 }
 
 # Entry point
-clearPrevious
-generateSolution
-compileProject
-installResources
+if($Cleanup) 
+{
+    clearPrevious
+}
+else 
+{
+    Write-Host "Start project generation ..." -ForegroundColor DarkMagenta 
+
+    clearPrevious
+    generateSolution
+
+    if(-Not($NoBuild)) 
+    {
+        compileProject
+
+        if(-Not($NoInstall)) 
+        {
+            installResources
+        }
+    }
+
+    Write-Host "... Done." -ForegroundColor DarkMagenta     
+}

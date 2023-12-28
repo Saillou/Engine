@@ -29,13 +29,13 @@ add_library(${ENGINE_NAME}
     ${_external_list}
 )
 target_include_directories(${ENGINE_NAME} PRIVATE 
-    # "${EXTERNAL_FOLDER}/glm/"
-    # "${EXTERNAL_FOLDER}/glad/include/"
-    # "${EXTERNAL_FOLDER}/GLFW/include/"
-    # "${EXTERNAL_FOLDER}/stb/"
-    # "${EXTERNAL_FOLDER}/freetype/include/"
-    # "${EXTERNAL_FOLDER}/reactphysics3d/include/"
-    # "${EXTERNAL_FOLDER}/assimp/include/"
+    "${EXTERNAL_FOLDER}/glm/"
+    "${EXTERNAL_FOLDER}/glad/include/"
+    "${EXTERNAL_FOLDER}/GLFW/include/"
+    "${EXTERNAL_FOLDER}/stb/"
+    "${EXTERNAL_FOLDER}/freetype/include/"
+    "${EXTERNAL_FOLDER}/reactphysics3d/include/"
+    "${EXTERNAL_FOLDER}/assimp/include/"
 )
 set_target_properties(${ENGINE_NAME} PROPERTIES 
     CXX_STANDARD 17
@@ -55,26 +55,26 @@ add_executable(${APPLICATION_NAME}
 target_include_directories(${APPLICATION_NAME} PRIVATE 
     "${SOURCE_FOLDER}/"
 
-    # "${EXTERNAL_FOLDER}/glm/"
-    # "${EXTERNAL_FOLDER}/glad/include/"
-    # "${EXTERNAL_FOLDER}/GLFW/include/"
-    # "${EXTERNAL_FOLDER}/stb/"
-    # "${EXTERNAL_FOLDER}/freetype/include/"
-    # "${EXTERNAL_FOLDER}/reactphysics3d/include/"
-    # "${EXTERNAL_FOLDER}/assimp/include/"
+    "${EXTERNAL_FOLDER}/glm/"
+    "${EXTERNAL_FOLDER}/glad/include/"
+    "${EXTERNAL_FOLDER}/GLFW/include/"
+    "${EXTERNAL_FOLDER}/stb/"
+    "${EXTERNAL_FOLDER}/freetype/include/"
+    "${EXTERNAL_FOLDER}/reactphysics3d/include/"
+    "${EXTERNAL_FOLDER}/assimp/include/"
 )
 target_link_libraries(${APPLICATION_NAME}
     debug "${OUTPUT_FOLDER}/lib/debug/${ENGINE_NAME}.lib"
-    # debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
-    # debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
-    # debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
-    # debug "${EXTERNAL_FOLDER}/assimp/lib/Debug/assimp-vc143-mtd.lib"
+    debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
+    debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
+    debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
+    debug "${EXTERNAL_FOLDER}/assimp/lib/Debug/assimp-vc143-mtd.lib"
 
     optimized "${OUTPUT_FOLDER}/lib/release/${ENGINE_NAME}.lib"
-    # optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
-    # optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
-    # optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
-    # optimized "${EXTERNAL_FOLDER}/assimp/lib/Release/assimp-vc143-mt.lib"
+    optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
+    optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
+    optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
+    optimized "${EXTERNAL_FOLDER}/assimp/lib/Release/assimp-vc143-mt.lib"
 )
 set_target_properties(${APPLICATION_NAME} PROPERTIES 
     CXX_STANDARD 17
@@ -100,26 +100,26 @@ add_executable(${TOOLS_NAME}
 target_include_directories(${TOOLS_NAME} PRIVATE 
     "${SOURCE_FOLDER}/"
 
-    # "${EXTERNAL_FOLDER}/glm/"
-    # "${EXTERNAL_FOLDER}/glad/include/"
-    # "${EXTERNAL_FOLDER}/GLFW/include/"
-    # "${EXTERNAL_FOLDER}/stb/"
-    # "${EXTERNAL_FOLDER}/freetype/include/"
-    # "${EXTERNAL_FOLDER}/reactphysics3d/include/"
-    # "${EXTERNAL_FOLDER}/assimp/include/"
+    "${EXTERNAL_FOLDER}/glm/"
+    "${EXTERNAL_FOLDER}/glad/include/"
+    "${EXTERNAL_FOLDER}/GLFW/include/"
+    "${EXTERNAL_FOLDER}/stb/"
+    "${EXTERNAL_FOLDER}/freetype/include/"
+    "${EXTERNAL_FOLDER}/reactphysics3d/include/"
+    "${EXTERNAL_FOLDER}/assimp/include/"
 )
 target_link_libraries(${TOOLS_NAME}    
     debug "${OUTPUT_FOLDER}/lib/debug/${ENGINE_NAME}.lib"
-    # debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
-    # debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
-    # debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
-    # debug "${EXTERNAL_FOLDER}/assimp/lib/Debug/assimp-vc143-mtd.lib"
+    debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
+    debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
+    debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
+    debug "${EXTERNAL_FOLDER}/assimp/lib/Debug/assimp-vc143-mtd.lib"
 
     optimized "${OUTPUT_FOLDER}/lib/release/${ENGINE_NAME}.lib"
-    # optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
-    # optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
-    # optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
-    # optimized "${EXTERNAL_FOLDER}/assimp/lib/Release/assimp-vc143-mt.lib"
+    optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
+    optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
+    optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
+    optimized "${EXTERNAL_FOLDER}/assimp/lib/Release/assimp-vc143-mt.lib"
 )
 set_target_properties(${TOOLS_NAME} PROPERTIES 
     CXX_STANDARD 17
