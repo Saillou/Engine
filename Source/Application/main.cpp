@@ -1,9 +1,10 @@
 #include <string>
 
-#include "Utils/Timer.hpp"
-#include "Engine/Physx/Physx.hpp"
-#include "Engine/Graphic/Window.hpp"
-#include "Application/ApplicationManager.hpp"
+#include <Engine/Utils/Timer.hpp>
+#include <Engine/Physx/Physx.hpp>
+#include <Engine/Graphic/Window.hpp>
+
+#include "Game/ApplicationManager.hpp"
 
 // Options
 #ifdef _DEBUG

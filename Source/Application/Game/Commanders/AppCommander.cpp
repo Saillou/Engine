@@ -1,7 +1,7 @@
 #include "AppCommander.hpp"
 #include <glm/gtx/string_cast.hpp>
 
-#include "../../Engine/Physx/Physx.hpp"
+#include <Engine/Physx/Physx.hpp>
 
 using namespace glm;
 

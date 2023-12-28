@@ -3,8 +3,8 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-#include "../../../Utils/Timer.hpp"
-#include "../../../Engine/Physx/Physx.hpp"
+#include <Engine/Physx/Physx.hpp>
+#include <Engine/Utils/Timer.hpp>
 
 // ------------ Base ------------
 class BaseItem {

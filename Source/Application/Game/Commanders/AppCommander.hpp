@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../../Engine/Physx/Physx.hpp"
-#include "../../Engine/Graphic/Base/BaseCommander.hpp"
-#include "../../Utils/Timer.hpp"
+#include <Engine/Physx/Physx.hpp>
+#include <Engine/Graphic/Base/BaseCommander.hpp>
+#include <Engine/Utils/Timer.hpp>
+
 #include "../Scenes/AppScene.hpp"
 
 struct AppCommander : public BaseCommander {

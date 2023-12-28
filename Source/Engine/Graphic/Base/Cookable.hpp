@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "../Shaders/Shader.hpp"
-#include "../../../Utils/Caster.hpp"
+#include "../../Utils/Caster.hpp"
 
 // Objects
 struct Cookable : public Object {

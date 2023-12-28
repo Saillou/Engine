@@ -8,7 +8,7 @@
 #include "Scenes/BloomScene.hpp"
 #include "Scenes/LearnScene.hpp"
 
-#include "../Engine/Sound/Player.hpp"
+#include <Engine/Sound/Player.hpp>
 
 
 ApplicationManager* ApplicationManager::s_appManager = nullptr;

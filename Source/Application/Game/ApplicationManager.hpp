@@ -3,9 +3,9 @@
 #include <memory>
 #include <queue>
 
-#include "../Engine/Graphic/Window.hpp"
-#include "../Engine/Events/CommonEvents.hpp"
-#include "../Engine/Graphic/Base/BaseCommander.hpp"
+#include <Engine/Graphic/Window.hpp>
+#include <Engine/Events/CommonEvents.hpp>
+#include <Engine/Graphic/Base/BaseCommander.hpp>
 
 // Data
 enum SceneId {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Engine/Graphic/Base/BaseScene.hpp"
-#include "../../Engine/Graphic/Base/Shapes/Quad.hpp"
+#include <Engine/Graphic/Base/BaseScene.hpp>
+#include <Engine/Graphic/Base/Shapes/Quad.hpp>
 
 // -- Scene --
 struct LearnScene : public BaseScene {

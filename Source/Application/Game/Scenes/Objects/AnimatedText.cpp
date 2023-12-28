@@ -1,6 +1,6 @@
 #include "AnimatedText.hpp"
 
-#include "../../../Engine/Graphic/TextEngine.hpp"
+#include <Engine/Graphic/TextEngine.hpp>
 
 // Utils
 glm::vec2 AnimatedText::s_viewport_size = glm::vec2(800, 600);
