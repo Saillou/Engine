@@ -19,10 +19,6 @@ Available arguments are:
 | -NoBuild   | Don't build executables and libraries |
 | -NoInstall | Don't install resources               |
 
--Cleanup -NoBuild -NoInstall
-    [switch] $Cleanup,   # Clean generated files
-    [switch] $NoBuild,   # Don't build executables
-    [switch] $NoInstall  # Don't install resources
 
 ## Generation:
 - Visual Studio solution in `./_solution/Game.sln`.
