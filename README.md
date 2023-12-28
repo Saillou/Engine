@@ -13,11 +13,11 @@ The game
 Use the command `./generate.ps1` and hope for the best.
 
 Available arguments are:
-| Argument   | Description                           |
-| ---------- | ------------------------------------- |
-| -Cleanup   | Clean generated files                 |
-| -NoBuild   | Don't build executables and libraries |
-| -NoInstall | Don't install resources               |
+| Argument     | Description                           |
+| ------------ | ------------------------------------- |
+| `-Cleanup`   | Clean generated files                 |
+| `-NoBuild`   | Don't build executables and libraries |
+| `-NoInstall` | Don't install resources               |
 
 
 ## Generation:
