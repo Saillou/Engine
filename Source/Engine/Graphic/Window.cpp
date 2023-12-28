@@ -10,7 +10,6 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
     m_title(title)
 {
     _init(title);
-    m_scene = std::make_shared<BaseScene>();
 }
 
 Window::~Window() {
@@ -139,6 +138,10 @@ void Window::_init(const char* title) {
     glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* this_window, int new_width, int new_height) {
         ((Window*)(glfwGetWindowUserPointer(this_window)))->_resize(new_width, new_height);
     });
+
+    // Basic scene
+    m_scene = std::make_shared<BaseScene>();
+    m_scene->resize(m_width, m_height);
 }
 
 // Private
