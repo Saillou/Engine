@@ -107,10 +107,6 @@ target_include_directories(${TOOLS_NAME} PRIVATE
     "${EXTERNAL_FOLDER}/freetype/include/"
     "${EXTERNAL_FOLDER}/reactphysics3d/include/"
     "${EXTERNAL_FOLDER}/assimp/include/"
-
-    "${TOOLS_SOURCE}/imgui/"
-    "${TOOLS_SOURCE}/imgui/misc/"
-    "${TOOLS_SOURCE}/imgui/backends/"
 )
 target_link_libraries(${TOOLS_NAME}    
     debug "${OUTPUT_FOLDER}/lib/debug/${ENGINE_NAME}.lib"

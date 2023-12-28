@@ -23,6 +23,7 @@ struct Window {
     std::vector<unsigned int> keyPressed() const;
     glm::vec2 mousePos() const;
     std::shared_ptr<BaseScene> scene() const;
+    GLFWwindow* backend();
 
     // Setters
     std::shared_ptr<BaseScene> scene(std::shared_ptr<BaseScene> scene);

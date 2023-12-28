@@ -10,6 +10,7 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
     m_title(title)
 {
     _init(title);
+    m_scene = std::make_shared<BaseScene>();
 }
 
 Window::~Window() {
@@ -78,6 +79,10 @@ glm::vec2 Window::mousePos() const {
 
 std::shared_ptr<BaseScene> Window::scene() const {
     return m_scene;
+}
+
+GLFWwindow* Window::backend() {
+    return m_window;
 }
 
 // Setters

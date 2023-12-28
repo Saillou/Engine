@@ -61,7 +61,7 @@ std::string ShaderSource::str() const {
     std::stringstream ss;
 
     // version
-    ss << "#version 330\n";
+    ss << "#version 330 core\n";
 
     // structs
     for (const auto& struc : structs)
