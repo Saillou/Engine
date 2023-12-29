@@ -17,5 +17,3 @@ protected:
 
     std::shared_ptr<BaseScene> m_scene;
 };
-
-typedef std::unique_ptr<BaseCommander> uBaseCommander;

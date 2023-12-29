@@ -76,11 +76,11 @@ else
     if(-Not($NoBuild)) 
     {
         compileProject
+    }
 
-        if(-Not($NoInstall)) 
-        {
-            installResources
-        }
+    if(-Not($NoInstall)) 
+    {
+        installResources
     }
 
     Write-Host "... Done." -ForegroundColor DarkMagenta     

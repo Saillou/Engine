@@ -7,15 +7,18 @@
 #include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
 
+#include <Engine/Utils/Timer.hpp>
+
 // -- Scene --
-struct AppScene : public BaseScene {
-    AppScene();
+struct View : public BaseScene {
+    View();
 
     void draw() override;
 
     bool redraw = false;
 
 private:
+    Timer::Chronometre m_timer;
 
     struct FireGrid {
         glm::vec3 pos;

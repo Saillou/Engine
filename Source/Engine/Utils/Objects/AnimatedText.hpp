@@ -3,8 +3,8 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-#include <Engine/Utils/Timeline.hpp>
-#include <Engine/Utils/Animator.hpp>
+#include "../Timeline.hpp"
+#include "../Animator.hpp"
 
 // -- Utils --
 struct Drawable {

@@ -1,8 +1,9 @@
-#include "AppScene.hpp"
+#include "View.hpp"
 
 #include <algorithm>
 #include <ctime>
 #include <random>
+#include <iostream>
 
 // Random engine
 static std::default_random_engine gen;
@@ -12,7 +13,7 @@ static std::uniform_real_distribution<float> dstr_one(0.0f, 1.0f);
 static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
 // -- Scene instance --
-AppScene::AppScene() :
+View::View() :
     BaseScene(),
     m_fireGrid({
         glm::vec3(0, 0, 0),
@@ -69,16 +70,18 @@ AppScene::AppScene() :
 
     // Cook
     m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
+
+    // Start
+    m_timer.tic();
 }
 
-void AppScene::draw() {
+void View::draw() {
     // Cleanup previous draws
     BaseScene::clear();
 
-    // Update time
-    static float t = 0.0f;
-    const float dt = 0.016f;
-    
+    // Get d_time
+    float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+
     // Particles
     {
         // Move
@@ -104,7 +107,7 @@ void AppScene::draw() {
                 model = glm::scale(
                     glm::translate(
                         model, 
-                        m_fireGrid.pos + dt * glm::vec3(speed)), speed.a * glm::vec3(1, 1, 1)
+                        m_fireGrid.pos + dt_s * glm::vec3(speed)), speed.a * glm::vec3(1, 1, 1)
                 );
             }
         }
@@ -120,6 +123,6 @@ void AppScene::draw() {
     }
 
     // Update
-    t += dt;
+    m_timer.tic();
     redraw = false;
 }
