@@ -8,7 +8,6 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 
 set(EXTERNAL_FOLDER  "${CMAKE_SOURCE_DIR}/External")
 set(SOURCE_FOLDER    "${CMAKE_SOURCE_DIR}/Source")
-set(RESOURCES_FOLDER "${CMAKE_SOURCE_DIR}/Resources")
 set(OUTPUT_FOLDER    "${CMAKE_SOURCE_DIR}/_output")
 
 set(CMAKE_CXX_FLAGS_RELEASE         "${CMAKE_CXX_FLAGS_RELEASE} /MD")
@@ -45,12 +44,10 @@ set_target_properties(${ENGINE_NAME} PROPERTIES
 # ------------------------------ Application executable ------------------------------
 set(APPLICATION_NAME    "Application")
 set(APPLICATION_SOURCE  "${SOURCE_FOLDER}/Application")
-file(GLOB_RECURSE _resource_list CONFIGURE_DEPENDS "${RESOURCES_FOLDER}/*")
 file(GLOB_RECURSE _source_a_list CONFIGURE_DEPENDS "${APPLICATION_SOURCE}/*")
 
 add_executable(${APPLICATION_NAME}
     ${_source_a_list}
-    ${_resource_list}
 )
 target_include_directories(${APPLICATION_NAME} PRIVATE 
     "${SOURCE_FOLDER}/"
@@ -68,13 +65,13 @@ target_link_libraries(${APPLICATION_NAME}
     debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
     debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
     debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
-    debug "${EXTERNAL_FOLDER}/assimp/lib/Debug/assimp-vc143-mtd.lib"
 
     optimized "${OUTPUT_FOLDER}/lib/release/${ENGINE_NAME}.lib"
     optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
     optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
     optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
-    optimized "${EXTERNAL_FOLDER}/assimp/lib/Release/assimp-vc143-mt.lib"
+
+    "${EXTERNAL_FOLDER}/assimp/lib/assimp-vc143-mt.lib"
 )
 set_target_properties(${APPLICATION_NAME} PROPERTIES 
     CXX_STANDARD 17
@@ -113,13 +110,13 @@ target_link_libraries(${TOOLS_NAME}
     debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
     debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
     debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
-    debug "${EXTERNAL_FOLDER}/assimp/lib/Debug/assimp-vc143-mtd.lib"
 
     optimized "${OUTPUT_FOLDER}/lib/release/${ENGINE_NAME}.lib"
     optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
     optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
     optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
-    optimized "${EXTERNAL_FOLDER}/assimp/lib/Release/assimp-vc143-mt.lib"
+
+    "${EXTERNAL_FOLDER}/assimp/lib/assimp-vc143-mt.lib"
 )
 set_target_properties(${TOOLS_NAME} PROPERTIES 
     CXX_STANDARD 17
@@ -141,5 +138,4 @@ source_group(TREE ${TOOLS_SOURCE}       FILES ${_source_t_list})
 source_group(TREE ${APPLICATION_SOURCE} FILES ${_source_a_list})
 source_group(TREE ${ENGINE_SOURCE}      FILES ${_source_e_list})
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${_resource_list})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${_external_list})

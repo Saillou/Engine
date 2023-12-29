@@ -5,6 +5,51 @@
 #include <random>
 #include <iostream>
 
+#include <Engine/Graphic/Model/Model.hpp>
+
+struct ModelObject {
+    ModelObject(const std::string& path) :
+        _object(path)
+    {
+        _shader.
+            attachSource(GL_VERTEX_SHADER, ShaderSource{}
+                .add_var("layout (location = 0) in", "vec3", "aPos")
+                .add_var("layout (location = 1) in", "vec3", "aNormal")
+                .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+
+                .add_var("uniform", "mat4", "model")
+                .add_var("uniform", "mat4", "view")
+                .add_var("uniform", "mat4", "projection")
+
+                .add_var("out", "vec2", "TexCoords")
+
+                .add_func("void", "main", "", R"_main_(
+                    TexCoords = aTexCoords;    
+                    gl_Position = projection * view * model * vec4(aPos, 1.0);
+                )_main_").str()
+            )
+            .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+                .add_var("in", "vec2", "TexCoords")
+                .add_var("uniform", "sampler2D", "texture_diffuse1")
+                .add_var("out", "vec4", "FragColor")
+
+                .add_func("void", "main", "", R"_main_(
+                    FragColor = texture(texture_diffuse1, TexCoords);
+                )_main_").str()
+            );
+    }
+
+    void draw() {
+        _object.draw(_shader);
+    }
+
+private:
+    Shader _shader;
+    Model _object;
+};
+
+std::unique_ptr<ModelObject> p_obj;
+
 // -- Scene instance --
 View::View() :
     BaseScene()
@@ -13,6 +58,9 @@ View::View() :
     m_camera.position    = glm::vec3(0.0f, -10.0f, 0.0f);
     m_camera.direction   = glm::vec3(0.0f, 0.0, 0.0f);
     m_camera.fieldOfView = 45.0f;
+
+    // Objects
+    p_obj = std::make_unique<ModelObject>("Resources/objects/backpack/backpack.obj");
 
     // Start
     m_timer.tic();
@@ -23,6 +71,7 @@ void View::draw() {
     float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
 
     // Draw stuff
+    p_obj->draw();
     
     // Prepare next
     m_timer.tic();

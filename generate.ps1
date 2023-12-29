@@ -56,9 +56,11 @@ function installResources()
 
     # Install for Debug
     Copy-Item -Path "$PSScriptRoot/Resources" -Destination "$PSScriptRoot/_output/bin/debug/Resources" -Recurse -Force
+    Copy-Item -Path "$PSScriptRoot/Dlls/*" -Destination "$PSScriptRoot/_output/bin/debug" -Recurse -Force
 
     # Install for Release
     Copy-Item -Path "$PSScriptRoot/Resources" -Destination "$PSScriptRoot/_output/bin/release/Resources" -Recurse -Force
+    Copy-Item -Path "$PSScriptRoot/Dlls/*" -Destination "$PSScriptRoot/_output/bin/release" -Recurse -Force
 }
 
 # Entry point
