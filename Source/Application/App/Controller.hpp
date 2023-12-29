@@ -15,7 +15,6 @@ protected:
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
 
 private:
-    // Members
     std::shared_ptr<View> m_scene;
     Timer::Chronometre m_timer;
 };

@@ -1,7 +1,6 @@
 #include "Controller.hpp"
 #include <iostream>
 
-// Instance
 Controller::Controller(std::shared_ptr<BaseScene> scene):
     m_scene(std::dynamic_pointer_cast<View>(scene))
 {
@@ -24,8 +23,7 @@ void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
 }
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
-    if(evt.key == Key::Space)
-        m_scene->redraw = true;
+    // ..
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
