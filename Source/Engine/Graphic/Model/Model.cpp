@@ -166,14 +166,14 @@ unsigned int Model::_TextureFromFile(const char* path, const std::string& direct
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
+
+    stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
+        GLenum format = GL_RGB;
         if (nrComponents == 1)
             format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
         else if (nrComponents == 4)
             format = GL_RGBA;
 

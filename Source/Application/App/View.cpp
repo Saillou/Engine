@@ -71,6 +71,7 @@ View::View() :
 
     // Objects
     p_obj = std::make_unique<ModelObject>("Resources/objects/backpack/backpack.obj");
+    p_obj->model = glm::rotate(p_obj->model, 1.5f, glm::vec3(1, 0, 0));
 
     // Start
     m_timer.tic();
@@ -81,6 +82,7 @@ void View::draw() {
     float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
 
     // Draw stuff
+    p_obj->model = glm::rotate(p_obj->model, 0.5f * dt_s, glm::vec3(0, 1, 0));
     p_obj->draw(m_camera);
     
     // Prepare next
