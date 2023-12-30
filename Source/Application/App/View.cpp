@@ -65,16 +65,13 @@ View::View() :
     BaseScene()
 {
     // Camera
-    m_camera.position    = glm::vec3(0.0f, -10.0f, 0.0f);
+    m_camera.position    = glm::vec3(0.0f, -5.0f, 0.0f);
     m_camera.direction   = glm::vec3(0.0f, 0.0, 0.0f);
     m_camera.fieldOfView = 45.0f;
 
     // Objects
-    p_obj = std::make_unique<ModelObject>("Resources/objects/backpack/backpack.obj");
-    //p_obj = std::make_unique<ModelObject>("Resources/objects/cyborg/cyborg.obj");
-    //p_obj = std::make_unique<ModelObject>("Resources/objects/nanosuit/nanosuit.obj");
-    //p_obj = std::make_unique<ModelObject>("Resources/objects/planet/planet.obj");
-    //p_obj = std::make_unique<ModelObject>("Resources/objects/rock/rock.obj");
+    p_obj = std::make_unique<ModelObject>("Resources/objects/paint/tree.glb");
+    //p_obj = std::make_unique<ModelObject>("Resources/objects/backpack/backpack.obj");
     p_obj->model = glm::rotate(p_obj->model, 1.5f, glm::vec3(1, 0, 0));
 
     // Start
