@@ -36,6 +36,7 @@ private:
     std::vector<_Object> m_objects;                                      // All scene objects
 
     std::unique_ptr<Box> m_model_box;
+    std::unique_ptr<Skybox> m_skybox;
 
     // Other members
     Timer::Chronometre m_timer;
