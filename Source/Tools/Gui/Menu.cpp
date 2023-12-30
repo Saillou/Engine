@@ -65,7 +65,6 @@ void Menu::ShowMenuBar()
 
 void Menu::ShowMenuFile()
 {
-    ImGui::MenuItem("(demo menu)", NULL, false, false);
     if (ImGui::MenuItem("New")) {}
     if (ImGui::MenuItem("Open", "Ctrl+O")) {}
     if (ImGui::BeginMenu("Open Recent"))
