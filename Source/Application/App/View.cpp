@@ -71,6 +71,10 @@ View::View() :
 
     // Objects
     p_obj = std::make_unique<ModelObject>("Resources/objects/backpack/backpack.obj");
+    //p_obj = std::make_unique<ModelObject>("Resources/objects/cyborg/cyborg.obj");
+    //p_obj = std::make_unique<ModelObject>("Resources/objects/nanosuit/nanosuit.obj");
+    //p_obj = std::make_unique<ModelObject>("Resources/objects/planet/planet.obj");
+    //p_obj = std::make_unique<ModelObject>("Resources/objects/rock/rock.obj");
     p_obj->model = glm::rotate(p_obj->model, 1.5f, glm::vec3(1, 0, 0));
 
     // Start
