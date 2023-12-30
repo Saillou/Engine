@@ -11,8 +11,10 @@ int main() {
 
     // Loop
     do {
+        // Inputs
         for (auto key : window.keyPressed()) {
-            switch (key) {
+            switch (key) 
+            {
             case GLFW_KEY_ESCAPE:
                 window.close(); 
                 break;
@@ -27,9 +29,11 @@ int main() {
             (int)window.mousePos().x, (int)window.mousePos().y
         ));
 
-        Event::Emit(CommonEvents::StateUpdated());
-    } 
-    while (window.update());
+        // States, Physics ..
+        {
+            Event::Emit(CommonEvents::StateUpdated());
+        }
+    } while (window.update());
 
     // Cleanup
     return 0;

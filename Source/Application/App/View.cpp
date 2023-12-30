@@ -98,5 +98,5 @@ void View::_initObjects() {
 }
 
 void View::_onResize() {
-    // For example resize: framebuffers ..
+    // For example: resize framebuffers ..
 }
