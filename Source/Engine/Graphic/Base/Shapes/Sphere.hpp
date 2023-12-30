@@ -18,6 +18,7 @@ struct Sphere :
     Sphere(float radius);
     virtual ~Sphere() = default;
 
+    void draw(const Camera& camera, const glm::mat4& quad, const std::vector<Light>& lights = {});
     void draw(const Camera& camera, const glm::vec3& position = {}, const glm::vec3& orientation = {}, const std::vector<Light>& lights = {});
     void drawBatch(size_t amount, const Camera& camera);
 };

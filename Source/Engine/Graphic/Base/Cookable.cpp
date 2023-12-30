@@ -3,13 +3,17 @@
 #include <glad/glad.h>
 
 // - Recipes
-Cookable* Cookable::addRecipe(const CookType& type) {
+Cookable* Cookable::addRecipe(CookType type) {
     m_shaders[type] = std::make_unique<Shader>();
     UShader& recipe = m_shaders[type];
 
     switch (type) {
     case CookType::Solid:
         _set_shader_solid(recipe);
+        break;
+
+    case CookType::Geometry:
+        _set_shader_geometry(recipe);
         break;
 
     case CookType::Quad:
@@ -29,7 +33,7 @@ Cookable* Cookable::addRecipe(const CookType& type) {
     return this;
 }
 
-Cookable* Cookable::addRecipe(const CookType& type, const glm::vec4& color) {
+Cookable* Cookable::addRecipe(CookType type, const glm::vec4& color) {
     addRecipe(type);
 
     // Set uniforms
@@ -38,12 +42,11 @@ Cookable* Cookable::addRecipe(const CookType& type, const glm::vec4& color) {
     return this;
 }
 
-UShader& Cookable::get(const CookType& type) {
+UShader& Cookable::get(CookType type) {
     return m_shaders[type];
 }
 
 // - Shaders
-// Vertex
 void Cookable::_set_shader_batch(UShader& shader) {
     shader->
         attachSource(GL_VERTEX_SHADER, ShaderSource{}
@@ -144,6 +147,55 @@ void Cookable::_set_shader_solid(UShader& shader) {
             )_main_").str()
         );
 }
+
+void Cookable::_set_shader_geometry(UShader& shader) {
+    shader->
+        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("layout (location = 1) in", "vec3", "aNormal")
+
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+            .add_var("uniform", "mat4", "Model")
+
+            .add_var("out", "vec3", "Normal")
+            .add_var("out", "vec3", "FragPos")
+
+            .add_func("void", "main", "", R"_main_(
+                FragPos = vec3(Model * vec4(aPos, 1.0));
+                Normal = mat3(transpose(inverse(Model))) * aNormal;  
+    
+                gl_Position = Projection * View * vec4(FragPos, 1.0);
+            )_main_").str()
+        )
+        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
+            .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(line_strip, max_vertices = 4)")
+
+            .add_func("void", "main", "", R"_main_(
+                gl_Position     = gl_in[1].gl_Position; EmitVertex();
+                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
+                EndPrimitive();
+
+                gl_Position     = gl_in[0].gl_Position; EmitVertex();
+                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
+                EndPrimitive();
+            )_main_").str()
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec3", "Normal")
+            .add_var("in", "vec3", "FragPos")
+
+            .add_var("uniform", "vec4", "color")
+
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                FragColor = color;
+            )_main_").str()
+        );
+}
+
 
 void Cookable::_set_shader_quad(UShader& shader) {
     shader->

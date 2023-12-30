@@ -29,8 +29,12 @@ private:
 
     void _initObjects();
 
+    // Object specifics
     std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models; // Object models (vertices, textures..)
     std::vector<_Object> m_objects;                                      // All scene objects
 
+    std::unique_ptr<Box> m_model_box;
+
+    // Other members
     Timer::Chronometre m_timer;
 };

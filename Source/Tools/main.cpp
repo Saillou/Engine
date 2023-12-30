@@ -10,6 +10,7 @@ int main()
     Menu menu(window.backend());
 
     Light light(glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 });
+
     Sphere sphere_model(0.15f);
     sphere_model.addRecipe(Cookable::CookType::Solid);
 

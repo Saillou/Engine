@@ -9,20 +9,24 @@
 struct Cookable : public Object {
     // Basic possibilities
     enum class CookType {
-        Solid, Quad, Batch
+        Solid, 
+        Geometry, 
+        Quad, 
+        Batch
     };
 
     // Instance
     virtual ~Cookable() = default;
 
-    virtual Cookable* addRecipe(const CookType& type);
-    virtual Cookable* addRecipe(const CookType& type, const glm::vec4& color);
+    virtual Cookable* addRecipe(CookType type);
+    virtual Cookable* addRecipe(CookType type, const glm::vec4& color);
 
-    UShader& get(const CookType& type);
+    UShader& get(CookType type);
 
 protected:
     virtual void _set_shader_batch(UShader& shader);
     virtual void _set_shader_solid(UShader& shader);
+    virtual void _set_shader_geometry(UShader& shader);
     virtual void _set_shader_quad(UShader& shader);
 
     // Members
