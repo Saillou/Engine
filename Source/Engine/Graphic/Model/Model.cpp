@@ -1,7 +1,6 @@
 #include "Model.hpp"
 
-Model::Model(const std::string& path, bool gamma):
-    gammaCorrection(gamma) 
+Model::Model(const std::string& path)
 {
     _loadModel(path);
 }
@@ -103,6 +102,28 @@ Mesh Model::_processMesh(aiMesh* mesh, const aiScene* scene) {
     }
     // process materials
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+    aiString texture_file;
+    material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
+    if (const aiTexture* rawTextureData = scene->GetEmbeddedTexture(texture_file.C_Str())) 
+    {
+        //read texture from memory
+        TextureData texture;
+        texture.id   = _TextureFromRawData(rawTextureData);
+        texture.type = "texture_diffuse";
+        texture.path = "embedded_diffuse_" + std::string(texture_file.C_Str());
+
+        textures.push_back(texture);
+    }
+    else 
+    {
+        //regular file, check if it exists and read it
+        std::vector<TextureData> diffuseMaps = _loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    }
+
+
+
     // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
     // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
     // Same applies to other texture as the following list summarizes:
@@ -110,18 +131,18 @@ Mesh Model::_processMesh(aiMesh* mesh, const aiScene* scene) {
     // specular: texture_specularN
     // normal: texture_normalN
 
-    // 1. diffuse maps
-    std::vector<TextureData> diffuseMaps = _loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    std::vector<TextureData> specularMaps = _loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    std::vector<TextureData> normalMaps = _loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    std::vector<TextureData> heightMaps = _loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    //// 1. diffuse maps
+    //std::vector<TextureData> diffuseMaps = _loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    //textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    //// 2. specular maps
+    //std::vector<TextureData> specularMaps = _loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+    //textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    //// 3. normal maps
+    //std::vector<TextureData> normalMaps = _loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+    //textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+    //// 4. height maps
+    //std::vector<TextureData> heightMaps = _loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+    //textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);
@@ -157,7 +178,51 @@ std::vector<TextureData> Model::_loadMaterialTextures(aiMaterial* mat, aiTexture
     return textures;
 }
 
-unsigned int Model::_TextureFromFile(const char* path, const std::string& directory, bool gamma)
+unsigned int Model::_TextureFromRawData(const aiTexture* rawTextureData) {
+    int width, height, nrComponents;
+    unsigned char* data = nullptr;
+
+    stbi_set_flip_vertically_on_load(false);
+    if (rawTextureData->mHeight == 0)
+    {
+        data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(rawTextureData->pcData), rawTextureData->mWidth, &width, &height, &nrComponents, 0);
+    }
+    else
+    {
+        data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(rawTextureData->pcData), rawTextureData->mWidth * rawTextureData->mHeight, &width, &height, &nrComponents, 0);
+    }
+
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    if (data)
+    {
+        GLenum format = GL_RGB;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to read at texture." << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
+
+unsigned int Model::_TextureFromFile(const char* path, const std::string& directory)
 {
     std::string filename = std::string(path);
     filename = directory + '/' + filename;
