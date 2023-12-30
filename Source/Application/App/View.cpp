@@ -9,7 +9,8 @@
 
 struct ModelObject {
     ModelObject(const std::string& path) :
-        _object(path)
+        _object(path),
+        model(glm::mat4(1.0f))
     {
         _shader.
             attachSource(GL_VERTEX_SHADER, ShaderSource{}
@@ -36,12 +37,21 @@ struct ModelObject {
                 .add_func("void", "main", "", R"_main_(
                     FragColor = texture(texture_diffuse1, TexCoords);
                 )_main_").str()
-            );
+            )
+        .link();
     }
 
-    void draw() {
+    void draw(const Camera& camera) {
+        _shader
+            .use()
+            .set("projection",  camera.projection)
+            .set("view",        camera.modelview)
+            .set("model",       model);
+
         _object.draw(_shader);
     }
+
+    glm::mat4 model;
 
 private:
     Shader _shader;
@@ -71,7 +81,7 @@ void View::draw() {
     float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
 
     // Draw stuff
-    p_obj->draw();
+    p_obj->draw(m_camera);
     
     // Prepare next
     m_timer.tic();
