@@ -17,6 +17,24 @@ View::View() :
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::microsecond>() / 1'000.0f << "ms." << std::endl;
 
     // Populate objects
+    _initObjects();
+}
+
+void View::draw() {
+    float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+    BaseScene::clear();
+
+    // Draw objects
+    for (const _Object& obj : m_objects) {
+        m_models[obj.id]->draw(m_camera, obj.quat);
+    }
+    
+    // Prepare next
+    m_timer.tic();
+}
+
+void View::_initObjects() {
+    // Trees
     m_objects.push_back({_ObjecId::Tree,
         glm::scale(
             glm::translate(
@@ -37,6 +55,7 @@ View::View() :
         )
     });
 
+    // Main character
     m_objects.push_back({_ObjecId::Character,
         glm::scale(
             glm::translate(
@@ -46,17 +65,4 @@ View::View() :
             glm::vec3(0.05f, 0.05f, 0.05f)      // Scale
         )
     });
-}
-
-void View::draw() {
-    BaseScene::clear();
-    float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
-
-    // Draw objects
-    for (const _Object& obj : m_objects) {
-        m_models[obj.id]->draw(m_camera, obj.quat);
-    }
-    
-    // Prepare next
-    m_timer.tic();
 }

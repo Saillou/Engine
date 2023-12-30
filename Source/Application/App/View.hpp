@@ -27,6 +27,8 @@ private:
         glm::mat4 quat;
     };
 
+    void _initObjects();
+
     std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models; // Object models (vertices, textures..)
     std::vector<_Object> m_objects;                                      // All scene objects
 
