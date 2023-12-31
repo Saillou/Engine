@@ -7,27 +7,33 @@
 function clearPrevious() 
 {
     Write-Host "Deleting ./_solution." -ForegroundColor DarkRed 
-    if (Test-Path -Path "./_solution")
+    if (Test-Path -Path "$PSScriptRoot/_solution")
     {
-        Remove-Item -Path "./_solution" -Recurse -Force
+        Remove-Item -Path "$PSScriptRoot/_solution" -Recurse -Force
     }
 
     Write-Host "Deleting ./_output." -ForegroundColor DarkRed 
-    if (Test-Path -Path "./_output")
+    if (Test-Path -Path "$PSScriptRoot/_output")
     {
-        Remove-Item -Path "./_output" -Recurse -Force
+        Remove-Item -Path "$PSScriptRoot/_output" -Recurse -Force
+    }
+
+    Write-Host "Deleting ./imgui.ini" -ForegroundColor DarkRed 
+    if (Test-Path -Path "$PSScriptRoot/imgui.ini")
+    {
+        Remove-Item -Path "$PSScriptRoot/imgui.ini" -Recurse -Force
     }
 }
 
 function generateSolution() 
 {
     Write-Host "Creating ./_solution." -ForegroundColor DarkGreen 
-    if (-Not(Test-Path -Path "./_solution")) 
+    if (-Not(Test-Path -Path "$PSScriptRoot/_solution")) 
     {
-        New-Item -ItemType Directory -Path "./_solution"
+        New-Item -ItemType Directory -Path "$PSScriptRoot/_solution"
     }
 
-    Push-Location -Path  "./_solution"
+    Push-Location -Path  "$PSScriptRoot/_solution"
 
     Write-Host "Generating Visual Studio solution." -ForegroundColor DarkGreen 
     cmake .. -G "Visual Studio 17 2022" -A x64
@@ -37,7 +43,7 @@ function generateSolution()
 
 function compileProject()
 {
-    Push-Location -Path  "./_solution"
+    Push-Location -Path  "$PSScriptRoot/_solution"
 
     # Compile for Debug
     Write-Host "Compile for Debug." -ForegroundColor DarkYellow 
