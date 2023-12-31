@@ -41,6 +41,7 @@ private:
 
     std::unique_ptr<Sphere> m_model_sphere;
     std::unique_ptr<Box>    m_model_box;
+    std::unique_ptr<Box>    m_model_box_shadow;
 
     // Scene objects
     std::vector<_Object>    m_objects;                                      

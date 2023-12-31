@@ -10,7 +10,8 @@ struct Cookable : public Object {
     // Basic possibilities
     enum class CookType {
         Solid, 
-        Geometry, 
+        Geometry,
+        Shadow,
         Quad, 
         Batch
     };
@@ -26,6 +27,7 @@ struct Cookable : public Object {
 protected:
     virtual void _set_shader_batch(UShader& shader);
     virtual void _set_shader_solid(UShader& shader);
+    virtual void _set_shader_shadow(UShader& shader);
     virtual void _set_shader_geometry(UShader& shader);
     virtual void _set_shader_quad(UShader& shader);
 

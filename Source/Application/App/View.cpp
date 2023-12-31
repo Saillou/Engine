@@ -11,7 +11,7 @@ View::View() :
 
     // Lightings
     m_lights = {
-        Light(glm::vec3{  0,  0, 0.35f }, glm::vec4{ 1,1,1,1 }),
+        Light(glm::vec3{  0,  0, 0.70f }, glm::vec4{ 1,1,1,1 }),
         Light(glm::vec3{ -1,  0, 0.35f }, glm::vec4{ 1,0,0,1 }),
         Light(glm::vec3{  0, -1, 0.35f }, glm::vec4{ 0,1,0,1 }),
         Light(glm::vec3{ +1,  0, 0.35f }, glm::vec4{ 1,1,0,1 }),
@@ -57,6 +57,9 @@ void View::draw() {
             m_model_box->draw(m_camera, cell_quat, m_lights);
         }
 
+        // Draw box with shadow
+        m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0.15f)), m_lights);
+
         // Skybox
         m_skybox->draw(m_camera);
     }
@@ -76,7 +79,11 @@ void View::_initObjects() {
         "Resources/textures/skybox/back.jpg"
     });
 
-    // Ground
+    // Box - Test shadow
+    m_model_box_shadow = std::make_unique<Box>(0.3f);
+    m_model_box_shadow->addRecipe(Cookable::CookType::Shadow, glm::vec4(1,1,1,1));
+
+    // Ground - Grid
     m_model_box = std::make_unique<Box>(1.0f);
     m_model_box->addRecipe(Cookable::CookType::Solid,    glm::vec4(0.7f, 0.7f, 0.7f, 1));
     m_model_box->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
@@ -118,7 +125,7 @@ void View::_initObjects() {
         )
     });
 
-    // Main character
+    // Character
     m_objects.push_back({_ObjecId::Character,
         glm::scale(
             glm::translate(
