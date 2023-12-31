@@ -1,11 +1,22 @@
 #include "View.hpp"
 
+#include <algorithm>
+
 View::View() :
     BaseScene()
 {
     // Camera
     m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
     m_camera.direction = glm::vec3(0.0f, 0.0, 0.0f);
+
+    // Lightings
+    m_lights = {
+        Light(glm::vec3{  0,  0, 0.35f }, glm::vec4{ 1,1,1,1 }),
+        Light(glm::vec3{ -1,  0, 0.35f }, glm::vec4{ 1,0,0,1 }),
+        Light(glm::vec3{  0, -1, 0.35f }, glm::vec4{ 0,1,0,1 }),
+        Light(glm::vec3{ +1,  0, 0.35f }, glm::vec4{ 1,1,0,1 }),
+        Light(glm::vec3{  0, +1, 0.35f }, glm::vec4{ 0,1,1,1 }),
+    };
 
     // Load models
     m_timer.tic();
@@ -16,7 +27,11 @@ View::View() :
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Populate objects
-    _initObjects();
+    m_timer.tic();
+    {
+        _initObjects();
+    }
+    std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
 
 void View::draw() {
@@ -30,14 +45,15 @@ void View::draw() {
             m_models[obj.id]->draw(m_camera, obj.quat);
         }
 
-        // Draw grid
-        const int N = 10;
-        const float s = 0.3f;
-        for (int i = 0; i < N*N; i++) {
-            int x = i % N - N/2;
-            int y = i / N - N/2;
+        // Lights
+        for (auto& light : m_lights) {
+            m_model_sphere->get(Cookable::CookType::Solid)->use().set("color", light.color);
+            m_model_sphere->draw(m_camera, light.position);
+        }
 
-            m_model_box->draw(m_camera, glm::translate(glm::mat4(1.0f), s*glm::vec3(x, y, 0)));
+        // Draw grid
+        for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
+            m_model_box->draw(m_camera, cell_quat, m_lights);
         }
 
         // Skybox
@@ -60,9 +76,25 @@ void View::_initObjects() {
     });
 
     // Ground
-    m_model_box = std::make_unique<Box>(0.3f);
+    m_model_box = std::make_unique<Box>(1.0f);
     m_model_box->addRecipe(Cookable::CookType::Solid,    glm::vec4(0.1f, 0.12f, 0.1f, 1));
     m_model_box->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
+
+    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 10, {} });
+    m_grid->m_grid_cells.resize(m_grid->n_side * m_grid->n_side);
+    std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
+    { 
+        const glm::vec2 cell_pos = glm::vec2(id%N - N/2, id/N - N/2);
+        const glm::vec3 T_pos    = S * glm::vec3(cell_pos, -0.5f);
+        const glm::vec3 T_scale  = S * glm::vec3(1,1,1);
+
+        id++;
+        return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
+    });
+
+    // Lanterns
+    m_model_sphere = std::make_unique<Sphere>(0.1f);
+    m_model_sphere->addRecipe(Cookable::CookType::Solid);
 
     // Trees
     m_objects.push_back({_ObjecId::Tree,
@@ -91,7 +123,7 @@ void View::_initObjects() {
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(0, 0, 0)),            // Translation
+                glm::vec3(-1, 0, 1)),           // Translation
             glm::vec3(0.02f, 0.02f, 0.02f)      // Scale
         )
     });

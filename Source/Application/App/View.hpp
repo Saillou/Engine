@@ -28,14 +28,24 @@ private:
         glm::mat4 quat;
     };
 
+    struct _Grid {
+        float cell_size;
+        int n_side;
+        std::vector<glm::mat4> m_grid_cells;
+    };
+
     void _initObjects();
     void _onResize() override;
 
-    // Object specifics
-    std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models; // Object models (vertices, textures..)
-    std::vector<_Object> m_objects;                                      // All scene objects
+    // Object models (vertices, textures..)
+    std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models; 
 
-    std::unique_ptr<Box> m_model_box;
+    std::unique_ptr<Sphere> m_model_sphere;
+    std::unique_ptr<Box>    m_model_box;
+
+    // Scene objects
+    std::vector<_Object>    m_objects;                                      
+    std::unique_ptr<_Grid>  m_grid;
     std::unique_ptr<Skybox> m_skybox;
 
     // Other members
