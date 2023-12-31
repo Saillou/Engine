@@ -23,7 +23,20 @@ void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
 }
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
-    // ..
+    glm::vec2 dir(0, 0);
+
+    switch (evt.key)
+    {
+        case Key::ArrowRight: dir.x = +1.0f; break;
+        case Key::ArrowLeft:  dir.x = -1.0f; break;
+        case Key::ArrowUp:    dir.y = +1.0f; break;
+        case Key::ArrowDown:  dir.x = -1.0f; break;
+    }
+
+    if (dir != glm::vec2(0, 0)) 
+    {
+        m_scene->camera().position += glm::vec3(0.1f*dir, 0);
+    }
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {

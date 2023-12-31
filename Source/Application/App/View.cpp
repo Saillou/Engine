@@ -38,6 +38,7 @@ void View::draw() {
     float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
 
     // Main scene
+    BaseScene::_update_camera();
     BaseScene::clear();
     {
         // Draw objects
@@ -77,7 +78,7 @@ void View::_initObjects() {
 
     // Ground
     m_model_box = std::make_unique<Box>(1.0f);
-    m_model_box->addRecipe(Cookable::CookType::Solid,    glm::vec4(0.1f, 0.12f, 0.1f, 1));
+    m_model_box->addRecipe(Cookable::CookType::Solid,    glm::vec4(0.7f, 0.7f, 0.7f, 1));
     m_model_box->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
     m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 10, {} });
