@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Shaders/Shader.hpp"
+#include "Utils/Array.hpp"
+#include "Utils/Buffer.hpp"
+#include "Utils/Texture.hpp"
 
 #include <string>
 #include <memory>
@@ -18,19 +21,18 @@ private:
 
     // Sub
     struct _Character {
-        unsigned int TextureID; // ID handle of the glyph texture
-        glm::ivec2   Size;      // Size of glyph
-        glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
-        unsigned int Advance;   // Horizontal offset to advance to next glyph
+        std::unique_ptr<Texture> pTexture;
+        glm::ivec2   size;      // size of glyph
+        glm::ivec2   bearing;   // offset from baseline to left/top of glyph
+        unsigned int advance;   // horizontal offset to advance to next glyph
     };
 
     // Instance
     TextEngine();
     void _render(std::string text, float x, float y, float scale, glm::vec3 color);
 
-    // Instance members
-    unsigned int m_VAO;
-    unsigned int m_VBO;
+    Array m_vao;
+    Buffer m_vbo;
     Shader m_text_shader;
     std::unordered_map<GLchar, _Character> m_char_map;
 };

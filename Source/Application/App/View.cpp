@@ -58,12 +58,17 @@ void View::draw() {
         }
 
         // Draw box with shadow
-        m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0.15f)), m_lights);
+        {
+            m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
+        }
 
         // Skybox
         m_skybox->draw(m_camera);
     }
     
+    // Text for test
+    TextEngine::Write("Hello", 50, 50, 1.0f, glm::vec3(1, 1, 1));
+
     // Prepare next
     m_timer.tic();
 }
@@ -89,7 +94,7 @@ void View::_initObjects() {
     m_model_box->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
     m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 10, {} });
-    m_grid->m_grid_cells.resize(m_grid->n_side * m_grid->n_side);
+    m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
     std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
     { 
         const glm::vec2 cell_pos = glm::vec2(id%N - N/2, id/N - N/2);

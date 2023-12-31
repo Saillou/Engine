@@ -2,18 +2,23 @@
 
 #include <string>
 #include <array>
+
 #include "../Base/Shapes/Box.hpp"
+#include "../Utils/Array.hpp"
+#include "../Utils/Buffer.hpp"
+#include "../Utils/Texture.hpp"
 
 struct Skybox {
     Skybox(const std::array<std::string, 6>& textures_path);
-    ~Skybox();
 
     void draw(const Camera& camera);
 
 private:
     Shader shader;
-    std::vector<float> skyboxVertices;
-    unsigned int VAO = 0;
-    unsigned int VBO = 0;
-    unsigned int texture = 0;
+
+    Array m_vao;
+    Buffer m_vbo;
+    Texture m_texture;
+
+    static const std::vector<float> _getCubeVertices();
 };

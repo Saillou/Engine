@@ -12,8 +12,12 @@ Buffer::~Buffer() {
 }
 
 void Buffer::bindData(const size_t size) {
-	glBindBuffer(m_bufferType, m_bufferId);
+	bind();
 	glBufferData(m_bufferType, size, nullptr, m_memoryType);
+}
+
+void Buffer::bind() {
+	glBindBuffer(m_bufferType, m_bufferId);
 }
 
 void Buffer::unbind() {
