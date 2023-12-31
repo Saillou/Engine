@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Engine/Events/CommonEvents.hpp>
+#include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Utils/Timer.hpp>
 
-#include "View.hpp"
+//#include "View.hpp"
 
 struct Controller: private Event::Subscriber {
     Controller(std::shared_ptr<BaseScene> scene);
@@ -15,6 +16,7 @@ protected:
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
 
 private:
-    std::shared_ptr<View> m_scene;
+    std::shared_ptr<BaseScene> m_scene;
+    //std::shared_ptr<View> m_scene;
     Timer::Chronometre m_timer;
 };

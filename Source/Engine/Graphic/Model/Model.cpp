@@ -119,8 +119,6 @@ Mesh Model::_processMesh(aiMesh* mesh, const aiScene* scene) {
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     }
 
-
-
     // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
     // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
     // Same applies to other texture as the following list summarizes:
@@ -145,7 +143,7 @@ Mesh Model::_processMesh(aiMesh* mesh, const aiScene* scene) {
     return Mesh(vertices, indices, textures);
 }
 
-std::vector<TextureData> Model::_loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
+std::vector<TextureData> Model::_loadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName) {
     std::vector<TextureData> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
     {
@@ -181,13 +179,9 @@ unsigned int Model::_TextureFromRawData(const aiTexture* rawTextureData) {
 
     stbi_set_flip_vertically_on_load(false);
     if (rawTextureData->mHeight == 0)
-    {
         data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(rawTextureData->pcData), rawTextureData->mWidth, &width, &height, &nrComponents, 0);
-    }
     else
-    {
         data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(rawTextureData->pcData), rawTextureData->mWidth * rawTextureData->mHeight, &width, &height, &nrComponents, 0);
-    }
 
     unsigned int textureID;
     glGenTextures(1, &textureID);

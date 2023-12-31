@@ -1,13 +1,15 @@
 #include <Engine/Graphic/Window.hpp>
 
 #include "App/Controller.hpp"
-#include "App/View.hpp"
+#include "App/ViewTest.hpp"
+//#include "App/View.hpp"
 
 // -- Entry point --
 int main() {
     // Setup
     Window window(1600, 900, "Sample scene");
-    Controller controller(window.scene(std::make_shared<View>()));
+    Controller controller(window.scene(std::make_shared<ViewTest>()));
+    //Controller controller(window.scene(std::make_shared<View>()));
 
     // Loop
     do {
