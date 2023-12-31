@@ -104,7 +104,8 @@ void Cookable::_set_shader_solid(UShader& shader) {
                 Normal = mat3(transpose(inverse(Model))) * aNormal;  
     
                 gl_Position = Projection * View * vec4(FragPos, 1.0);
-            )_main_").str()
+            )_main_")
+            .str()
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec3", "Normal")
@@ -112,39 +113,63 @@ void Cookable::_set_shader_solid(UShader& shader) {
 
             .add_var("uniform", "vec4", "color")
             .add_var("uniform", "vec3", "CameraPos")
-            .add_var("uniform", "lowp int", "LightLength")
-            .add_var("uniform", "vec3", "LightPos")
-            .add_var("uniform", "vec4", "LightColor")
+
+            .add_var("uniform", "highp int", "LightNumber")
+
+            .add_var("uniform", "vec3", "LightPos_0")
+            .add_var("uniform", "vec3", "LightPos_1")
+            .add_var("uniform", "vec3", "LightPos_2")
+            .add_var("uniform", "vec3", "LightPos_3")
+            .add_var("uniform", "vec3", "LightPos_4")
+
+            .add_var("uniform", "vec4", "LightColor_0")
+            .add_var("uniform", "vec4", "LightColor_1")
+            .add_var("uniform", "vec4", "LightColor_2")
+            .add_var("uniform", "vec4", "LightColor_3")
+            .add_var("uniform", "vec4", "LightColor_4")
 
             .add_var("out", "vec4", "FragColor")
 
-            .add_func("void", "main", "", R"_main_(
-                // Shall use light ?
-                if(LightColor == vec4(0, 0, 0, 0)) {
-                    FragColor = color;
-                    return;
-                }
-
+            .add_func("vec3", "compute_light", "vec3 light_pos, vec3 light_color", R"_light_(
                 // ambient
                 float ambientStrength = 0.1;
-                vec3 ambient = ambientStrength * vec3(LightColor.rgb);
+                vec3 ambient = ambientStrength * light_color;
 
                 // diffuse 
                 vec3 normDir = normalize(Normal);
-                vec3 lightDir = normalize(LightPos - FragPos);
+                vec3 lightDir = normalize(light_pos - FragPos);
                 float diff = max(dot(normDir, lightDir), 0.0);
-                vec3 diffuse = diff * vec3(LightColor.rgb);
+                vec3 diffuse = 0.7 * diff * light_color;
 
                 // specular
                 float specularStrength = 0.5;
                 vec3 cameraDir = normalize(CameraPos - FragPos);
                 vec3 reflectDir = reflect(-lightDir, normDir);  
                 float spec = pow(max(dot(cameraDir, reflectDir), 0.0), 32);
-                vec3 specular = specularStrength * spec * vec3(LightColor.rgb);
+                vec3 specular = specularStrength * spec * light_color;
 
-                vec3 result = (ambient + diffuse + specular) * color.rgb;
-                FragColor = vec4(result, color.a);
-            )_main_").str()
+                return (ambient + diffuse + specular) * color.rgb;
+            )_light_")
+
+            .add_func("void", "main", "", R"_main_(
+                // Shall use light ?
+                if(LightNumber == 0) {
+                    FragColor = color;
+                    return;
+                }
+
+                float ratio = 1.0 / float(LightNumber);
+
+                vec3 light_result = vec3(0,0,0);
+                light_result += ratio * compute_light(LightPos_0, LightColor_0.rgb);
+                light_result += ratio * compute_light(LightPos_1, LightColor_1.rgb);
+                light_result += ratio * compute_light(LightPos_2, LightColor_2.rgb);
+                light_result += ratio * compute_light(LightPos_3, LightColor_3.rgb);
+                light_result += ratio * compute_light(LightPos_4, LightColor_4.rgb);
+
+                FragColor = vec4(light_result, color.a);
+            )_main_")
+            .str()
         );
 }
 

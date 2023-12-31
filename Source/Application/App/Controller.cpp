@@ -30,7 +30,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
         case Key::ArrowRight: dir.x = +1.0f; break;
         case Key::ArrowLeft:  dir.x = -1.0f; break;
         case Key::ArrowUp:    dir.y = +1.0f; break;
-        case Key::ArrowDown:  dir.x = -1.0f; break;
+        case Key::ArrowDown:  dir.y = -1.0f; break;
     }
 
     if (dir != glm::vec2(0, 0)) 

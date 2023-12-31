@@ -57,14 +57,12 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
             recipe.second->
                 use().
                 set("CameraPos", camera.position).
-                set("LightPos", glm::vec3(0, 0, 0)).
-                set("LightColor", glm::vec4(0, 0, 0, 0));
+                set("LightNumber", (int)lights.size());
 
-            if (!lights.empty())
-            {
+            for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
                 recipe.second->
-                    set("LightPos", lights[0].position).
-                    set("LightColor", lights[0].color);
+                    set("LightPos_" + std::to_string(iLight), lights[iLight].position).
+                    set("LightColor_" + std::to_string(iLight), lights[iLight].color);
             }
         }
 

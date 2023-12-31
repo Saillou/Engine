@@ -48,15 +48,20 @@ void Sphere::draw(const Camera& camera, const glm::mat4& model, const std::vecto
             use().
             set("Model", model).
             set("View", camera.modelview).
-            set("Projection", camera.projection).
-            set("CameraPos", camera.position).
-            set("LightPos", glm::vec3(0, 0, 0)).
-            set("LightColor", glm::vec4(0, 0, 0, 0));
+            set("Projection", camera.projection);
 
-        if (!lights.empty()) {
+        if (recipe.first != Cookable::CookType::Geometry)
+        {
             recipe.second->
-                set("LightPos", lights[0].position).
-                set("LightColor", lights[0].color);
+                use().
+                set("CameraPos", camera.position).
+                set("LightNumber", (int)lights.size());
+
+            for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
+                recipe.second->
+                    set("LightPos_"+std::to_string(iLight), lights[iLight].position).
+                    set("LightColor_" + std::to_string(iLight), lights[iLight].color);
+            }
         }
 
         // Draw
