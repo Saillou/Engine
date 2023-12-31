@@ -9,9 +9,8 @@
 #include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
 #include <Engine/Graphic/Model/Skybox.hpp>
+#include <Engine/Graphic/Model/ObjectModel.hpp>
 #include <Engine/Graphic/Utils/Framebuffer.hpp>
-
-#include "Models/ObjectModel.hpp"
 
 struct View : public BaseScene {
     View();

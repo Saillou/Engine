@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include <Engine/Graphic/Camera.hpp>
-#include <Engine/Graphic/Model/Model.hpp>
+#include "../Camera.hpp"
+#include "Model.hpp"
 
 struct ObjectModel {
     ObjectModel(const std::string& path);
