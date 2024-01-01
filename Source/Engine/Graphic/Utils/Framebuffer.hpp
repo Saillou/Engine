@@ -8,10 +8,11 @@ class Framebuffer {
 public:
 	enum Type {
 		Unique,
-		Multisample
+		Multisample,
+		Cubemap
 	};
 
-	Framebuffer(Type type, unsigned int width = 0, unsigned int height = 0);
+	Framebuffer(Type type, unsigned int width = 0, unsigned int height = 0, GLuint m_target = GL_COLOR_ATTACHMENT0);
 	virtual ~Framebuffer();
 
 	Framebuffer& operator=(const Framebuffer&)	= delete;
@@ -31,14 +32,16 @@ public:
 
 	void bind() const;
 	void unbind() const;
-	virtual void clear(); // override if use different background color or utils buffers
+	virtual void clear();
 
 protected:
-	const Type m_type;
+	const Type		m_type;
+	const GLuint	m_target;
+	const bool		m_useRBO;
 
-	unsigned int m_framebufferId;
-	unsigned int m_renderbufferId;
-	Texture m_texture_attached;
+	unsigned int	m_framebufferId;
+	unsigned int	m_renderbufferId;
+	Texture			m_texture_attached;
 
 private:
 	void _createRenderBufferObject(unsigned int width, unsigned int height);

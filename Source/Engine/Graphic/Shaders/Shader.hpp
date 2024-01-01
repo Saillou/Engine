@@ -35,6 +35,7 @@ public:
 	Shader& set(const std::string& name, const glm::mat4& mat);
 	Shader& setBlock(const std::string& name, const int layout);
 
+	bool has(const std::string& name);
 	unsigned int getId() const;
 
 private:

@@ -13,15 +13,11 @@
 #include <Engine/Graphic/Utils/Framebuffer.hpp>
 
 struct ViewTest : public BaseScene {
-    ViewTest();
+    ViewTest(int widthHint = 0, int heightHint = 0);
 
     void draw() override;
 
 private:
-    void _onResize() override;
-
-    // ----------
-    unsigned int loadTexture(const char* path);
     void createPointShadowShader();
     void createSimpleDepthShader();
 
@@ -32,13 +28,9 @@ private:
     Shader shaderPoint;
     Shader simpleDepthShader;
 
-    unsigned int depthCubemap = 0;
-    unsigned int depthMapFBO = 0;
-    unsigned int woodTexture = 0;
-
-    // settings
-    const unsigned int SHADOW_WIDTH = 1024;
-    const unsigned int SHADOW_HEIGHT = 1024;
+    //unsigned int depthMapFBO = 0;
+    std::unique_ptr<Framebuffer> framebufferDepth;
+    std::unique_ptr<Texture> textureWood;
 
     // object
     unsigned int cubeVAO = 0;

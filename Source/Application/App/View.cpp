@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-View::View() :
-    BaseScene()
+View::View(int widthHint, int heightHint):
+    BaseScene(widthHint, heightHint)
 {
     // Camera
     m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);

@@ -73,6 +73,10 @@ unsigned int Texture::height() const {
 	return m_height;
 }
 
+unsigned int Texture::type() const {
+	return m_texture_type;
+}
+
 void Texture::bind() const {
 	glBindTexture(m_texture_type, m_textureId);
 }

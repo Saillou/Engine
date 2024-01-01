@@ -37,8 +37,6 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     if (dir != glm::vec2(0, 0)) 
     {
         m_scene->camera().position += glm::vec3(0.1f*dir, 0);
-
-        std::cout << m_scene->camera().position.x << " " << m_scene->camera().position.y << std::endl;
     }
 }
 

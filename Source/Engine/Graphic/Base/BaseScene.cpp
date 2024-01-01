@@ -2,8 +2,10 @@
 
 #include <glad/glad.h>
 
-BaseScene::BaseScene():
-    _internalFrame(Framebuffer::Unique)
+BaseScene::BaseScene(int widthHint, int heightHint):
+    m_width(widthHint),
+    m_height(heightHint),
+    _internalFrame(Framebuffer::Unique, widthHint, heightHint)
 {
     _init_gl_config();
 }
@@ -41,6 +43,13 @@ void BaseScene::drawFrame(Framebuffer& framebuffer) {
     _quad.draw();
 
     glEnable(GL_DEPTH_TEST); // set back to original state.
+}
+
+void BaseScene::Viewport(int width, int height) {
+    glViewport(0, 0, width, height);
+}
+void BaseScene::Viewport(int x, int y, int width, int height) {
+    glViewport(x, y, width, height);
 }
 
 void BaseScene::resize(int width, int height) {

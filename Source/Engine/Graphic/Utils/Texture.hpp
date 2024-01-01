@@ -19,6 +19,7 @@ public:
 	unsigned int id() const;
 	unsigned int width() const;
 	unsigned int height() const;
+	unsigned int type() const;
 
 	void bind() const;
 	void unbind() const;

@@ -1,20 +1,53 @@
 #include "Framebuffer.hpp"
 
-Framebuffer::Framebuffer(Type type, unsigned int width, unsigned int height) :
+Framebuffer::Framebuffer(Type type, unsigned int width, unsigned int height, GLuint target) :
 	m_type(type),
 	m_framebufferId(0),
 	m_renderbufferId(0),
-	m_texture_attached(width, height, type == Unique ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE)
+	m_texture_attached(width, height, 
+		type == Unique  ? GL_TEXTURE_2D:
+		type == Cubemap ? GL_TEXTURE_CUBE_MAP:
+		GL_TEXTURE_2D_MULTISAMPLE
+	),
+	m_target(target),
+	m_useRBO(type != Cubemap)
 {
 	glGenFramebuffers(1, &m_framebufferId);
 
+	// Create depth cube texture
+	if (type == Cubemap)
+	{
+		GLuint component = target == GL_DEPTH_ATTACHMENT ? GL_DEPTH_COMPONENT : GL_RGB;
+		m_texture_attached.bind();
+		for (unsigned int i = 0; i < 6; ++i) 
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, component, width, height, 0, component, GL_FLOAT, NULL);
+		}
+
+	}
+
 	bind();
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, type == Unique ? GL_TEXTURE_2D : GL_TEXTURE_2D_MULTISAMPLE, m_texture_attached.id(), 0);
-	_createRenderBufferObject(width, height);
+
+	// Attach texture to framebuffer
+	if (type == Cubemap) {
+		glFramebufferTexture(GL_FRAMEBUFFER, target, m_texture_attached.id(), 0);
+	}
+	else {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, target, m_texture_attached.type(), m_texture_attached.id(), 0);
+	}
+
+	// Create and link render buffer object
+	if (m_useRBO)
+	{
+		_createRenderBufferObject(width, height);
+	}
+
 	unbind();
 }
 Framebuffer::~Framebuffer() {
-	glDeleteRenderbuffers(1, &m_renderbufferId);
+	if(m_useRBO)
+		glDeleteRenderbuffers(1, &m_renderbufferId);
+
 	glDeleteFramebuffers(1, &m_framebufferId);
 }
 
@@ -47,9 +80,12 @@ Texture& Framebuffer::texture() {
 void Framebuffer::resize(unsigned int width, unsigned int height) {
 	m_texture_attached.resize(width, height);
 	
-	bind();
-	_createRenderBufferObject(width, height);
-	unbind();
+	if (m_useRBO) 
+	{
+		bind();
+		_createRenderBufferObject(width, height);
+		unbind();
+	}
 }
 
 unsigned int Framebuffer::width() const {

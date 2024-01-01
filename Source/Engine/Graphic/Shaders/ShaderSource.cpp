@@ -1,5 +1,6 @@
 #include "ShaderSource.hpp"
 
+#include <iostream>
 #include <sstream>
 
 ShaderSource& ShaderSource::add_cp_layout(const std::string& dir, const std::array<std::string,3>& n_cores) {
@@ -36,11 +37,17 @@ ShaderSource& ShaderSource::add_struct(const std::string& structName, const std:
     return *this;
 }
 
-ShaderSource& ShaderSource::add_var(const std::string& dir, const std::string& type, const std::string& name) {
+ShaderSource& ShaderSource::add_var(const std::string& dir, const std::string& type, const std::string& name, const std::string& value) {
     std::stringstream ss;
-    ss << dir << " ";
-    ss << type << " ";
-    ss << name << ";\n";
+    if (!dir.empty())
+        ss << dir << " ";
+
+    ss << type << " " << name;
+
+    if (!value.empty())
+        ss << " = " << value;
+
+    ss << ";\n";
 
     layouts.push_back(ss.str());
     return *this;

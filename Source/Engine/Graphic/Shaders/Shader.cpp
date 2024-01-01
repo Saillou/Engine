@@ -63,6 +63,10 @@ Shader& Shader::use() {
     return *this;
 }
 
+bool Shader::has(const std::string& name) {
+    return glGetUniformLocation(m_id, name.c_str()) != -1;
+}
+
 unsigned int Shader::getId() const {
     return m_id;
 }

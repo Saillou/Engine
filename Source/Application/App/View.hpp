@@ -13,7 +13,7 @@
 #include <Engine/Graphic/Utils/Framebuffer.hpp>
 
 struct View : public BaseScene {
-    View();
+    View(int widthHint = 0, int heightHint = 0);
 
     void draw() override;
 

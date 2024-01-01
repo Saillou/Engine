@@ -11,12 +11,15 @@
 
 // Scene model
 struct BaseScene {
-    BaseScene();
+    BaseScene(int widthHint = 0, int heightHint = 0);
     virtual ~BaseScene();
 
     virtual void clear();
     virtual void draw();                            // called by an instance of a `Window::update()`
     virtual void resize(int width, int height);     // called by an event `Window::resize()`
+
+    static void Viewport(int width, int height);
+    static void Viewport(int x, int y, int width, int height);
 
     // utils
     void drawFrame(Framebuffer& framebuffer);
