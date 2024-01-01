@@ -199,14 +199,10 @@ void Cookable::_set_shader_shadow(UShader& shader) {
             .add_var("uniform", "mat4", "projection")
             .add_var("uniform", "mat4", "view")
             .add_var("uniform", "mat4", "model")
-            .add_var("uniform", "bool", "reverse_normals")
 
             .add_func("void", "main", "", R"_main_(
                 vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
-                if(reverse_normals) // a slight hack to make sure the outer large cube displays lighting from the 'inside' instead of the default 'outside'.
-                    vs_out.Normal = transpose(inverse(mat3(model))) * (-1.0 * aNormal);
-                else
-                    vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
+                vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
                 vs_out.TexCoords = aTexCoords;
                 gl_Position = projection * view * model * vec4(aPos, 1.0);
             )_main_").str()
@@ -218,7 +214,7 @@ void Cookable::_set_shader_shadow(UShader& shader) {
                 vec2 TexCoords;
             } fs_in)_struct_")
 
-            .add_var("uniform", "sampler2D", "diffuseTexture")
+            .add_var("uniform", "vec4", "diffuseColor")
             .add_var("uniform", "samplerCube", "depthMap")
             .add_var("uniform", "vec3", "lightPos")
             .add_var("uniform", "vec3", "viewPos")
@@ -252,7 +248,7 @@ void Cookable::_set_shader_shadow(UShader& shader) {
                 return shadow / float(samples);
             )_fun_")
             .add_func("void", "main", "", R"_main_(
-                vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
+                vec3 color = diffuseColor.rgb;
                 vec3 normal = normalize(fs_in.Normal);
                 vec3 lightColor = vec3(0.3);
 
@@ -281,7 +277,6 @@ void Cookable::_set_shader_shadow(UShader& shader) {
             .str()
         );
 }
-
 
 void Cookable::_set_shader_geometry(UShader& shader) {
     shader->
@@ -330,7 +325,6 @@ void Cookable::_set_shader_geometry(UShader& shader) {
             )_main_").str()
         );
 }
-
 
 void Cookable::_set_shader_quad(UShader& shader) {
     shader->

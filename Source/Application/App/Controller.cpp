@@ -3,7 +3,6 @@
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
     m_scene(scene)
-    //m_scene(std::dynamic_pointer_cast<View>(scene))
 {
     // Root events
     _subscribe(&Controller::_on_state_update);
