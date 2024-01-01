@@ -1,4 +1,4 @@
-#include "Box.hpp"
+    #include "Box.hpp"
 
 Box::Box(float size) 
 {
@@ -12,32 +12,41 @@ Box::Box(const glm::vec3& dims)
 
 void Box::_setupMesh(const glm::vec3& dims) {
     using v3 = glm::vec3;
+    using v2 = glm::vec2;
 
     const glm::mat3 world(1.0f); // identity
 
+    // Space dimensions
     const v3 u = dims[0] * world[0];
     const v3 v = dims[1] * world[1];
     const v3 w = dims[2] * world[2];
 
     // Vertices positions
-    const v3 A = -u + v - w;
-    const v3 B = +u + v - w;
-    const v3 C = +u - v - w;
-    const v3 D = -u - v - w;
+    const v3 pA = -u + v - w;
+    const v3 pB = +u + v - w;
+    const v3 pC = +u - v - w;
+    const v3 pD = -u - v - w;
 
-    const v3 E = -u + v + w;
-    const v3 F = +u + v + w;
-    const v3 G = +u - v + w;
-    const v3 H = -u - v + w;
+    const v3 pE = -u + v + w;
+    const v3 pF = +u + v + w;
+    const v3 pG = +u - v + w;
+    const v3 pH = -u - v + w;
 
-    _createQuad(D, C, B, A, -w);
-    _createQuad(H, G, F, E, +w);
+    // Texture coordinates
+    const v2 tA = glm::vec2(0.0f, 0.0f);
+    const v2 tB = glm::vec2(1.0f, 0.0f);
+    const v2 tC = glm::vec2(0.0f, 1.0f);
+    const v2 tD = glm::vec2(1.0f, 1.0f);
 
-    _createQuad(E, A, D, H, -u);
-    _createQuad(F, B, C, G, +u);
 
-    _createQuad(D, C, G, H, -v);
-    _createQuad(A, B, F, E, +v);
+    _createQuad(pD, pC, pB, pA, -w, tA, tB, tC, tD);
+    _createQuad(pH, pG, pF, pE, +w, tA, tB, tC, tD);
+
+    _createQuad(pE, pA, pD, pH, -u, tA, tB, tC, tD);
+    _createQuad(pF, pB, pC, pG, +u, tA, tB, tC, tD);
+
+    _createQuad(pD, pC, pG, pH, -v, tA, tB, tC, tD);
+    _createQuad(pA, pB, pF, pE, +v, tA, tB, tC, tD);
 
     // Bind
     _bindArray();

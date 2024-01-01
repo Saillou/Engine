@@ -4,13 +4,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include <Engine/Utils/Timer.hpp>
 #include <Engine/Graphic/Base/BaseScene.hpp>
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
-#include <Engine/Graphic/Model/Skybox.hpp>
-#include <Engine/Graphic/Model/ObjectModel.hpp>
-#include <Engine/Graphic/Utils/Framebuffer.hpp>
 #include <Engine/Utils/Objects/ShadowRender.hpp>
 
 struct ViewTest : public BaseScene {
@@ -26,10 +21,8 @@ private:
     ShadowRender m_shadowRender;
 
     // object
-    Cookable cook;
     std::unique_ptr<Texture> textureWood;
-    unsigned int cubeVAO = 0;
-    unsigned int cubeVBO = 0;
+    std::unique_ptr<Box> box;
 
     float m_time = 0.0f;
 };

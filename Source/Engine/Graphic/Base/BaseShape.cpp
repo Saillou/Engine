@@ -3,7 +3,8 @@
 
 BaseShape::BaseShape() : 
     m_vbo_vertices(GL_ARRAY_BUFFER), 
-    m_vbo_normals(GL_ARRAY_BUFFER), 
+    m_vbo_normals(GL_ARRAY_BUFFER),
+    m_vbo_uvs(GL_ARRAY_BUFFER),
     m_ebo(GL_ELEMENT_ARRAY_BUFFER),
     m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
     m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
@@ -15,15 +16,27 @@ BaseShape::BaseShape() :
 void BaseShape::_bindArray() {
     bind();
 
+    // Required: vertices positions
     m_vbo_vertices.bindData(m_vertices);
     glVertexAttribPointer(m_current_attrib_id, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
     glEnableVertexAttribArray(m_current_attrib_id);
     m_current_attrib_id++;
 
-    m_vbo_normals.bindData(m_normals);
-    glVertexAttribPointer(m_current_attrib_id, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(m_current_attrib_id);
-    m_current_attrib_id++;
+    // Optional: normals
+    if (!m_normals.empty()) {
+        m_vbo_normals.bindData(m_normals);
+        glVertexAttribPointer(m_current_attrib_id, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(m_current_attrib_id);
+        m_current_attrib_id++;
+    }
+
+    // Optional: texture coordinates
+    if (!m_uvs.empty()) {
+        m_vbo_uvs.bindData(m_uvs);
+        glVertexAttribPointer(m_current_attrib_id, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(m_current_attrib_id);
+        m_current_attrib_id++;
+    }
 
     m_ebo.bindData(m_indices);
 
@@ -79,6 +92,10 @@ int BaseShape::normalsLength() const {
     return (int)m_normals.size();
 }
 
+int BaseShape::uvsLength() const {
+    return (int)m_uvs.size();
+}
+
 // Helpers
 int BaseShape::_addPoint(float x, float y, float z) {
     m_vertices.push_back(x);
@@ -96,6 +113,13 @@ int BaseShape::_addPoint(float x, float y, float z, float nx, float ny, float nz
     return _addPoint(x, y, z);
 }
 
+int BaseShape::_addPoint(float x, float y, float z, float nx, float ny, float nz, float tu, float tv) {
+    m_uvs.push_back(tu);
+    m_uvs.push_back(tv);
+
+    return _addPoint(x, y, z, nx, ny, nz);
+}
+
 int BaseShape::_addPoint(const glm::vec3& vec) {
     return _addPoint(vec.x, vec.y, vec.z);
 }
@@ -104,6 +128,14 @@ int BaseShape::_addPoint(const glm::vec3& vec, const glm::vec3& norm) {
     return _addPoint(
         vec.x,  vec.y,  vec.z, 
         norm.x, norm.y, norm.z
+    );
+}
+
+int BaseShape::_addPoint(const glm::vec3& vec, const glm::vec3& norm, const glm::vec2& uv) {
+    return _addPoint(
+        vec.x,  vec.y,  vec.z,
+        norm.x, norm.y, norm.z,
+        uv.x,   uv.y
     );
 }
 
@@ -143,3 +175,18 @@ void BaseShape::_createQuad(const glm::vec3& P0, const glm::vec3& P1, const glm:
     _addAsTriangle(i0, i1, i2);
     _addAsTriangle(i2, i3, i0);
 };
+
+void BaseShape::_createQuad(
+    const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, const glm::vec3& P3,
+    const glm::vec3& n,
+    const glm::vec2& T0, const glm::vec2& T1, const glm::vec2& T2, const glm::vec2& T3
+) 
+{
+    int i0 = _addPoint(P0, n, T0);
+    int i1 = _addPoint(P1, n, T1);
+    int i2 = _addPoint(P2, n, T2);
+    int i3 = _addPoint(P3, n, T3);
+
+    _addAsTriangle(i0, i1, i2);
+    _addAsTriangle(i2, i3, i0);
+}

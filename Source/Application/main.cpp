@@ -2,7 +2,7 @@
 
 #include "App/Controller.hpp"
 #include "App/ViewTest.hpp"
-//#include "App/View.hpp"
+#include "App/View.hpp"
 
 // -- Entry point --
 int main() {

@@ -86,7 +86,7 @@ void View::_initObjects() {
 
     // Box - Test shadow
     m_model_box_shadow = std::make_unique<Box>(0.3f);
-    m_model_box_shadow->addRecipe(Cookable::CookType::Shadow, glm::vec4(1,1,1,1));
+    m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1,1,1,1));
 
     // Ground - Grid
     m_model_box = std::make_unique<Box>(1.0f);
