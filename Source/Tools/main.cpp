@@ -21,7 +21,7 @@ int main()
         {
             UShader& shader = sphere_model.get(Cookable::CookType::Solid);
             shader->use();
-            shader->set("color", glm::vec4(menu.state.color.x, menu.state.color.y, menu.state.color.z, menu.state.color.w));
+            shader->set("diffuse_color", glm::vec4(menu.state.color.x, menu.state.color.y, menu.state.color.z, menu.state.color.w));
 
             if (menu.state.lightEnabled)
                 sphere_model.draw(window.scene()->camera(), {}, {}, { light });
