@@ -41,22 +41,16 @@ void View::draw() {
 
     // Shadow scene
     m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
-        // Draw grid
+        // Ground
         for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
             sh.use().set("model", cell_quat);
-
-            m_model_box->bind();
-            glDrawElements(GL_TRIANGLES, (int)m_model_box->indicesLength(), GL_UNSIGNED_INT, 0);
-            m_model_box->unbind();
+            m_model_box->drawElements();
         }
 
         // Box
         {
             sh.use().set("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)));
-
-            m_model_box_shadow->bind();
-            glDrawElements(GL_TRIANGLES, (int)m_model_box_shadow->indicesLength(), GL_UNSIGNED_INT, 0);
-            m_model_box_shadow->unbind();
+            m_model_box_shadow->drawElements();
         }
     });
 
@@ -77,9 +71,7 @@ void View::draw() {
 
         // Draw grid with shadow
         for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-            Texture::activate(GL_TEXTURE1);
-            m_shadowRender.bindTexture();
-
+            m_shadowRender.bindTexture(GL_TEXTURE1);
             m_model_box->draw(m_camera, cell_quat, m_lights);
         }
 

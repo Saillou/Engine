@@ -47,7 +47,8 @@ ShadowRender::ShadowRender() :
         link();
 }
 
-void ShadowRender::bindTexture() {
+void ShadowRender::bindTexture(GLuint target) {
+    Texture::activate(target);
     fbo.texture().bind();
 }
 

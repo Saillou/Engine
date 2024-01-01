@@ -11,7 +11,7 @@ struct ShadowRender
 {
 	ShadowRender();
 
-	void bindTexture();
+	void bindTexture(GLuint target = GL_TEXTURE1);
 	void render(const Camera& camera, const Light& light, std::function<void(Shader&)> renderFunc);
 
 private:

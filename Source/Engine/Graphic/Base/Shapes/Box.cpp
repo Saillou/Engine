@@ -63,7 +63,7 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
 
         switch (recipe.first)
         {
-        case Cookable::CookType::Solid:
+        case CookType::Solid:
             recipe.second->
                 set("CameraPos", camera.position).
                 set("LightNumber", (int)lights.size());
@@ -86,9 +86,7 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
         }
 
         // Draw
-        bind();
-        glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
-        unbind();
+        drawElements();
     }
 }
 
@@ -117,4 +115,10 @@ void Box::drawBatch(size_t amount, const Camera& camera) {
         glDrawElementsInstanced(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)amount);
         unbind();
     }
+}
+
+void Box::drawElements() {
+    bind();
+    glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
+    unbind();
 }
