@@ -46,7 +46,7 @@ Cookable* Cookable::addRecipe(CookType type, const glm::vec4& color) {
     addRecipe(type);
 
     // Set uniforms
-    m_shaders[type]->use().set("color", color);
+    m_shaders[type]->use().set("diffuse_color", color);
 
     return this;
 }
@@ -120,7 +120,7 @@ void Cookable::_set_shader_solid(UShader& shader) {
             .add_var("in", "vec3", "Normal")
             .add_var("in", "vec3", "FragPos")
 
-            .add_var("uniform", "vec4", "color")
+            .add_var("uniform", "vec4", "diffuse_color")
             .add_var("uniform", "vec3", "CameraPos")
 
             .add_var("uniform", "highp int", "LightNumber")
@@ -157,13 +157,13 @@ void Cookable::_set_shader_solid(UShader& shader) {
                 float spec = pow(max(dot(cameraDir, reflectDir), 0.0), 32);
                 vec3 specular = specularStrength * spec * light_color;
 
-                return (ambient + diffuse + specular) * color.rgb;
+                return (ambient + diffuse + specular) * diffuse_color.rgb;
             )_light_")
 
             .add_func("void", "main", "", R"_main_(
                 // Shall use light ?
                 if(LightNumber == 0) {
-                    FragColor = color;
+                    FragColor = diffuse_color;
                     return;
                 }
 
@@ -176,7 +176,7 @@ void Cookable::_set_shader_solid(UShader& shader) {
                 light_result += ratio * compute_light(LightPos_3, LightColor_3.rgb);
                 light_result += ratio * compute_light(LightPos_4, LightColor_4.rgb);
 
-                FragColor = vec4(light_result, color.a);
+                FragColor = vec4(light_result, diffuse_color.a);
             )_main_")
             .str()
         );
@@ -196,15 +196,15 @@ void Cookable::_set_shader_shadow(UShader& shader) {
                 vec2 TexCoords;
             } vs_out)_struct_")
 
-            .add_var("uniform", "mat4", "projection")
-            .add_var("uniform", "mat4", "view")
-            .add_var("uniform", "mat4", "model")
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+            .add_var("uniform", "mat4", "Model")
 
             .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
-                vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
+                vs_out.FragPos = vec3(Model * vec4(aPos, 1.0));
+                vs_out.Normal = transpose(inverse(mat3(Model))) * aNormal;
                 vs_out.TexCoords = aTexCoords;
-                gl_Position = projection * view * model * vec4(aPos, 1.0);
+                gl_Position = Projection * View * Model * vec4(aPos, 1.0);
             )_main_").str()
         ).
         attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
@@ -214,7 +214,7 @@ void Cookable::_set_shader_shadow(UShader& shader) {
                 vec2 TexCoords;
             } fs_in)_struct_")
 
-            .add_var("uniform", "vec4", "diffuseColor")
+            .add_var("uniform", "vec4", "diffuse_color")
             .add_var("uniform", "samplerCube", "depthMap")
             .add_var("uniform", "vec3", "lightPos")
             .add_var("uniform", "vec3", "viewPos")
@@ -248,7 +248,7 @@ void Cookable::_set_shader_shadow(UShader& shader) {
                 return shadow / float(samples);
             )_fun_")
             .add_func("void", "main", "", R"_main_(
-                vec3 color = diffuseColor.rgb;
+                vec3 color = diffuse_color.rgb;
                 vec3 normal = normalize(fs_in.Normal);
                 vec3 lightColor = vec3(0.3);
 
@@ -316,12 +316,12 @@ void Cookable::_set_shader_geometry(UShader& shader) {
             .add_var("in", "vec3", "Normal")
             .add_var("in", "vec3", "FragPos")
 
-            .add_var("uniform", "vec4", "color")
+            .add_var("uniform", "vec4", "diffuse_color")
 
             .add_var("out", "vec4", "FragColor")
 
             .add_func("void", "main", "", R"_main_(
-                FragColor = color;
+                FragColor = diffuse_color;
             )_main_").str()
         );
 }

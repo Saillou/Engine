@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <Engine/Utils/Timer.hpp>
+#include <Engine/Utils/Objects/ShadowRender.hpp>
 #include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
@@ -49,5 +50,6 @@ private:
     std::unique_ptr<Skybox> m_skybox;
 
     // Other members
+    ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

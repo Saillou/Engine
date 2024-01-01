@@ -61,10 +61,10 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
             set("View", camera.modelview).
             set("Projection", camera.projection);
 
-        if (recipe.first != Cookable::CookType::Geometry)
+        switch (recipe.first)
         {
+        case Cookable::CookType::Solid:
             recipe.second->
-                use().
                 set("CameraPos", camera.position).
                 set("LightNumber", (int)lights.size());
 
@@ -73,6 +73,16 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
                     set("LightPos_" + std::to_string(iLight), lights[iLight].position).
                     set("LightColor_" + std::to_string(iLight), lights[iLight].color);
             }
+            break;
+
+        case CookType::Shadow:
+            recipe.second->
+                set("viewPos", camera.position).
+                set("far_plane", camera.far_plane).
+                set("lightPos", lights[0].position).
+                set("depthMap", 1);
+
+            break;
         }
 
         // Draw

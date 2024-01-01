@@ -37,8 +37,31 @@ View::View(int widthHint, int heightHint):
 void View::draw() {
     float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
 
-    // Main scene
     BaseScene::_update_camera();
+
+    // Shadow scene
+    m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
+        // Draw grid
+        for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
+            sh.use().set("model", cell_quat);
+
+            m_model_box->bind();
+            glDrawElements(GL_TRIANGLES, (int)m_model_box->indicesLength(), GL_UNSIGNED_INT, 0);
+            m_model_box->unbind();
+        }
+
+        // Box
+        {
+            sh.use().set("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)));
+
+            m_model_box_shadow->bind();
+            glDrawElements(GL_TRIANGLES, (int)m_model_box_shadow->indicesLength(), GL_UNSIGNED_INT, 0);
+            m_model_box_shadow->unbind();
+        }
+    });
+
+    // Main scene
+    BaseScene::Viewport(m_width, m_height);
     BaseScene::clear();
     {
         // Draw objects
@@ -48,16 +71,19 @@ void View::draw() {
 
         // Lights
         for (auto& light : m_lights) {
-            m_model_sphere->get(Cookable::CookType::Solid)->use().set("color", light.color);
+            m_model_sphere->get(Cookable::CookType::Solid)->use().set("diffuse_color", light.color);
             m_model_sphere->draw(m_camera, light.position);
         }
 
-        // Draw grid
+        // Draw grid with shadow
         for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
+            Texture::activate(GL_TEXTURE1);
+            m_shadowRender.bindTexture();
+
             m_model_box->draw(m_camera, cell_quat, m_lights);
         }
 
-        // Draw box with shadow
+        // Draw box
         {
             m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
         }
@@ -86,12 +112,12 @@ void View::_initObjects() {
 
     // Box - Test shadow
     m_model_box_shadow = std::make_unique<Box>(0.3f);
-    m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1,1,1,1));
+    m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
 
     // Ground - Grid
     m_model_box = std::make_unique<Box>(1.0f);
-    m_model_box->addRecipe(Cookable::CookType::Solid,    glm::vec4(0.7f, 0.7f, 0.7f, 1));
-    m_model_box->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
+    m_model_box->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.7f, 0.7f, 0.7f, 1))
+               ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
     m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 10, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
