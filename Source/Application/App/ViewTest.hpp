@@ -11,6 +11,7 @@
 #include <Engine/Graphic/Model/Skybox.hpp>
 #include <Engine/Graphic/Model/ObjectModel.hpp>
 #include <Engine/Graphic/Utils/Framebuffer.hpp>
+#include <Engine/Utils/Objects/ShadowRender.hpp>
 
 struct ViewTest : public BaseScene {
     ViewTest(int widthHint = 0, int heightHint = 0);
@@ -18,21 +19,16 @@ struct ViewTest : public BaseScene {
     void draw() override;
 
 private:
-    void createPointShadowShader();
-    void createSimpleDepthShader();
-
     void renderScene(Shader& shader);
     void renderCube();
 
     // shader
-    Shader shaderPoint;
-    Shader simpleDepthShader;
-
-    //unsigned int depthMapFBO = 0;
-    std::unique_ptr<Framebuffer> framebufferDepth;
-    std::unique_ptr<Texture> textureWood;
+    ShadowRender m_shadowRender;
 
     // object
+    Cookable cook;
+    std::unique_ptr<Texture> textureWood;
+
     unsigned int cubeVAO = 0;
     unsigned int cubeVBO = 0;
 

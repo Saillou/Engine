@@ -15,10 +15,10 @@ void Camera::lookAt(const glm::vec3& up) {
 }
 
 void Camera::usePerspective(float aspect) {
-    projection = glm::perspective(glm::radians<float>(fieldOfView), aspect, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians<float>(fieldOfView), aspect, near_plane, far_plane);
 }
 
 void Camera::useOrtho(float aspect) {
-    projection = glm::ortho(-aspect, +aspect, -1.0f, 1.0f, 0.1f, 100.0f);
+    projection = glm::ortho(-aspect, +aspect, -1.0f, 1.0f, near_plane, far_plane);
 }
 
