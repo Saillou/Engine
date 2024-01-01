@@ -51,7 +51,10 @@ void ShadowRender::bindTexture() {
     fbo.texture().bind();
 }
 
-void ShadowRender::render(const Camera& camera, const glm::vec3& lightPos, std::function<void(Shader&)> renderFunc) {
+void ShadowRender::render(const Camera& camera, const Light& light, std::function<void(Shader&)> renderFunc) 
+{
+    const glm::vec3& lightPos = light.position;
+
     // Create depth cubemap transformation matrices
     const glm::mat4 shadowProj = glm::perspective(1.57f, 1.0f, camera.near_plane, camera.far_plane);
     const std::array<glm::mat4, 6> shadowTransforms =

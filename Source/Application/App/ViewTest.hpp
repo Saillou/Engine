@@ -28,10 +28,8 @@ private:
     // object
     Cookable cook;
     std::unique_ptr<Texture> textureWood;
-
     unsigned int cubeVAO = 0;
     unsigned int cubeVBO = 0;
 
-    // lights
-    glm::vec3 lightPos;
+    float m_time = 0.0f;
 };
