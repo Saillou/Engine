@@ -35,6 +35,7 @@ private:
     };
 
     void _initObjects();
+    void _initParticles();
     void _onResize() override;
 
     // Object models (vertices, textures..)
@@ -48,6 +49,21 @@ private:
     std::vector<_Object>    m_objects;                                      
     std::unique_ptr<_Grid>  m_grid;
     std::unique_ptr<Skybox> m_skybox;
+
+    // Fire grid
+    struct FireGrid {
+        glm::vec3 pos;
+
+        struct Particles {
+            const size_t amount;
+
+            std::unique_ptr<Box> object;
+            std::vector<glm::mat4> models;
+            std::vector<glm::vec4> colors;
+
+            std::vector<glm::vec4> speeds;
+        } particles;
+    } m_fireGrid;
 
     // Other members
     ShadowRender m_shadowRender;

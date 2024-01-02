@@ -1,15 +1,31 @@
 #include "View.hpp"
 
 #include <algorithm>
+#include <ctime>
+#include <random>
+
+// Random engine
+static std::default_random_engine gen;
+
+static std::uniform_real_distribution<float> dstr_pi(-glm::pi<float>(), +glm::pi<float>());
+static std::uniform_real_distribution<float> dstr_one(0.0f, 1.0f);
+static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
 View::View(int widthHint, int heightHint):
-    BaseScene(widthHint, heightHint)
+    BaseScene(widthHint, heightHint),
+    m_fireGrid({
+        glm::vec3(0, 0, 0),
+        { 
+            size_t(2500),
+            std::make_unique<Box>(0.015f * glm::vec3(1.0f, 1.0f, 1.0f))
+        }
+    })
 {
     // Camera
     m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
     m_camera.direction = glm::vec3(0.0f, 0.0, 0.0f);
 
-    // Lightings
+    // Lightnings
     m_lights = {
         Light(glm::vec3{  0,  0, 0.70f }, glm::vec4{ 1,1,1,1 }),
         Light(glm::vec3{ -1,  0, 0.35f }, glm::vec4{ 1,0,0,1 }),
@@ -32,10 +48,18 @@ View::View(int widthHint, int heightHint):
         _initObjects();
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+
+    // Create particules
+    m_timer.tic();
+    {
+        _initParticles();
+    }
+    std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
 
 void View::draw() {
-    float dt_s = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+    float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+    m_timer.tic();
 
     BaseScene::_update_camera();
 
@@ -80,14 +104,55 @@ void View::draw() {
             m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
         }
 
+    // Particles
+    {
+        // Move
+        for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++)
+        {
+            glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
+            glm::mat4& model = m_fireGrid.particles.models[particules_id];
+
+            if (model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f)
+            {
+                const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
+                int x = particules_id % SIZE - SIZE / 2;
+                int y = particules_id / SIZE - SIZE / 2;
+
+                model = glm::translate(
+                    glm::mat4(1.0f),
+                    glm::vec3(x * 0.05f, 0.0f, y * 0.05f)
+                );
+
+                speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
+            }
+            else {
+                model = glm::scale(
+                    glm::translate(
+                        model, 
+                        m_fireGrid.pos + 0.016f * glm::vec3(speed)), speed.a * glm::vec3(1, 1, 1)
+                );
+            }
+        }
+
+        // Update
+        m_fireGrid.particles.object->updateBatch(
+            m_fireGrid.particles.colors,
+            m_fireGrid.particles.models
+        );
+
+        // Draw
+        m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
+    }
+
         // Skybox
         m_skybox->draw(m_camera);
     }
     
-    // Text for test
-    TextEngine::Write("Hello", 50, 50, 1.0f, glm::vec3(1, 1, 1));
+    // Some static texts
+    TextEngine::Write("Sample scene", 50, 50, 1.0f, glm::vec3(1, 1, 1));
 
     // Prepare next
+    float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 }
 
@@ -155,9 +220,54 @@ void View::_initObjects() {
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
                 glm::vec3(-1, 0, 1)),           // Translation
-            glm::vec3(0.02f, 0.02f, 0.02f)      // Scale
+            glm::vec3(0.01f, 0.01f, 0.01f)      // Scale
         )
     });
+}
+
+void View::_initParticles() {
+    // - Generate batch parameters
+    const glm::vec3 color(1.0f, 0.7f, 0.3f);
+
+    // Define particles
+    m_fireGrid.particles.models.resize(m_fireGrid.particles.amount);
+    m_fireGrid.particles.speeds.resize(m_fireGrid.particles.amount);
+    m_fireGrid.particles.colors.resize(m_fireGrid.particles.amount);
+
+    std::generate(m_fireGrid.particles.models.begin(), m_fireGrid.particles.models.end(), [&, particules_id = 0]() mutable -> glm::mat4
+    {
+        const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
+        int x = particules_id % SIZE - SIZE / 2;
+        int y = particules_id / SIZE - SIZE / 2;
+        particules_id++;
+
+        return glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(x * 0.05f, 0.0f, y * 0.05f)
+        );
+    });
+
+    std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable -> glm::vec4
+    {
+        particules_id++;
+        float ratio = particules_id / float(m_fireGrid.particles.amount);
+
+        return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    });
+
+    std::generate(m_fireGrid.particles.speeds.begin(), m_fireGrid.particles.speeds.end(), [&]() -> glm::vec4
+    {
+        return glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
+    });
+
+    // Create batch
+    m_fireGrid.particles.object->createBatch(
+        m_fireGrid.particles.colors,
+        m_fireGrid.particles.models
+    );
+
+    // Cook
+    m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
 }
 
 void View::_onResize() {

@@ -61,8 +61,9 @@ void Cookable::_set_shader_batch(UShader& shader) {
         attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
-            .add_var("layout (location = 2) in", "vec4", "aColor")
-            .add_var("layout (location = 3) in", "mat4", "aModel")
+            .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+            .add_var("layout (location = 3) in", "vec4", "aColor")
+            .add_var("layout (location = 4) in", "mat4", "aModel")
 
             .add_var("uniform", "mat4", "Projection")
             .add_var("uniform", "mat4", "View")
