@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <map>
 
 #include <Engine/Utils/Timer.hpp>
 #include <Engine/Utils/Objects/ShadowRender.hpp>
@@ -18,54 +19,16 @@ struct View : public BaseScene {
 
     void draw() override;
 
+    void drawObject(const glm::vec3& pos, int type);
+
 private:
-    enum class _ObjecId {
-        Character, Tree
-    };
-
-    struct _Object {
-        _ObjecId id;
-        glm::mat4 quat;
-    };
-
-    struct _Grid {
-        float cell_size;
-        int n_side;
-        std::vector<glm::mat4> m_grid_cells;
-    };
-
     void _initObjects();
-    void _initParticles();
-    void _onResize() override;
 
-    // Object models (vertices, textures..)
-    std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models; 
+    std::shared_ptr<Box> _modelCharacter;
+    std::shared_ptr<Sphere> _modelBall;
 
-    std::unique_ptr<Sphere> m_model_sphere;
-    std::unique_ptr<Box>    m_model_box;
-    std::unique_ptr<Box>    m_model_box_shadow;
-
-    // Scene objects
-    std::vector<_Object>    m_objects;                                      
-    std::unique_ptr<_Grid>  m_grid;
-    std::unique_ptr<Skybox> m_skybox;
-
-    // Fire grid
-    struct FireGrid {
-        glm::vec3 pos;
-
-        struct Particles {
-            const size_t amount;
-
-            std::unique_ptr<Box> object;
-            std::vector<glm::mat4> models;
-            std::vector<glm::vec4> colors;
-
-            std::vector<glm::vec4> speeds;
-        } particles;
-    } m_fireGrid;
+    std::map<int, std::vector<glm::vec3>> _models;
 
     // Other members
-    ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

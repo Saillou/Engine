@@ -1,6 +1,8 @@
 #include "Controller.hpp"
 #include <iostream>
 
+#include "View.hpp"
+
 Controller::Controller(std::shared_ptr<BaseScene> scene):
     m_scene(scene)
 {
@@ -17,7 +19,7 @@ Controller::Controller(std::shared_ptr<BaseScene> scene):
 void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
     float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
 
-    // .. do stuff ..
+    // physic of ball here: m_scene->ballPos(new pos);
 
     m_timer.tic();
 }
@@ -27,16 +29,14 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
     switch (evt.key)
     {
-        case Key::ArrowRight: dir.x = +1.0f; break;
-        case Key::ArrowLeft:  dir.x = -1.0f; break;
-        case Key::ArrowUp:    dir.y = +1.0f; break;
-        case Key::ArrowDown:  dir.y = -1.0f; break;
+        case Key::ArrowRight: dir.x = +0.05f; break;
+        case Key::ArrowLeft:  dir.x = -0.05f; break;
+        case Key::ArrowUp:    dir.y = +0.05f; break;
+        case Key::ArrowDown:  dir.y = -0.05f; break;
     }
 
-    if (dir != glm::vec2(0, 0)) 
-    {
-        m_scene->camera().position += glm::vec3(0.1f*dir, 0);
-    }
+    auto m_view = std::dynamic_pointer_cast<View>(m_scene);
+    //m_view->movePlayer2Pos(glm::vec3(dir.x,0, dir.y));
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
