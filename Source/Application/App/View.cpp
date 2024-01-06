@@ -104,45 +104,45 @@ void View::draw() {
             m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
         }
 
-    // Particles
-    {
-        // Move
-        for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++)
+        // Particles
         {
-            glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
-            glm::mat4& model = m_fireGrid.particles.models[particules_id];
-
-            if (model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f)
+            // Move
+            for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++)
             {
-                const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
-                int x = particules_id % SIZE - SIZE / 2;
-                int y = particules_id / SIZE - SIZE / 2;
+                glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
+                glm::mat4& model = m_fireGrid.particles.models[particules_id];
 
-                model = glm::translate(
-                    glm::mat4(1.0f),
-                    glm::vec3(x * 0.05f, 0.0f, y * 0.05f)
-                );
+                if (model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f)
+                {
+                    const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
+                    int x = particules_id % SIZE - SIZE / 2;
+                    int y = particules_id / SIZE - SIZE / 2;
 
-                speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
+                    model = glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(x * 0.05f, 0.0f, y * 0.05f)
+                    );
+
+                    speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
+                }
+                else {
+                    model = glm::scale(
+                        glm::translate(
+                            model, 
+                            m_fireGrid.pos + 0.016f * glm::vec3(speed)), speed.a * glm::vec3(1, 1, 1)
+                    );
+                }
             }
-            else {
-                model = glm::scale(
-                    glm::translate(
-                        model, 
-                        m_fireGrid.pos + 0.016f * glm::vec3(speed)), speed.a * glm::vec3(1, 1, 1)
-                );
-            }
+
+            // Update
+            m_fireGrid.particles.object->updateBatch(
+                m_fireGrid.particles.colors,
+                m_fireGrid.particles.models
+            );
+
+            // Draw
+            m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
         }
-
-        // Update
-        m_fireGrid.particles.object->updateBatch(
-            m_fireGrid.particles.colors,
-            m_fireGrid.particles.models
-        );
-
-        // Draw
-        m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
-    }
 
         // Skybox
         m_skybox->draw(m_camera);

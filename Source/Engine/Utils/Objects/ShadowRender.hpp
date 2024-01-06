@@ -2,9 +2,9 @@
 
 #include <functional>
 
-#include "../../Graphic/Shaders/Shader.hpp"
+#include "../../Graphic/Utils/Shader.hpp"
 #include "../../Graphic/Utils/Framebuffer.hpp"
-#include "../../Graphic/Base/Light.hpp"
+#include "../../Graphic/Light.hpp"
 #include "../../Graphic/Camera.hpp"
 
 struct ShadowRender 

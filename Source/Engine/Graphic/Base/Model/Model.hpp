@@ -23,10 +23,6 @@
 class Model
 {
 public:
-    std::vector<TextureData> textures_loaded;
-    std::vector<Mesh>        meshes;
-    std::string directory;
-
     Model(const std::string& path);
 
     void draw(Shader& shader);
@@ -34,9 +30,10 @@ public:
 private:
     void _loadModel(const std::string& path);
     void _processNode(aiNode* node, const aiScene* scene);
-    Mesh _processMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<TextureData> _loadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName);
+    void _processMesh(aiMesh* inMesh, const aiScene* scene, Mesh& outMesh);
 
     static unsigned int _TextureFromRawData(const aiTexture* rawTextureData);
-    static unsigned int _TextureFromFile(const char* path, const std::string& directory);
+
+    std::vector<TextureData> _textures_loaded;
+    std::vector<Mesh>        _meshes;
 };

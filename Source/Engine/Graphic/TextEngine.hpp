@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Shaders/Shader.hpp"
 #include "Utils/Array.hpp"
 #include "Utils/Buffer.hpp"
+#include "Utils/Shader.hpp"
 #include "Utils/Texture.hpp"
 
 #include <string>

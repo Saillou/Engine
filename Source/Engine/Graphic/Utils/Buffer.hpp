@@ -8,10 +8,6 @@ public:
 	Buffer(unsigned int glBufferType, unsigned int glMemoryType = GL_STATIC_DRAW);
 	virtual ~Buffer();
 
-	Buffer& operator=(const Buffer&)	= delete;
-	Buffer(const Buffer&)				= delete;
-	Buffer(Buffer&&)					= delete;
-
 	template <typename T> inline
 		void bindData(const std::vector<T>& data);
 

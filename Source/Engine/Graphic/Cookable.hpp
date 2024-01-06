@@ -2,11 +2,11 @@
 
 #include <glm/glm.hpp>
 
-#include "../Shaders/Shader.hpp"
-#include "../../Utils/Caster.hpp"
+#include "Utils/Shader.hpp"
+#include "../Utils/Caster.hpp"
 
 // Objects
-struct Cookable : public Object {
+struct Cookable : public FlatObject {
     // Basic possibilities
     enum class CookType {
         Solid, 

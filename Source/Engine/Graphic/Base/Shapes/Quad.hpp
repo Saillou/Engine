@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../BaseShape.hpp"
-#include "../Cookable.hpp"
+#include "BaseShape.hpp"
+#include "../../Cookable.hpp"
 
 struct Quad :
     public BaseShape,

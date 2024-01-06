@@ -23,13 +23,13 @@ std::unique_ptr<Derived, Del> dynamic_unique_ptr_cast(std::unique_ptr<Base, Del>
 }
 
 // -- Objects type eraser --
-struct Object {
-    virtual ~Object() = default;
+struct FlatObject {
+    virtual ~FlatObject() = default;
 
     template<typename T> inline T* as() 
     {
         return reinterpret_cast<T*>(this);
     }
 };
-typedef std::shared_ptr<Object> sObject;
-typedef std::unordered_map<std::string, sObject> Collection;
+typedef std::shared_ptr<FlatObject> sFlatObject;
+typedef std::unordered_map<std::string, sFlatObject> Collection;

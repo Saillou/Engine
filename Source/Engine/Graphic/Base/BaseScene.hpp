@@ -4,9 +4,8 @@
 #include "../Camera.hpp"
 #include "../Utils/Framebuffer.hpp"
 
-#include "Light.hpp"
-#include "Cookable.hpp"
-#include "BaseShape.hpp"
+#include "../Light.hpp"
+#include "../Cookable.hpp"
 #include "Shapes/Quad.hpp"
 
 // Scene model

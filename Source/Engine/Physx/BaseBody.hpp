@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
-#include "../Graphic/Base/Light.hpp"
+#include "../Graphic/Light.hpp"
 #include "../Graphic/Camera.hpp"
 
 class BaseBody {

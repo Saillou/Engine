@@ -3,8 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-#include "../Utils/Array.hpp"
-#include "../Utils/Buffer.hpp"
+#include "../../Utils/Array.hpp"
+#include "../../Utils/Buffer.hpp"
 
 #include <vector>
 

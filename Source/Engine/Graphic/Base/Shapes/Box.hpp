@@ -4,10 +4,10 @@
 #include <memory>
 #include <glm/glm.hpp>
 
-#include "../BaseShape.hpp"
-#include "../Cookable.hpp"
-#include "../Light.hpp"
+#include "BaseShape.hpp"
+#include "../../Light.hpp"
 #include "../../Camera.hpp"
+#include "../../Cookable.hpp"
 
 // Objects
 struct Box : 

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "../Camera.hpp"
+#include "../../Camera.hpp"
 #include "Model.hpp"
 
 struct ObjectModel {

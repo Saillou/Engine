@@ -4,42 +4,40 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Shaders/Shader.hpp"
+#include "../../Utils/Shader.hpp"
+#include "../../Utils/Array.hpp"
+#include "../../Utils/Buffer.hpp"
 
 #include <string>
 #include <vector>
-
-#define MAX_BONE_INFLUENCE 4
 
 struct Vertex {
     glm::vec3 Position;
     glm::vec3 Normal;
     glm::vec2 TexCoords;
-    glm::vec3 Tangent;
-    glm::vec3 Bitangent;
-
-    int m_BoneIDs[MAX_BONE_INFLUENCE];
-    float m_Weights[MAX_BONE_INFLUENCE];
 };
 
 struct TextureData {
     unsigned int id = 0;
     std::string type;
-    std::string path;
 };
 
 class Mesh {
-public:
-    std::vector<Vertex>       vertices;
-    std::vector<unsigned int> indices;
-    std::vector<TextureData>  textures;
+    friend class Model;
 
+public:
+    Mesh();
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures);
     void Draw(Shader& shader);
 
 private:
-    unsigned int VAO;
-    unsigned int VBO, EBO;
+    Array m_vao;
+    Buffer m_vbo;
+    Buffer m_ebo;
 
-    void _setupMesh();
+    std::vector<Vertex>       vertices = {};
+    std::vector<unsigned int> indices  = {};
+    std::vector<TextureData>  textures = {};
+
+    void _setup();
 };

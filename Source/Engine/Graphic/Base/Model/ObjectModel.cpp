@@ -41,4 +41,3 @@ void ObjectModel::draw(const Camera& camera, const glm::mat4& model) {
 
     _object.draw(_shader);
 }
-

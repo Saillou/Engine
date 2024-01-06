@@ -3,10 +3,10 @@
 #include <string>
 #include <array>
 
-#include "../Base/Shapes/Box.hpp"
-#include "../Utils/Array.hpp"
-#include "../Utils/Buffer.hpp"
-#include "../Utils/Texture.hpp"
+#include "../Shapes/Box.hpp"
+#include "../../Utils/Array.hpp"
+#include "../../Utils/Buffer.hpp"
+#include "../../Utils/Texture.hpp"
 
 struct Skybox {
     Skybox(const std::array<std::string, 6>& textures_path);
