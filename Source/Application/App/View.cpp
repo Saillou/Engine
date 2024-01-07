@@ -27,7 +27,7 @@ View::View(int widthHint, int heightHint):
 
     // Lightnings
     m_lights = {
-        Light(glm::vec3{  0,  0, 0.70f }, glm::vec4{ 1,1,1,1 })
+        Light(glm::vec3{  0,  0, 0.50f }, glm::vec4{ 1, 0.7, 0.3, 1 })
     };
 
     // Load models
@@ -103,10 +103,10 @@ void View::draw() {
             m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
         }
 
-        //// Particles
-        //{
-        //    m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
-        //}
+        // Particles
+        {
+            m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
+        }
 
         // Draw ground with shadow
         m_shadowRender.bindTexture(GL_TEXTURE1);
@@ -146,7 +146,7 @@ void View::_initObjects() {
     m_model_box->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1))
                ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
-    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 30, {} });
+    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 15, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
     std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
     { 
@@ -237,7 +237,7 @@ void View::_setParticles(float dt) {
             int x = particules_id % SIZE - SIZE / 2;
             int y = particules_id / SIZE - SIZE / 2;
 
-            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.07f, 0.0f, 0.5f + y * 0.02f));
+            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 0.0f, 0.5f + y * 0.002f));
             speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
         }
         else {

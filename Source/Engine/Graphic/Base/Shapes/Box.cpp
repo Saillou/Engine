@@ -80,6 +80,7 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
                 set("viewPos", camera.position).
                 set("far_plane", camera.far_plane).
                 set("lightPos", lights[0].position).
+                set("lightColor", 0.3f*lights[0].color).
                 set("depthMap", 1);
 
             break;

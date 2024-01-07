@@ -315,6 +315,7 @@ void Cookable::_set_shader_shadow(UShader& shader) {
             .add_var("uniform", "vec4", "diffuse_color")
             .add_var("uniform", "samplerCube", "depthMap")
             .add_var("uniform", "vec3", "lightPos")
+            .add_var("uniform", "vec4", "lightColor")
             .add_var("uniform", "vec3", "viewPos")
             .add_var("uniform", "float", "far_plane")
             .add_var("", "vec3", "gridSamplingDisk[20]", R"_var_(vec3[] (
@@ -348,15 +349,14 @@ void Cookable::_set_shader_shadow(UShader& shader) {
             .add_func("void", "main", "", R"_main_(
                 vec3 color = diffuse_color.rgb;
                 vec3 normal = normalize(fs_in.Normal);
-                vec3 lightColor = vec3(0.3);
 
                 // ambient
-                vec3 ambient = 0.3 * lightColor;
+                vec3 ambient = 0.3 * lightColor.rgb;
 
                 // diffuse
                 vec3 lightDir = normalize(lightPos - fs_in.FragPos);
                 float diff = max(dot(lightDir, normal), 0.0);
-                vec3 diffuse = diff * lightColor;
+                vec3 diffuse = diff * lightColor.rgb;
 
                 // specular
                 vec3 viewDir = normalize(viewPos - fs_in.FragPos);
@@ -364,7 +364,7 @@ void Cookable::_set_shader_shadow(UShader& shader) {
                 float spec = 0.0;
                 vec3 halfwayDir = normalize(lightDir + viewDir);  
                 spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-                vec3 specular = spec * lightColor;  
+                vec3 specular = spec * lightColor.rgb;  
   
                 // calculate shadow
                 float shadow = ShadowCalculation(fs_in.FragPos);                      
