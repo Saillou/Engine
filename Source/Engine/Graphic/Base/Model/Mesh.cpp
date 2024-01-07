@@ -19,7 +19,7 @@ Mesh::Mesh(std::vector<Vertex> vertices_, std::vector<unsigned int> indices_, st
 }
 
 // render the mesh
-void Mesh::Draw(Shader& shader) {
+void Mesh::draw(Shader& shader) {
     // Bind textures
     unsigned int diffuseNr = 1;
 
@@ -35,13 +35,16 @@ void Mesh::Draw(Shader& shader) {
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
-    // Draw mesh
-    m_vao.bind();
-    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
-    m_vao.unbind();
+    drawElements();
 
     // Unbind textures
     glActiveTexture(GL_TEXTURE0);
+}
+
+void Mesh::drawElements() {
+    m_vao.bind();
+    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+    m_vao.unbind();
 }
 
 // initializes all the buffer objects/arrays

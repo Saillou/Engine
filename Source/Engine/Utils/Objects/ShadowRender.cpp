@@ -2,8 +2,6 @@
 
 #include <glad/glad.h>
 
-#include "../../Graphic/Base/BaseScene.hpp"
-
 ShadowRender::ShadowRender() : 
 	fbo(Framebuffer::Cubemap, 1024, 1024, GL_DEPTH_ATTACHMENT)
 {
@@ -52,6 +50,13 @@ void ShadowRender::bindTexture(GLuint target) {
     fbo.texture().bind();
 }
 
+int ShadowRender::width() const {
+    return fbo.width();
+}
+int ShadowRender::height() const {
+    return fbo.height();
+}
+
 void ShadowRender::render(const Camera& camera, const Light& light, std::function<void(Shader&)> renderFunc) 
 {
     const glm::vec3& lightPos = light.position;
@@ -69,7 +74,6 @@ void ShadowRender::render(const Camera& camera, const Light& light, std::functio
     };
 
     // Render scene to depth cubemap
-    BaseScene::Viewport(fbo.width(), fbo.height());
     fbo.bind();
     fbo.clear();
     {

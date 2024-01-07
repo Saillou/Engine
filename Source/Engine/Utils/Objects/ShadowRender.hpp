@@ -14,7 +14,10 @@ struct ShadowRender
 	void bindTexture(GLuint target = GL_TEXTURE1);
 	void render(const Camera& camera, const Light& light, std::function<void(Shader&)> renderFunc);
 
-private:
+	int width() const;
+	int height() const;
+
+//private:
 	Framebuffer fbo;
 	Shader shader;
 };

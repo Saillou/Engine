@@ -64,10 +64,7 @@ void Sphere::draw(const Camera& camera, const glm::mat4& model, const std::vecto
             }
         }
 
-        // Draw
-        bind();
-        glDrawElements(GL_TRIANGLE_STRIP, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
-        unbind();
+        drawElements();
     }
 }
 
@@ -96,4 +93,10 @@ void Sphere::drawBatch(size_t amount, const Camera& camera) {
         glDrawElementsInstanced(GL_TRIANGLE_STRIP, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)amount);
         unbind();
     }
+}
+
+void Sphere::drawElements() {
+    bind();
+    glDrawElements(GL_TRIANGLE_STRIP, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
+    unbind();
 }

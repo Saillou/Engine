@@ -17,6 +17,10 @@ Cookable* Cookable::addRecipe(CookType type) {
         _set_shader_solid(recipe);
         break;
 
+    case CookType::Model:
+        _set_shader_model(recipe);
+        break;
+
     case CookType::Shadow:
         _set_shader_shadow(recipe);
         break;
@@ -176,6 +180,99 @@ void Cookable::_set_shader_solid(UShader& shader) {
                 light_result += ratio * compute_light(LightPos_2, LightColor_2.rgb);
                 light_result += ratio * compute_light(LightPos_3, LightColor_3.rgb);
                 light_result += ratio * compute_light(LightPos_4, LightColor_4.rgb);
+
+                FragColor = vec4(light_result, diffuse_color.a);
+            )_main_")
+            .str()
+        );
+}
+
+void Cookable::_set_shader_model(UShader& shader) {
+    shader->
+        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("layout (location = 1) in", "vec3", "aNormal")
+            .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+            .add_var("uniform", "mat4", "Model")
+
+            .add_var("out", "vec3", "Normal")
+            .add_var("out", "vec3", "FragPos")
+            .add_var("out", "vec2", "TexCoords")
+
+            .add_func("void", "main", "", R"_main_(
+                TexCoords = aTexCoords;
+                FragPos   = vec3(Model * vec4(aPos, 1.0));
+                Normal    = mat3(transpose(inverse(Model))) * aNormal;  
+    
+                gl_Position = Projection * View * vec4(FragPos, 1.0);
+            )_main_")
+            .str()
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec3", "Normal")
+            .add_var("in", "vec3", "FragPos")
+            .add_var("in", "vec2", "TexCoords")
+
+            .add_var("uniform", "sampler2D", "texture_diffuse1")
+            .add_var("uniform", "vec3", "CameraPos")
+
+            .add_var("uniform", "highp int", "LightNumber")
+
+            .add_var("uniform", "vec3", "LightPos_0")
+            .add_var("uniform", "vec3", "LightPos_1")
+            .add_var("uniform", "vec3", "LightPos_2")
+            .add_var("uniform", "vec3", "LightPos_3")
+            .add_var("uniform", "vec3", "LightPos_4")
+
+            .add_var("uniform", "vec4", "LightColor_0")
+            .add_var("uniform", "vec4", "LightColor_1")
+            .add_var("uniform", "vec4", "LightColor_2")
+            .add_var("uniform", "vec4", "LightColor_3")
+            .add_var("uniform", "vec4", "LightColor_4")
+
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("vec3", "compute_light", "vec3 obj_color, vec3 light_pos, vec3 light_color", R"_light_(
+                // ambient
+                float ambientStrength = 0.1;
+                vec3 ambient = ambientStrength * light_color;
+
+                // diffuse 
+                vec3 normDir = normalize(Normal);
+                vec3 lightDir = normalize(light_pos - FragPos);
+                float diff = max(dot(normDir, lightDir), 0.0);
+                vec3 diffuse = 0.7 * diff * light_color;
+
+                // specular
+                float specularStrength = 0.5;
+                vec3 cameraDir = normalize(CameraPos - FragPos);
+                vec3 reflectDir = reflect(-lightDir, normDir);  
+                float spec = pow(max(dot(cameraDir, reflectDir), 0.0), 32);
+                vec3 specular = specularStrength * spec * light_color;
+
+                return (ambient + diffuse + specular) * obj_color.rgb;
+            )_light_")
+
+            .add_func("void", "main", "", R"_main_(
+                vec4 diffuse_color = texture(texture_diffuse1, TexCoords);
+
+                // Shall use light ?
+                if(LightNumber == 0) {
+                    FragColor = diffuse_color;
+                    return;
+                }
+
+                float ratio = 1.0 / float(LightNumber);
+
+                vec3 light_result = vec3(0,0,0);
+                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_0, LightColor_0.rgb);
+                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_1, LightColor_1.rgb);
+                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_2, LightColor_2.rgb);
+                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_3, LightColor_3.rgb);
+                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_4, LightColor_4.rgb);
 
                 FragColor = vec4(light_result, diffuse_color.a);
             )_main_")

@@ -36,6 +36,8 @@ private:
 
     void _initObjects();
     void _initParticles();
+
+    void _setParticles(float dt = 0.0f);
     void _onResize() override;
 
     // Object models (vertices, textures..)

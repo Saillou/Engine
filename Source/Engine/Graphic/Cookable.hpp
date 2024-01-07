@@ -12,6 +12,7 @@ struct Cookable : public FlatObject {
         Solid, 
         Geometry,
         Shadow,
+        Model,
         Quad, 
         Batch
     };
@@ -27,6 +28,7 @@ struct Cookable : public FlatObject {
 protected:
     virtual void _set_shader_batch(UShader& shader);
     virtual void _set_shader_solid(UShader& shader);
+    virtual void _set_shader_model(UShader& shader);
     virtual void _set_shader_shadow(UShader& shader);
     virtual void _set_shader_geometry(UShader& shader);
     virtual void _set_shader_quad(UShader& shader);

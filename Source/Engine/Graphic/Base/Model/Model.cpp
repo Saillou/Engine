@@ -7,7 +7,13 @@ Model::Model(const std::string& path)
 
 void Model::draw(Shader& shader) {
     for (unsigned int i = 0; i < _meshes.size(); i++) {
-        _meshes[i].Draw(shader);
+        _meshes[i].draw(shader);
+    }
+}
+
+void Model::drawElements() {
+    for (unsigned int i = 0; i < _meshes.size(); i++) {
+        _meshes[i].drawElements();
     }
 }
 

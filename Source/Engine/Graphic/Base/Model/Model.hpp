@@ -26,6 +26,7 @@ public:
     Model(const std::string& path);
 
     void draw(Shader& shader);
+    void drawElements();
 
 private:
     void _loadModel(const std::string& path);

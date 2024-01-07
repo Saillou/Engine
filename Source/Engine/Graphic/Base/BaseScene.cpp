@@ -36,6 +36,9 @@ void BaseScene::drawFrame(Framebuffer& framebuffer) {
         Framebuffer::Blit(framebuffer, _internalFrame);
         _internalFrame.texture().bind();
     }
+    else if (framebuffer.type() == Framebuffer::Type::Cubemap) {
+        // ..
+    }
     else {
         framebuffer.texture().bind();
     }
