@@ -1,7 +1,9 @@
  param (
     [switch] $Cleanup,   # Clean generated files
     [switch] $NoBuild,   # Don't build binaries
-    [switch] $NoInstall  # Don't install resources
+    [switch] $NoInstall, # Don't install resources
+    [switch] $NoCleanup, # Don't clean
+    [switch] $VS2019     # Use Visual Studio 2019 instead of 2022
  )
 
 function clearPrevious() 
@@ -35,8 +37,16 @@ function generateSolution()
 
     Push-Location -Path  "$PSScriptRoot/_solution"
 
-    Write-Host "Generating Visual Studio solution." -ForegroundColor DarkGreen 
-    cmake .. -G "Visual Studio 17 2022" -A x64
+    Write-Host "Generating Visual Studio solution." -ForegroundColor DarkGreen
+    if($VS2019)
+    {
+        cmake .. -G "Visual Studio 16 2019" -A x64
+    } 
+    else
+    {
+        cmake .. -G "Visual Studio 17 2022" -A x64
+    }
+    
 
     Pop-Location
 }
@@ -78,7 +88,11 @@ else
 {
     Write-Host "Start project generation ..." -ForegroundColor DarkMagenta 
 
-    clearPrevious
+    if(-Not($NoCleanup))
+    {
+        clearPrevious
+    }
+    
     generateSolution
 
     if(-Not($NoBuild)) 
