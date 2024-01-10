@@ -8,15 +8,32 @@
 #include <Engine/Utils/Objects/ShadowRender.hpp>
 
 #include <Engine/Graphic/Base/BaseScene.hpp>
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
+#include <Engine/Graphic/Base/Shapes/Quad.hpp>
+#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
+
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/ObjectModel.hpp>
+
+#include <Engine/Graphic/Utils/Shader.hpp>
+#include <Engine/Graphic/Utils/Framebuffer.hpp>
+
+struct Filter {
+    Quad surface;
+    Shader shader;
+    Framebuffer framebuffer;
+
+    Filter();
+    void apply(Framebuffer& fIn);
+    void resize(int width, int height);
+};
 
 struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
 
     void draw() override;
+
+    bool enable_filter = true;
 
 private:
     enum class _ObjecId {
@@ -68,6 +85,9 @@ private:
     } m_fireGrid;
 
     // Other members
+    Filter m_filter;
+    Framebuffer framebuffer_main;
+
     ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

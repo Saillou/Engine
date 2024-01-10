@@ -19,7 +19,8 @@ View::View(int widthHint, int heightHint):
             size_t(2500),
             std::make_unique<Box>(glm::vec3(0.010f))
         }
-    })
+    }),
+    framebuffer_main(Framebuffer::Multisample, m_width, m_height)
 {
     // Camera
     m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
@@ -83,9 +84,9 @@ void View::draw() {
     });
 
     // Main scene
-    BaseScene::Viewport(m_width, m_height);
-    BaseScene::clear();
-
+    BaseScene::Viewport(width(), height());
+    framebuffer_main.bind();
+    framebuffer_main.clear();
     {
         // Lights
         for (auto& light : m_lights) {
@@ -117,7 +118,20 @@ void View::draw() {
         // Skybox
         m_skybox->draw(m_camera);
     }
-    
+    framebuffer_main.unbind();
+
+    // Draw on final frame
+    BaseScene::clear();
+
+    // Apply filter
+    if(enable_filter) {
+        m_filter.apply(framebuffer_main);
+        BaseScene::drawFrame(m_filter.framebuffer);
+    }
+    else {
+        BaseScene::drawFrame(framebuffer_main);
+    }
+
     // Some static texts
     TextEngine::Write("Sample scene", 50, 50, 1.0f, glm::vec3(1, 1, 1));
 
@@ -254,5 +268,65 @@ void View::_setParticles(float dt) {
 }
 
 void View::_onResize() {
-    // For example: resize framebuffers ..
+    framebuffer_main.resize(m_width, m_height);
+    m_filter.resize(m_width, m_height);
+}
+
+
+// Filter struct
+Filter::Filter() : framebuffer(Framebuffer::Unique) {
+    shader.
+        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("out", "vec2", "TexCoords")
+            .add_func("void", "main", "", R"_main_(
+                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+                float tx = aPos.x > 0 ? 1.0 : 0.0;
+                float ty = aPos.y > 0 ? 1.0 : 0.0;
+                TexCoords = vec2(tx, ty);
+            )_main_").str()
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec2", "TexCoords")
+            .add_var("uniform", "sampler2D", "quadTexture")
+            .add_var("uniform", "highp int", "seed")
+            .add_var("out", "vec4", "FragColor")
+            .add_func("void", "main", "", R"_main_(
+                vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
+                vec2 tex_offset = 1.0 / tex_size;
+                vec2 tex_id     = TexCoords/tex_offset;
+
+                int pix_id = int(tex_id.x + tex_id.y * tex_size.x);
+                if((seed + pix_id) % 4 != 0) {
+                    FragColor = vec4(0, 0, 0, 1);
+                    return;
+                }
+
+                vec4 texture_color = texture(quadTexture, TexCoords);
+                vec3 night_color = vec3(0.0, 0.5f*texture_color.r + 0.5f*texture_color.g, texture_color.b);
+                FragColor = vec4(night_color.rgb, texture_color.a);
+            )_main_").str()
+        )
+        .link();
+}
+
+void Filter::apply(Framebuffer& fIn) {
+    // Multisample -> Monosample
+    Framebuffer::Blit(fIn, framebuffer);
+
+    // Draw
+    framebuffer.bind();
+    glDisable(GL_DEPTH_TEST);
+    {
+        static int seed = 0; seed++;
+        shader.use().set("seed", seed / 10);
+        framebuffer.texture().bind();
+        surface.drawElements();
+    }
+    glEnable(GL_DEPTH_TEST);
+    framebuffer.unbind();
+}
+
+void Filter::resize(int width, int height) {
+    framebuffer.resize(width, height);
 }
