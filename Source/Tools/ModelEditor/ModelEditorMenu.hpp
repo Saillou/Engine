@@ -21,6 +21,11 @@ struct ModelEditorMenu
 								float rotation;
 								std::string path;
 								bool updateAsset;
+
+								glm::vec3 centerPosition;
+								glm::vec3 worldPosition;
+
+								bool showWireFrame;
 				} state;
 
 };

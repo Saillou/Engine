@@ -22,6 +22,7 @@ public:
 private:
     Window* m_window;
 
+    std::unique_ptr<Sphere>         m_center;
     std::unique_ptr<ObjectModel>    m_model;
     std::vector<Light>              m_lights;
     ModelEditorMenu                 m_menu;
