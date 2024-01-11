@@ -14,6 +14,12 @@ Menu::Menu(GLFWwindow* backend)
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
     ImGui::StyleColorsDark();
+
+    state =
+    {
+        false,
+        EditorId::None
+    };
 }
 
 // Cleanup
@@ -23,20 +29,6 @@ Menu::~Menu()
     ImGui_ImplGlfw_Shutdown();
 
     ImGui::DestroyContext();
-}
-
-// Copied from imgui_sample.cpp
-void Menu::ShowMovableOptions()
-{
-    ImGui::Begin("Hello, world!");
-    ImGui::Text("This is some useful text.");
-
-    ImGui::Checkbox("Enable light", &state.lightEnabled);
-    ImGui::SliderFloat("alpha", &state.color.w, 0.0f, 1.0f);
-    ImGui::ColorEdit3("color", (float*)&state.color);
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
 }
 
 // Copied from imgui_demo.cpp
@@ -49,14 +41,23 @@ void Menu::ShowMenuBar()
             ShowMenuFile();
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Edit"))
+        if (ImGui::BeginMenu("Editors"))
         {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-            ImGui::Separator();
-            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+            if (ImGui::MenuItem("Clear"))
+            {
+                state.goToNewEditor = true;
+                state.editorId = EditorId::None;
+            }
+            if (ImGui::MenuItem("Material Editor"))
+            {
+                state.goToNewEditor = true;
+                state.editorId = EditorId::Material;
+            }
+            if (ImGui::MenuItem("Model Editor"))
+            {
+                state.goToNewEditor = true;
+                state.editorId = EditorId::Model;
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
