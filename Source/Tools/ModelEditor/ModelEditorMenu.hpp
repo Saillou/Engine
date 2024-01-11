@@ -26,6 +26,7 @@ struct ModelEditorMenu
 								glm::vec3 worldPosition;
 
 								bool showWireFrame;
+								int cameraType;
 				} state;
 
 };

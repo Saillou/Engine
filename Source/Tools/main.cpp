@@ -14,15 +14,15 @@ int main()
 
     MaterialEditor materialEditor(&window);
     bool showMaterialEditor = false;
-    //materialEditor.onEnter();
 
     ModelEditor modelEditor(&window);
     bool showModelEditor = false;
-    //modelEditor.onEnter();
 
     while (window.update()) 
     {
         window.scene()->clear();
+
+        //window.scene()->camera().lookAt(glm::vec3(0, 0, 0.01f));
         
         if (menu.state.goToNewEditor)
         {

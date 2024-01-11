@@ -97,7 +97,7 @@ void ModelEditorMenu::ShowMovableOptions()
             state.position.z += 0.005f;
         }
     }
-    //ImGui::ColorEdit3("color", (float*)&state.color);
+
     ImGui::Text("Rotation");
     static bool rotationX = state.rotationVector.x > 0.1f;
     static bool rotationY = state.rotationVector.y > 0.1f;
@@ -148,16 +148,15 @@ void ModelEditorMenu::ShowMovableOptions()
     ImGui::Text("Camera settings");
     ImGui::Checkbox("Wireframe", &state.showWireFrame);
 
-    static int camera = 0;
-    if (ImGui::RadioButton("Camera Side", &camera, 0))
+    if (ImGui::RadioButton("Camera Side", &state.cameraType, 0))
     {
 
     }
-    if (ImGui::RadioButton("Camera Top", &camera, 1))
+    if (ImGui::RadioButton("Camera Top", &state.cameraType, 1))
     {
 
     }
-    if (ImGui::RadioButton("Camera Front", &camera, 2))
+    if (ImGui::RadioButton("Camera Front", &state.cameraType, 2))
     {
 
     }
@@ -178,5 +177,6 @@ void ModelEditorMenu::resetState()
         {0,0,0},                                        // center
         {0,0,0},                                        // world pos
         false,                                          // show Wireframe
+        0,                                              // camera type
     };
 }

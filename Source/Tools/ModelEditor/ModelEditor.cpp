@@ -46,6 +46,23 @@ void ModelEditor::onUpdate()
         glPolygonMode(GL_BACK, GL_FILL);
     }
 
+    Camera& camera = m_window->scene()->camera();
+    switch (m_menu.state.cameraType)
+    {
+    case 0:
+        m_window->scene()->camera().position = glm::vec3{ 0, -1, 0 };
+        m_window->scene()->camera().lookAt(glm::vec3(0, 0, 1));
+        break;
+    case 1:
+        m_window->scene()->camera().position = glm::vec3{ 0,0,1 };
+        m_window->scene()->camera().lookAt(glm::vec3(0, 1, 0));
+        break;
+    case 2:
+        m_window->scene()->camera().position = glm::vec3{ -1, 0, 0 };
+        m_window->scene()->camera().lookAt(glm::vec3(0, 0, 1));
+        break;
+    }
+
     if (m_menu.state.updateAsset)
     {
         m_menu.state.updateAsset = false;
