@@ -1,39 +1,65 @@
 #include <Engine/Graphic/Window.hpp>
 #include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 
-#include "Gui/Menu.hpp"
+#include "Menu.hpp"
+
+#include "MaterialEditor/MaterialEditor.h"
+#include "ModelEditor/ModelEditor.h"
 
 // Entry point
 int main() 
 {
-    Window window(1280, 720, "Model creation");
+    Window window(1280, 720, "Tools");
     Menu menu(window.backend());
 
-    Light light(glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 });
+    MaterialEditor materialEditor(&window);
+    bool showMaterialEditor = false;
+    //materialEditor.onEnter();
 
-    Sphere sphere_model(0.15f);
-    sphere_model.addRecipe(Cookable::CookType::Solid);
+    ModelEditor modelEditor(&window);
+    bool showModelEditor = false;
+    //modelEditor.onEnter();
 
     while (window.update()) 
     {
         window.scene()->clear();
         
+        if (menu.state.goToNewEditor)
         {
-            UShader& shader = sphere_model.get(Cookable::CookType::Solid);
-            shader->use();
-            shader->set("diffuse_color", glm::vec4(menu.state.color.x, menu.state.color.y, menu.state.color.z, menu.state.color.w));
+            menu.state.goToNewEditor = false;
 
-            if (menu.state.lightEnabled)
-                sphere_model.draw(window.scene()->camera(), {}, {}, { light });
-            else
-                sphere_model.draw(window.scene()->camera());
+            switch (menu.state.editorId)
+            {
+            case EditorId::None:
+                showMaterialEditor = false;
+                showModelEditor = false;
+                materialEditor.onExit();
+                modelEditor.onExit();
+                break;
+            case EditorId::Material:
+                showMaterialEditor = true;
+                showModelEditor = false;
+                materialEditor.onEnter();
+                modelEditor.onExit();
+                break;
+            case EditorId::Model:
+                showMaterialEditor = false;
+                showModelEditor = true;
+                materialEditor.onExit();
+                modelEditor.onEnter();
+                break;
+            }
         }
 
         menu.Prepare();
-        {
-            menu.ShowMenuBar();
-            menu.ShowMovableOptions();
-        }
+        menu.ShowMenuBar();
+
+        if(showMaterialEditor)
+            materialEditor.onUpdate();
+
+        if (showModelEditor)
+            modelEditor.onUpdate();
+
         menu.Render();
     }
 
