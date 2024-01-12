@@ -40,6 +40,13 @@ View::View(int widthHint, int heightHint):
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
+    m_timer.tic();
+    {
+        m_gameModels[ModelId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
+        m_gameModels[ModelId::Wagon] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
+    }
+    std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+
     // Populate objects
     m_timer.tic();
     {
@@ -95,12 +102,26 @@ void View::draw() {
             m_model_sphere->draw(m_camera, light.position);
         }
 
-        glm::mat4 quat = glm::translate(glm::mat4(1.0f), m_lights[0].position);
-        m_model->draw(m_camera, quat, m_lights);
-
         // Draw objects
         for (const _Object& obj : m_objects) {
             m_models[obj.id]->draw(m_camera, obj.quat, m_lights);
+        }
+
+        // Draw game objects
+        for (auto obj : m_gameObjects)
+        {
+            const GameModel& model = GameModelTable::getModelById(obj.first);
+
+            auto x = model.localPosition.x;
+            glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), obj.second);
+            localTransform = glm::rotate(localTransform, model.localRotation, model.localRotationVector);
+            localTransform = glm::translate(localTransform, obj.second * -1.f);
+            localTransform = glm::translate(localTransform, model.localPosition);
+            localTransform = glm::scale(localTransform, model.localScale);
+
+            glm::mat4 worldTransform = glm::translate(glm::mat4(1.f), m_lights[0].position);
+
+            m_gameModels[obj.first]->draw(m_camera, worldTransform * localTransform, m_lights);
         }
 
         // Draw box
@@ -204,6 +225,11 @@ void View::_initObjects() {
             glm::vec3(0.01f, 0.01f, 0.01f)      // Scale
         )
     });
+
+    // GameObjects:
+    m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Locomotive, { 0,0,0 }));
+    m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Locomotive, { 1,1,1 }));
+    m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Wagon, { 2,2,2 }));
 }
 
 void View::_initParticles() {

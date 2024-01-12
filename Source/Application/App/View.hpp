@@ -13,6 +13,8 @@
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/ObjectModel.hpp>
 
+#include "Application/TrainGame/TrainGameModels.hpp"
+
 struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
 
@@ -41,7 +43,8 @@ private:
     void _onResize() override;
 
     // Object models (vertices, textures..)
-    std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models; 
+    std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models;
+    std::unordered_map<ModelId, std::unique_ptr<ObjectModel>> m_gameModels;
 
     std::unique_ptr<Sphere> m_model_sphere;
     std::unique_ptr<Box>    m_model_box;
@@ -49,7 +52,8 @@ private:
     std::unique_ptr<ObjectModel> m_model;
 
     // Scene objects
-    std::vector<_Object>    m_objects;                                      
+    std::vector<_Object>    m_objects;
+    std::vector<std::pair<ModelId, glm::vec3>> m_gameObjects;
     std::unique_ptr<_Grid>  m_grid;
     std::unique_ptr<Skybox> m_skybox;
 
