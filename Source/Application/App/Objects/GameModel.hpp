@@ -11,28 +11,29 @@ enum class ModelId
     Wagon
 };
 
+struct Transform
+{
+    glm::vec3   position;
+    glm::vec3   scale;
+    glm::vec3   rotationVector;
+    float       rotation;
+};
+
 struct GameModel
 {
     GameModel()
         : modelId(ModelId::None)
-        , localRotation(0.f)
-        , localPosition({0})
-        , localScale({1})
-        , localRotationVector({1,0,0})
+        , transform({})
     {}
 
     GameModel(const GameModel& other)
     {
         modelId = other.modelId;
-        localRotation = other.localRotation;
-        localPosition = other.localPosition;
-        localScale = other.localScale;
-        localRotationVector = other.localRotationVector;
+        transform = other.transform;
     }
 
     ModelId     modelId;
-    float       localRotation;
-    glm::vec3   localPosition;
-    glm::vec3   localScale;
-    glm::vec3   localRotationVector;
+    Transform   transform; // local transform of the Model
+
+    // todo: add quat
 };

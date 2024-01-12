@@ -109,20 +109,34 @@ void View::draw() {
         }
 
         // Draw game objects
-        for (auto obj : m_gameObjects)
+        for (auto& model : m_modelsToDraw)
         {
-            const GameModel& model = GameModelTable::getModelById(obj.first);
+            const GameModel& gameModel = GameModelTable::getModelById(model.first);
 
-            auto x = model.localPosition.x;
-            glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), obj.second);
-            localTransform = glm::rotate(localTransform, model.localRotation, model.localRotationVector);
-            localTransform = glm::translate(localTransform, obj.second * -1.f);
-            localTransform = glm::translate(localTransform, model.localPosition);
-            localTransform = glm::scale(localTransform, model.localScale);
+            for (auto& t : model.second)
+            {
+                glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), t.position);
+                localTransform = glm::rotate(localTransform, gameModel.transform.rotation, gameModel.transform.rotationVector);
+                localTransform = glm::translate(localTransform, t.position * -1.f);
+                localTransform = glm::translate(localTransform, gameModel.transform.position);
+                localTransform = glm::scale(localTransform, gameModel.transform.scale);
 
-            glm::mat4 worldTransform = glm::translate(glm::mat4(1.f), m_lights[0].position);
+                glm::mat4 worldTransform = glm::translate(glm::mat4(1.0f), t.position);
+                worldTransform = glm::rotate(worldTransform, t.rotation, t.rotationVector);
+                worldTransform = glm::scale(worldTransform, t.scale);
 
-            m_gameModels[obj.first]->draw(m_camera, worldTransform * localTransform, m_lights);
+                m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
+            }
+
+            //glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), obj.second);
+            //localTransform = glm::rotate(localTransform, model.localRotation, model.localRotationVector);
+            //localTransform = glm::translate(localTransform, obj.second * -1.f);
+            //localTransform = glm::translate(localTransform, model.localPosition);
+            //localTransform = glm::scale(localTransform, model.localScale);
+
+            /*glm::mat4 worldTransform = glm::translate(glm::mat4(1.f), m_lights[0].position);
+
+            m_gameModels[obj.first]->draw(m_camera, worldTransform * localTransform, m_lights);*/
         }
 
         // Draw box
@@ -165,9 +179,32 @@ void View::draw() {
 
     TextEngine::Write(s, 50, 50, 1.0f, glm::vec3(1, 1, 1));
 
+    m_modelsToDraw.clear();
+
     // Prepare next
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
+}
+
+void View::loadModels(size_t size)
+{
+    m_gameModels.reserve(size);
+
+    // TODO: get the list of models we want to load from somewhere
+    // example: we do not want to store all game models here, only for the current level
+    // 
+    // Misha: can this part be async at some point ?
+    m_timer.tic();
+    {
+        m_gameModels[ModelId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
+        m_gameModels[ModelId::Wagon] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
+    }
+    std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+}
+
+void View::draw(ModelId id, const Transform& transform)
+{
+    m_modelsToDraw[id].push_back(transform);
 }
 
 void View::_initObjects() {

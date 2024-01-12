@@ -5,24 +5,28 @@
 
 #include "Application/TrainGame/TrainGameModels.hpp"
 
+#include "App/Game.hpp"
+
 void initGameModels();
 
 // -- Entry point --
 int main() {
     // Setup
-    Window window(1600, 900, "Sample scene");
-    Controller controller(window.scene(std::make_shared<View>(window.width(), window.height())));
+    Game game;
+    game.createScene();
+    //Window window(1600, 900, "Sample scene");
+    //Controller controller(window.scene(std::make_shared<View>(window.width(), window.height())));
 
     initGameModels();
 
     // Loop
     do {
         // Inputs
-        for (auto key : window.keyPressed()) {
+        for (auto key : game.window()->keyPressed()) {
             switch (key) 
             {
             case GLFW_KEY_ESCAPE:
-                window.close(); 
+                game.window()->close();
                 break;
 
             default:
@@ -32,14 +36,14 @@ int main() {
         }
 
         Event::Emit(CommonEvents::MouseMoved(
-            (int)window.mousePos().x, (int)window.mousePos().y
+            (int)game.window()->mousePos().x, (int)game.window()->mousePos().y
         ));
 
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());
         }
-    } while (window.update());
+    } while (game.window()->update());
 
     // Cleanup
     return 0;
