@@ -1,4 +1,7 @@
 #include "Controller.hpp"
+#include "View.hpp"
+
+#include <memory>
 #include <iostream>
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
@@ -23,6 +26,7 @@ void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
 }
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
+    // Mouvement
     glm::vec3 dir(0, 0, 0);
 
     switch (evt.key)
@@ -37,8 +41,17 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
     if (dir != glm::vec3(0, 0, 0)) 
     {
-        //m_scene->camera().position += 0.05f * dir;
+        m_scene->camera().position += 0.05f * dir;
         m_scene->lights()[0].position += 0.05f * dir;
+    }
+
+    // Other
+    auto view = std::dynamic_pointer_cast<View>(m_scene);
+
+    switch (evt.key)
+    {
+        case 'R': view->enable_filter = true; break;
+        case 'T': view->enable_filter = false; break;
     }
 }
 

@@ -28,6 +28,10 @@ Quad::Quad(float x, float y, float w, float h)
 void Quad::draw() {
     get(CookType::Quad)->use();
 
+    drawElements();
+}
+
+void Quad::drawElements() {
     bind();
     glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
     unbind();

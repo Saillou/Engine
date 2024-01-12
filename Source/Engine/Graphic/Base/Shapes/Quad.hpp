@@ -11,4 +11,5 @@ struct Quad :
     ~Quad() = default;
 
     void draw();
+    void drawElements();
 };
