@@ -127,16 +127,6 @@ void View::draw() {
 
                 m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
             }
-
-            //glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), obj.second);
-            //localTransform = glm::rotate(localTransform, model.localRotation, model.localRotationVector);
-            //localTransform = glm::translate(localTransform, obj.second * -1.f);
-            //localTransform = glm::translate(localTransform, model.localPosition);
-            //localTransform = glm::scale(localTransform, model.localScale);
-
-            /*glm::mat4 worldTransform = glm::translate(glm::mat4(1.f), m_lights[0].position);
-
-            m_gameModels[obj.first]->draw(m_camera, worldTransform * localTransform, m_lights);*/
         }
 
         // Draw box
@@ -371,7 +361,7 @@ Filter::Filter() : framebuffer(Framebuffer::Unique) {
                 vec2 tex_id     = TexCoords/tex_offset;
 
                 int pix_id = int(tex_id.x + tex_id.y * tex_size.x);
-                if((seed + pix_id) % 4 != 0) {
+                if((seed*0 + pix_id) % 4 != 0) {
                     FragColor = vec4(0, 0, 0, 1);
                     return;
                 }

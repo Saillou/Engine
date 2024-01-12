@@ -1,5 +1,7 @@
 #include "Game.hpp"
 
+#include "Application/App/Components/TrainController.h"
+
 static uint64_t gs_id = 0;
 
 Game::Game()
@@ -21,6 +23,9 @@ Game::~Game()
 void Game::createScene()
 {
     GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,1}, 0.f } });
+    TrainController* trainController = new TrainController(&obj->transform);
+    obj->components.push_back(trainController);
+
     m_objects[obj->id] = obj;
 }
 
@@ -31,6 +36,11 @@ void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
     // game loop
     for (auto& obj : m_objects)
     {
+        for (auto& comp : obj.second->components)
+        {
+            comp->update(dt_ms);
+        }
+
         m_view->draw(obj.second->modelId, obj.second->transform);
     }
 
