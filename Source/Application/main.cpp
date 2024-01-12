@@ -53,6 +53,6 @@ void initGameModels()
 {
     // Misha: is it really a good way of doing it ?
     // TODO: brainstorm about it
-    GameModelTable::addGameModel(ModelId::Locomotive,   { -0.75f, -1.68f, -0.135f }, { 0.01f, 0.01f, 0.01f }, { 1,0,0 }, 0.f);
+    GameModelTable::addGameModel(ModelId::Locomotive,   { -0.75f, -1.68f, -0.135f }, { 0.01f, 0.01f, 0.01f }, { 0,0,1 }, -1.5f);
     GameModelTable::addGameModel(ModelId::Wagon,        { -1.75f, -0.175f, -0.155f }, { 0.01f, 0.01f, 0.01f }, { 1,0,0 }, 0.f);
 }

@@ -8,7 +8,7 @@ class Component;
 
 struct GameObject
 {
-    uint64_t    id;
+    uint64_t    id; // unique for instance
     ModelId     modelId;
     Transform   transform; // world transform
 

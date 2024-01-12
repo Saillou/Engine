@@ -19,7 +19,10 @@ private:
     // Misha: is there a better way of doing it ?
     Transform* m_transform = nullptr;
     float m_speed;
+    float m_rotationSpeed;
     float m_minDistance;
+
+    glm::vec3 m_forwardVector;
 
     std::list<glm::vec3>::iterator  m_currentPoint;
     std::list<glm::vec3>            m_points;

@@ -115,9 +115,8 @@ void View::draw() {
 
             for (auto& t : model.second)
             {
-                glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), t.position);
+                glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
                 localTransform = glm::rotate(localTransform, gameModel.transform.rotation, gameModel.transform.rotationVector);
-                localTransform = glm::translate(localTransform, t.position * -1.f);
                 localTransform = glm::translate(localTransform, gameModel.transform.position);
                 localTransform = glm::scale(localTransform, gameModel.transform.scale);
 
