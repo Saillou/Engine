@@ -12,6 +12,7 @@
 
 #include "Mesh.hpp"
 
+#include <memory>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -30,11 +31,11 @@ public:
 
 private:
     void _loadModel(const std::string& path);
-    void _processNode(aiNode* node, const aiScene* scene);
-    void _processMesh(aiMesh* inMesh, const aiScene* scene, Mesh& outMesh);
+    void _processNode(aiNode* node,   const aiScene* scene);
+    void _processMesh(aiMesh* inMesh, const aiScene* scene);
 
     static unsigned int _TextureFromRawData(const aiTexture* rawTextureData);
 
     std::vector<TextureData> _textures_loaded;
-    std::vector<Mesh>        _meshes;
+    std::vector<std::unique_ptr<Mesh>> _meshes;
 };

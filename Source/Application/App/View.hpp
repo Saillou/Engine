@@ -33,11 +33,11 @@ struct View : public BaseScene {
 
     void draw() override;
 
-    bool enable_filter = true;
+    bool enable_filter = false;
 
 private:
     enum class _ObjecId {
-        Character, Tree
+        Character, Tree, Locomotive
     };
 
     struct _Object {
@@ -63,7 +63,6 @@ private:
     std::unique_ptr<Sphere> m_model_sphere;
     std::unique_ptr<Box>    m_model_box;
     std::unique_ptr<Box>    m_model_box_shadow;
-    std::unique_ptr<ObjectModel> m_model;
 
     // Scene objects
     std::vector<_Object>    m_objects;                                      

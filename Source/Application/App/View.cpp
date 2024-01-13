@@ -36,22 +36,23 @@ View::View(int widthHint, int heightHint):
     // Load models
     m_timer.tic();
     {
-        m_models[_ObjecId::Tree]      = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
-        m_models[_ObjecId::Character] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
+        m_models[_ObjecId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive.glb");
+        //m_models[_ObjecId::Tree]       = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
+        //m_models[_ObjecId::Character]  = std::make_unique<ObjectModel>("Resources/objects/character/character.glb");
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Populate objects
     m_timer.tic();
     {
-        _initObjects();
+        //_initObjects();
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Create particules
     m_timer.tic();
     {
-        _initParticles();
+        //_initParticles();
     }
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
@@ -90,14 +91,12 @@ void View::draw() {
     framebuffer_main.bind();
     framebuffer_main.clear();
     {
+
         // Lights
         for (auto& light : m_lights) {
             m_model_sphere->get(Cookable::CookType::Solid)->use().set("diffuse_color", light.color);
             m_model_sphere->draw(m_camera, light.position);
         }
-
-        glm::mat4 quat = glm::translate(glm::mat4(1.0f), m_lights[0].position);
-        m_model->draw(m_camera, quat, m_lights);
 
         // Draw objects
         for (const _Object& obj : m_objects) {
@@ -139,10 +138,9 @@ void View::draw() {
 
     // Some static texts
     std::ostringstream ss;
-    ss << "x: " << m_lights[0].position.x << ", z: " << m_lights[0].position.z;
-    std::string s(ss.str());
+    ss << "x: " << m_lights[0].position.x << ", y: " << m_lights[0].position.y << ", z: " << m_lights[0].position.z;
 
-    TextEngine::Write(s, 50, 50, 1.0f, glm::vec3(1, 1, 1));
+    TextEngine::Write(ss.str(), 50, 50, 1.0f, glm::vec3(1, 1, 1));
 
     // Prepare next
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
@@ -185,14 +183,23 @@ void View::_initObjects() {
     m_model_sphere = std::make_unique<Sphere>(0.1f);
     m_model_sphere->addRecipe(Cookable::CookType::Solid);
 
+    // Locomotive
+    m_objects.push_back({ _ObjecId::Locomotive,
+        glm::scale(
+            glm::translate(glm::mat4(1.0f),      // Identity
+                glm::vec3(-1.10f, -2.5f, 0.0f)), // Translation
+            glm::vec3(0.01f, 0.01f, 0.01f)       // Scale
+        )
+    });
+
     // Trees
     m_objects.push_back({_ObjecId::Tree,
         glm::scale(
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.57f, glm::vec3(0, 0, 1)),  // Rotation
-                glm::vec3(-1.4f, 0, +0.95f)),  // Translation
-            glm::vec3(0.01f, 0.01f, 0.01f)         // Scale
+                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
+                glm::vec3(+0.95f, 0, +0.95f)),  // Translation
+            glm::vec3(0.1f, 0.1f, 0.1f)         // Scale
         )
     });
 
@@ -200,13 +207,11 @@ void View::_initObjects() {
         glm::scale(
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.57f, glm::vec3(0, 1, 0)),  // Rotation
+                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
                 glm::vec3(-0.90f, 0, -0.95f)),  // Translation
             glm::vec3(0.1f, 0.1f, 0.1f)         // Scale
         )
     });
-
-    m_model = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
 
     // Character
     m_objects.push_back({_ObjecId::Character,
@@ -300,15 +305,13 @@ Filter::Filter() : framebuffer(Framebuffer::Unique) {
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
             .add_var("uniform", "sampler2D", "quadTexture")
-            .add_var("uniform", "highp int", "seed")
             .add_var("out", "vec4", "FragColor")
             .add_func("void", "main", "", R"_main_(
                 vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
                 vec2 tex_offset = 1.0 / tex_size;
                 vec2 tex_id     = TexCoords/tex_offset;
 
-                int pix_id = int(tex_id.x + tex_id.y * tex_size.x);
-                if((seed + pix_id) % 4 != 0) {
+                if(int(tex_id.x) % 3 != 0 || int(tex_id.y) % 2 != 0) {
                     FragColor = vec4(0, 0, 0, 1);
                     return;
                 }
@@ -329,8 +332,7 @@ void Filter::apply(Framebuffer& fIn) {
     framebuffer.bind();
     glDisable(GL_DEPTH_TEST);
     {
-        static int seed = 0; seed++;
-        shader.use().set("seed", seed / 10);
+        shader.use();
         framebuffer.texture().bind();
         surface.drawElements();
     }

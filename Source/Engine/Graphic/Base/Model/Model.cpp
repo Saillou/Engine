@@ -7,13 +7,13 @@ Model::Model(const std::string& path)
 
 void Model::draw(Shader& shader) {
     for (unsigned int i = 0; i < _meshes.size(); i++) {
-        _meshes[i].draw(shader);
+        _meshes[i]->draw(shader);
     }
 }
 
 void Model::drawElements() {
     for (unsigned int i = 0; i < _meshes.size(); i++) {
-        _meshes[i].drawElements();
+        _meshes[i]->drawElements();
     }
 }
 
@@ -34,9 +34,8 @@ void Model::_loadModel(const std::string& path) {
 }
 
 void Model::_processNode(aiNode* node, const aiScene* scene) {
-    _meshes.resize(node->mNumMeshes);
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-        _processMesh(scene->mMeshes[node->mMeshes[i]], scene, _meshes[i]);
+        _processMesh(scene->mMeshes[node->mMeshes[i]], scene);
     }
 
     // Recurse
@@ -45,7 +44,10 @@ void Model::_processNode(aiNode* node, const aiScene* scene) {
     }
 }
 
-void Model::_processMesh(aiMesh* inMesh, const aiScene* scene, Mesh& outMesh) {
+void Model::_processMesh(aiMesh* inMesh, const aiScene* scene) {
+    _meshes.push_back(std::make_unique<Mesh>());
+    Mesh& outMesh = *_meshes.back();
+
     // Mesh's vertices
     outMesh.vertices.resize(inMesh->mNumVertices);
 
@@ -89,6 +91,9 @@ void Model::_processMesh(aiMesh* inMesh, const aiScene* scene, Mesh& outMesh) {
 
         outMesh.textures.push_back(texture);
     }
+
+    // Mesh's relative position
+    inMesh->HasBones();
 
     outMesh._setup();
 }
