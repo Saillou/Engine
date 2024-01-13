@@ -27,9 +27,8 @@ class Mesh {
 
 public:
     Mesh();
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures);
-    void draw(Shader& shader);
-    void drawElements();
+    void draw(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
+    void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
 
 private:
     Array m_vao;

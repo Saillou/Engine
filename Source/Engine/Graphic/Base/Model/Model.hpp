@@ -17,9 +17,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <map>
 #include <vector>
-
+#include <stack>
 
 class Model
 {
@@ -27,15 +26,22 @@ public:
     Model(const std::string& path);
 
     void draw(Shader& shader);
-    void drawElements();
+    void drawElements(Shader& shader);
 
 private:
+    // Data tree for storing organized meshes
+    struct _Node {
+        glm::mat4 transform = glm::mat4(1.0f);
+        std::vector<std::unique_ptr<Mesh>> meshes = {};
+        std::vector<std::unique_ptr<_Node>> children = {};
+    };
+
     void _loadModel(const std::string& path);
-    void _processNode(aiNode* node,   const aiScene* scene);
-    void _processMesh(aiMesh* inMesh, const aiScene* scene);
+    void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<_Node>& parent);
+    void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
 
     static unsigned int _TextureFromRawData(const aiTexture* rawTextureData);
 
     std::vector<TextureData> _textures_loaded;
-    std::vector<std::unique_ptr<Mesh>> _meshes;
+    std::unique_ptr<_Node> _root;
 };

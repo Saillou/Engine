@@ -300,6 +300,7 @@ void Cookable::_set_shader_model(UShader& shader) {
             .add_var("uniform", "mat4", "Projection")
             .add_var("uniform", "mat4", "View")
             .add_var("uniform", "mat4", "Model")
+            .add_var("uniform", "mat4", "LocalModel")
 
             .add_var("out", "vec3", "Normal")
             .add_var("out", "vec3", "FragPos")
@@ -307,8 +308,8 @@ void Cookable::_set_shader_model(UShader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 TexCoords = aTexCoords;
-                FragPos   = vec3(Model * vec4(aPos, 1.0));
-                Normal    = mat3(transpose(inverse(Model))) * aNormal;  
+                FragPos   = vec3(Model * LocalModel * vec4(aPos, 1.0));
+                Normal    = mat3(transpose(inverse(Model * LocalModel))) * aNormal;  
     
                 gl_Position = Projection * View * vec4(FragPos, 1.0);
             )_main_")

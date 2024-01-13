@@ -7,19 +7,8 @@ Mesh::Mesh() :
 {
 }
 
-Mesh::Mesh(std::vector<Vertex> vertices_, std::vector<unsigned int> indices_, std::vector<TextureData> textures_) :
-    m_vbo(GL_ARRAY_BUFFER),
-    m_ebo(GL_ELEMENT_ARRAY_BUFFER),
-
-    vertices(vertices_),
-    indices(indices_),
-    textures(textures_)
-{
-    _setup();
-}
-
 // render the mesh
-void Mesh::draw(Shader& shader) {
+void Mesh::draw(Shader& shader, const glm::mat4& quat) {
     // Bind textures
     unsigned int diffuseNr = 1;
 
@@ -35,13 +24,15 @@ void Mesh::draw(Shader& shader) {
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
-    drawElements();
+    drawElements(shader, quat);
 
     // Unbind textures
     glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::drawElements() {
+void Mesh::drawElements(Shader& shader, const glm::mat4& quat) {
+    shader.use().set("LocalModel", quat);
+
     m_vao.bind();
     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
     m_vao.unbind();

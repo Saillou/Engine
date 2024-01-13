@@ -24,6 +24,6 @@ void ObjectModel::draw(const Camera& camera, const glm::mat4& model, const std::
     _object.draw(sh);
 }
 
-void ObjectModel::drawElements() {
-    _object.drawElements();
+void ObjectModel::drawElements(Shader& shader) {
+    _object.drawElements(shader);
 }

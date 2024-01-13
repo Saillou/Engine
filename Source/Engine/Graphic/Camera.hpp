@@ -14,7 +14,7 @@ struct Camera {
     glm::vec3 direction = {};
     float fieldOfView   = 30.0f;
     float near_plane    = 0.1f;
-    float far_plane     = 100.0f;
+    float far_plane     = 1000.0f;
 
     // Setters
     void lookAt(const glm::vec3& up);

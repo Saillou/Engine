@@ -37,26 +37,44 @@ View::View(int widthHint, int heightHint):
     m_timer.tic();
     {
         m_models[_ObjecId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive.glb");
-        //m_models[_ObjecId::Tree]       = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
-        //m_models[_ObjecId::Character]  = std::make_unique<ObjectModel>("Resources/objects/character/character.glb");
+        m_models[_ObjecId::Tree]       = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
+        m_models[_ObjecId::Character]  = std::make_unique<ObjectModel>("Resources/objects/character/character.glb");
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Populate objects
     m_timer.tic();
     {
-        //_initObjects();
+        _initObjects();
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Create particules
     m_timer.tic();
     {
-        //_initParticles();
+        _initParticles();
     }
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
 
+#ifdef DRAW_TEST
+void View::draw() {
+    BaseScene::_update_camera();
+    BaseScene::clear();
+
+    // Loco
+    m_models[_ObjecId::Locomotive]->draw(m_camera, m_objects[0].quat, m_lights);
+
+    // Some static texts
+    std::ostringstream ss;
+    ss << "x: " << m_camera.position.x << ", y: " << m_camera.position.y << ", z: " << m_camera.position.z;
+
+    TextEngine::Write(ss.str(), 50, 50, 1.0f, glm::vec3(1, 1, 1));
+}
+#endif
+
+#define DRAW_REAL
+#ifdef DRAW_REAL
 void View::draw() {
     float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
@@ -70,7 +88,7 @@ void View::draw() {
         // Draw objects
         for (const _Object& obj : m_objects) {
             sh.use().set("model", obj.quat);
-            m_models[obj.id]->drawElements();
+            m_models[obj.id]->drawElements(sh);
         }
 
         // Box
@@ -146,6 +164,7 @@ void View::draw() {
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 }
+#endif
 
 void View::_initObjects() {
     // Sky
@@ -186,9 +205,11 @@ void View::_initObjects() {
     // Locomotive
     m_objects.push_back({ _ObjecId::Locomotive,
         glm::scale(
-            glm::translate(glm::mat4(1.0f),      // Identity
-                glm::vec3(-1.10f, -2.5f, 0.0f)), // Translation
-            glm::vec3(0.01f, 0.01f, 0.01f)       // Scale
+            glm::translate(
+                glm::rotate(glm::mat4(1.0f),      // Identity
+                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
+                glm::vec3(1.0f, .20f, .0f)), // Translation
+            glm::vec3(1.0f, 1.0f, 1.0f)       // Scale
         )
     });
 
@@ -198,8 +219,8 @@ void View::_initObjects() {
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(+0.95f, 0, +0.95f)),  // Translation
-            glm::vec3(0.1f, 0.1f, 0.1f)         // Scale
+                glm::vec3(+0.95f, 0, 1.5f)),  // Translation
+            glm::vec3(2.0f, 2.0f, 2.0f)         // Scale
         )
     });
 
@@ -209,7 +230,7 @@ void View::_initObjects() {
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
                 glm::vec3(-0.90f, 0, -0.95f)),  // Translation
-            glm::vec3(0.1f, 0.1f, 0.1f)         // Scale
+            glm::vec3(2.0f, 2.0f, 2.0f)         // Scale
         )
     });
 
@@ -220,7 +241,7 @@ void View::_initObjects() {
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
                 glm::vec3(-1, 0, 1)),           // Translation
-            glm::vec3(0.01f, 0.01f, 0.01f)      // Scale
+            glm::vec3(1.0f, 1.0f, 1.0f)      // Scale
         )
     });
 }
