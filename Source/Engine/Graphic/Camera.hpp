@@ -20,4 +20,7 @@ struct Camera {
     void lookAt(const glm::vec3& up);
     void usePerspective(float aspect);
     void useOrtho(float aspect);
+
+    // Method
+    glm::vec3 ray(const glm::vec2& screenPos) const;
 };

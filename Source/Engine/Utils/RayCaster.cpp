@@ -8,34 +8,15 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return false;
 
-	// 4d Homogeneous Clip Coordinates
-	const vec4 vpMousePos(
-		2.0f*(mousePos - vec2(0.5f)),	// (x,y) in [-1,1]
-		-1.0f,								// z
-		+1.0f								// w
-	);
-
-	// 4d Eye (Camera) Coordinates un projected
-	const vec4 eyeCamera(
-		vec2(inverse(camera.projection) * vpMousePos), 
-		-1.0f, 
-		0.0f
-	);
-
-	// 4d World Coordinates
-	const vec3 rDir(normalize(inverse(camera.modelview) * eyeCamera));
-
 	// Intersect
-	const vec3& rPos = camera.position;
-
 	const auto& idx = shape.indices();
 	const auto& v   = shape.vertices();
 
 	for (size_t i = 0; i < idx.size(); i += 3) {
-		if(IntersectTriangle(rPos, rDir, std::array<vec3, 3> {
-			vec3(quat* vec4(v[3 * idx[i + 0] + 0], v[3 * idx[i + 0] + 1], v[3 * idx[i + 0] + 2], 1)),
-			vec3(quat* vec4(v[3 * idx[i + 1] + 0], v[3 * idx[i + 1] + 1], v[3 * idx[i + 1] + 2], 1)),
-			vec3(quat* vec4(v[3 * idx[i + 2] + 0], v[3 * idx[i + 2] + 1], v[3 * idx[i + 2] + 2], 1))
+		if(IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
+			vec3(quat * vec4(v[3 * idx[i + 0] + 0], v[3 * idx[i + 0] + 1], v[3 * idx[i + 0] + 2], +1.0f)),
+			vec3(quat * vec4(v[3 * idx[i + 1] + 0], v[3 * idx[i + 1] + 1], v[3 * idx[i + 1] + 2], +1.0f)),
+			vec3(quat * vec4(v[3 * idx[i + 2] + 0], v[3 * idx[i + 2] + 1], v[3 * idx[i + 2] + 2], +1.0f))
 		})) return true;
 	}
 
