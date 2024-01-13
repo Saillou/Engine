@@ -24,9 +24,6 @@ struct Box :
     void drawBatch(size_t amount, const Camera& camera);
     void drawElements(Shader& sh);
 
-    const glm::vec3& dims() const;
-
 private:
     void _setupMesh(const glm::vec3& dims);
-    glm::vec3 _dims;
 };

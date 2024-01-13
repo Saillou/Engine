@@ -11,8 +11,6 @@ Box::Box(const glm::vec3& dims)
 }
 
 void Box::_setupMesh(const glm::vec3& dims) {
-    _dims = dims;
-
     using v3 = glm::vec3;
     using v2 = glm::vec2;
 
@@ -127,8 +125,4 @@ void Box::drawElements(Shader& sh) {
     bind();
     glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
     unbind();
-}
-
-const glm::vec3& Box::dims() const {
-    return _dims;
 }

@@ -60,11 +60,11 @@ View::View(int widthHint, int heightHint):
         m_camera.position = glm::vec3(1e-1f, 0.0f, +10.0f);
 
         // Ground - Grid
-        m_model_box = std::make_unique<Box>(0.8f);
-        m_model_box->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1))
-                   ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
+        m_model_sphere = std::make_unique<Sphere>(1.0f);
+        m_model_sphere->addRecipe(Cookable::CookType::Shadow,   glm::vec4(0.5f, 0.5f, 0.5f, 1))
+                      ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
-        m_grid = std::make_unique<_Grid>(_Grid{ 0.5f, 15, {} });
+        m_grid = std::make_unique<_Grid>(_Grid{ 1.0f, 1, {} });
         m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
         std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
             {
@@ -97,14 +97,14 @@ void View::draw() {
     BaseScene::clear();
 
     for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-        bool highlight = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box, cell_quat);
+        bool highlight = RayCaster::Intersect(m_mousePos, m_camera, *m_model_sphere, cell_quat);
 
         const glm::vec4 border_color = highlight ?
             glm::vec4(0.2f, 1.0f, 1.0f, 1):
             glm::vec4(0.2f, 0.2f, 0.2f, 1);
 
-        m_model_box->get(Cookable::CookType::Geometry)->use().set("diffuse_color", border_color);
-        m_model_box->draw(m_camera, cell_quat, m_lights);
+        m_model_sphere->get(Cookable::CookType::Geometry)->use().set("diffuse_color", border_color);
+        m_model_sphere->draw(m_camera, cell_quat, m_lights);
     }
 
     // For debug
