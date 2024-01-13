@@ -44,9 +44,6 @@ ShadowRender::ShadowRender() :
             .str()
         ).
         link();
-
-    // Default
-    shader.set("LocalModel", glm::mat4(1.0f));
 }
 
 void ShadowRender::bindTexture(GLuint target) {

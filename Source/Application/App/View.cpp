@@ -94,13 +94,13 @@ void View::draw() {
         // Box
         {
             sh.use().set("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)));
-            m_model_box_shadow->drawElements();
+            m_model_box_shadow->drawElements(sh);
         }
 
         // Ground
         for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
             sh.use().set("model", cell_quat);
-            m_model_box->drawElements();
+            m_model_box->drawElements(sh);
         }
     });
 
