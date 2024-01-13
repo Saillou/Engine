@@ -32,6 +32,7 @@ struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
 
     void draw() override;
+    void mouse_on(int x, int y);
 
     bool enable_filter = false;
 
@@ -88,6 +89,7 @@ private:
     Filter m_filter;
     Framebuffer framebuffer_main;
 
+    glm::vec2 m_mousePos;
     ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

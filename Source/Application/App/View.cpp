@@ -5,6 +5,10 @@
 #include <random>
 
 #include <sstream>
+#include <Engine/Utils/RayCaster.hpp>
+
+#define DRAW_TEST
+//#define DRAW_REAL
 
 // Random engine
 static std::default_random_engine gen;
@@ -18,11 +22,12 @@ View::View(int widthHint, int heightHint):
     m_fireGrid({
         glm::vec3(0, 0, 0),
         { 
-            size_t(2500),
+            size_t(5000),
             std::make_unique<Box>(glm::vec3(0.010f))
         }
     }),
-    framebuffer_main(Framebuffer::Multisample, m_width, m_height)
+    framebuffer_main(Framebuffer::Multisample, m_width, m_height),
+    m_mousePos(0.0f, 0.0f)
 {
     // Camera
     m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
@@ -36,23 +41,52 @@ View::View(int widthHint, int heightHint):
     // Load models
     m_timer.tic();
     {
+#ifdef DRAW_REAL
         m_models[_ObjecId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive.glb");
         m_models[_ObjecId::Tree]       = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
         m_models[_ObjecId::Character]  = std::make_unique<ObjectModel>("Resources/objects/character/character.glb");
+#endif
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Populate objects
     m_timer.tic();
     {
+#ifdef DRAW_REAL
         _initObjects();
+#endif
+
+#ifdef DRAW_TEST
+        m_camera.position = glm::vec3(1e-1f, 0.0f, +10.0f);
+
+        // Ground - Grid
+        m_model_box = std::make_unique<Box>(0.8f);
+        m_model_box->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1))
+                   ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
+
+        m_grid = std::make_unique<_Grid>(_Grid{ 0.5f, 15, {} });
+        m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
+        std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
+            {
+                const glm::vec2 cell_pos = glm::vec2(id % N - N / 2, id / N - N / 2);
+                const glm::vec3 T_pos    = S * glm::vec3(cell_pos, 0);
+                const glm::vec3 T_scale  = S * glm::vec3(1);
+
+                id++;
+                return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
+            }
+        );
+#endif
+
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Create particules
     m_timer.tic();
     {
+#ifdef DRAW_REAL
         _initParticles();
+#endif
     }
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
@@ -62,18 +96,37 @@ void View::draw() {
     BaseScene::_update_camera();
     BaseScene::clear();
 
-    // Loco
-    m_models[_ObjecId::Locomotive]->draw(m_camera, m_objects[0].quat, m_lights);
+    for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
+        bool highlight = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box, cell_quat);
 
-    // Some static texts
+        const glm::vec4 border_color = highlight ?
+            glm::vec4(0.2f, 1.0f, 1.0f, 1):
+            glm::vec4(0.2f, 0.2f, 0.2f, 1);
+
+        m_model_box->get(Cookable::CookType::Geometry)->use().set("diffuse_color", border_color);
+        m_model_box->draw(m_camera, cell_quat, m_lights);
+    }
+
+    // For debug
     std::ostringstream ss;
-    ss << "x: " << m_camera.position.x << ", y: " << m_camera.position.y << ", z: " << m_camera.position.z;
+    ss  << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f 
+        << ", y: "    << int(m_camera.position.y * 10) / 10.0f 
+        << ", z: "    << int(m_camera.position.z * 10) / 10.0f;
+    TextEngine::Write(ss.str(), 50.0f, m_height - 100.0f, 1.0f, glm::vec3(1, 1, 1));
 
-    TextEngine::Write(ss.str(), 50, 50, 1.0f, glm::vec3(1, 1, 1));
+    ss = {};
+    ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
+       << ", y: "      << int(m_height * m_mousePos.y * 10) / 10.0f;
+    TextEngine::Write(ss.str(), 50.0f, m_height - 50.0f, 1.0f, glm::vec3(1, 1, 1));
+}
+
+void View::mouse_on(int x, int y) {
+    m_mousePos.x = (float)x / m_width;
+    m_mousePos.y = (float)y / m_height;
 }
 #endif
 
-#define DRAW_REAL
+
 #ifdef DRAW_REAL
 void View::draw() {
     float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
@@ -189,14 +242,15 @@ void View::_initObjects() {
     m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 15, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
     std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
-    { 
-        const glm::vec2 cell_pos = glm::vec2(id%N - N/2, id/N - N/2);
-        const glm::vec3 T_pos    = S * glm::vec3(cell_pos, -0.5f);
-        const glm::vec3 T_scale  = S * glm::vec3(1);
+        { 
+            const glm::vec2 cell_pos = glm::vec2(id%N - N/2, id/N - N/2);
+            const glm::vec3 T_pos    = S * glm::vec3(cell_pos, -0.5f);
+            const glm::vec3 T_scale  = S * glm::vec3(1);
 
-        id++;
-        return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
-    });
+            id++;
+            return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
+        }
+    );
 
     // Lanterns
     m_model_sphere = std::make_unique<Sphere>(0.1f);
@@ -208,8 +262,8 @@ void View::_initObjects() {
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),      // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(1.0f, .20f, .0f)), // Translation
-            glm::vec3(1.0f, 1.0f, 1.0f)       // Scale
+                glm::vec3(1.0f, .30f, .0f)), // Translation
+            glm::vec3(2.0f)         // Scale
         )
     });
 
@@ -219,8 +273,8 @@ void View::_initObjects() {
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(+0.95f, 0, 1.5f)),  // Translation
-            glm::vec3(2.0f, 2.0f, 2.0f)         // Scale
+                glm::vec3(1.5f, 0.10f, 0.5f)),  // Translation
+            glm::vec3(2.0f)         // Scale
         )
     });
 
@@ -229,19 +283,17 @@ void View::_initObjects() {
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(-0.90f, 0, -0.95f)),  // Translation
-            glm::vec3(2.0f, 2.0f, 2.0f)         // Scale
+                glm::vec3(-0.90f, 0.10f, -0.95f)),  // Translation
+            glm::vec3(2.0f)         // Scale
         )
     });
 
     // Character
     m_objects.push_back({_ObjecId::Character,
-        glm::scale(
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(-1, 0, 1)),           // Translation
-            glm::vec3(1.0f, 1.0f, 1.0f)      // Scale
+                glm::vec3(-1, 0, 1)           // Translation
         )
     });
 }
@@ -262,12 +314,13 @@ void View::_initParticles() {
     );
 
     std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable -> glm::vec4
-    {
-        particules_id++;
-        float ratio = particules_id / float(m_fireGrid.particles.amount);
+        {
+            particules_id++;
+            float ratio = particules_id / float(m_fireGrid.particles.amount);
 
-        return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    });
+            return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        }
+    );
 
     _setParticles();
 
@@ -288,7 +341,7 @@ void View::_setParticles(float dt) {
             int x = particules_id % SIZE - SIZE / 2;
             int y = particules_id / SIZE - SIZE / 2;
 
-            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 0.0f, 0.5f + y * 0.002f));
+            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 1.5f, 0.25f + y * 0.002f));
             speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
         }
         else {
@@ -301,7 +354,6 @@ void View::_setParticles(float dt) {
         m_fireGrid.particles.colors,
         m_fireGrid.particles.models
     );
-
 }
 
 void View::_onResize() {

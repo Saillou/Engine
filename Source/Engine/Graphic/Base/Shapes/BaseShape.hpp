@@ -25,6 +25,9 @@ public:
 	int normalsLength() const;
 	int uvsLength() const;
 
+	const std::vector<unsigned int>& indices() const;
+	const std::vector<float>& vertices() const;
+
 protected:
 	virtual void _bindArray();
 
@@ -36,9 +39,7 @@ protected:
 	int _addPoint		(	const glm::vec3& vec, const glm::vec3& norm);
 	int _addPoint		(	const glm::vec3& vec, const glm::vec3& norm, const glm::vec2& uv);
 
-	void _addAsLine		(	unsigned int i0, unsigned int i1);
 	void _addAsTriangle	(	unsigned int i0, unsigned int i1, unsigned int i2);
-	void _addAsQuad		(	unsigned int i0, unsigned int i1, unsigned int i2, unsigned int i3);
 
 	void _createQuad	(	const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, const glm::vec3& P3);
 	void _createQuad	(	const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, const glm::vec3& P3, const glm::vec3& n);
