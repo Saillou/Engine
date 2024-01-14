@@ -4,36 +4,41 @@
 
 #include <Engine/Graphic/Base/Model/ObjectModel.hpp>
 
-enum class ModelId
+namespace Thomas
 {
-    None = 0,
-    Locomotive,
-    Wagon
-};
 
-struct Transform
-{
-    glm::vec3   position;
-    glm::vec3   scale;
-    glm::vec3   rotationVector;
-    float       rotation;
-};
-
-struct GameModel
-{
-    GameModel()
-        : modelId(ModelId::None)
-        , transform({})
-    {}
-
-    GameModel(const GameModel& other)
+    enum class ModelId
     {
-        modelId = other.modelId;
-        transform = other.transform;
-    }
+        None = 0,
+        Locomotive,
+        Wagon
+    };
 
-    ModelId     modelId;
-    Transform   transform; // local transform of the Model
+    struct Transform
+    {
+        glm::vec3   position;
+        glm::vec3   scale;
+        glm::vec3   rotationVector;
+        float       rotation;
+    };
 
-    // todo: add quat
-};
+    struct GameModel
+    {
+        GameModel()
+            : modelId(ModelId::None)
+            , transform({})
+        {}
+
+        GameModel(const GameModel& other)
+        {
+            modelId = other.modelId;
+            transform = other.transform;
+        }
+
+        ModelId     modelId;
+        Transform   transform; // local transform of the Model
+
+        // todo: add quat
+    };
+
+} // namespace Thomas

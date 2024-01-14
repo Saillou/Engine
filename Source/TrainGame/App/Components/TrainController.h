@@ -5,25 +5,30 @@
 #include "Component.hpp"
 #include "TrainGame/App/Objects/GameModel.hpp" // for Transform
 
-class TrainController : public Component
+namespace Thomas
 {
-public:
-    TrainController(Transform* transform);
-    ~TrainController();
 
-    void update(float dt) override;
+    class TrainController : public Component
+    {
+    public:
+        TrainController(Transform* transform);
+        ~TrainController();
 
-private:
-    bool goToPoint(const glm::vec3& pos, float dt);
+        void update(float dt) override;
 
-    // Misha: is there a better way of doing it ?
-    Transform* m_transform = nullptr;
-    float m_speed;
-    float m_rotationSpeed;
-    float m_minDistance;
+    private:
+        bool goToPoint(const glm::vec3& pos, float dt);
 
-    glm::vec3 m_forwardVector;
+        // Misha: is there a better way of doing it ?
+        Transform* m_transform = nullptr;
+        float m_speed;
+        float m_rotationSpeed;
+        float m_minDistance;
 
-    std::list<glm::vec3>::iterator  m_currentPoint;
-    std::list<glm::vec3>            m_points;
-};
+        glm::vec3 m_forwardVector;
+
+        std::list<glm::vec3>::iterator  m_currentPoint;
+        std::list<glm::vec3>            m_points;
+    };
+
+} // namespace Thomas

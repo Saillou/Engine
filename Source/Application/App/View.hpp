@@ -23,9 +23,6 @@ struct View : public BaseScene {
 
     bool enable_filter = false;
 
-    void loadModels(size_t size);
-    void draw(ModelId id, const Transform& transform);
-
 private:
     enum class _ObjecId {
         Character, Tree, Locomotive
@@ -51,8 +48,6 @@ private:
 
     // Object models (vertices, textures..)
     std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models;
-    std::unordered_map<ModelId, std::unique_ptr<ObjectModel>> m_gameModels;
-    std::unordered_map<ModelId, std::vector<Transform>> m_modelsToDraw;
 
     std::unique_ptr<Sphere> m_model_sphere;
     std::unique_ptr<Box>    m_model_box;
@@ -60,7 +55,6 @@ private:
 
     // Scene objects
     std::vector<_Object>    m_objects;
-    std::vector<std::pair<ModelId, glm::vec3>> m_gameObjects;
     std::unique_ptr<_Grid>  m_grid;
     std::unique_ptr<Skybox> m_skybox;
 

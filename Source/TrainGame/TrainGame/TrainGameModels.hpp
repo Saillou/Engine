@@ -10,18 +10,22 @@
 *  but for now I will keep it like this and I will see where it brings me...
 */
 
-class GameModelTable
+namespace Thomas
 {
-public:
-    static GameModelTable& get();
 
-    static const GameModel& getModelById(ModelId id);
-    static bool addGameModel(ModelId id, const glm::vec3& pos, const glm::vec3& scale, const glm::vec3& rotVec, float rotation);
+    class GameModelTable
+    {
+    public:
+        static GameModelTable& get();
 
-private:
-    GameModelTable();
-    GameModelTable(const GameModelTable& other) = delete;
-    GameModelTable(const GameModelTable&& other) = delete;
+        static const GameModel& getModelById(ModelId id);
+        static bool addGameModel(ModelId id, const glm::vec3& pos, const glm::vec3& scale, const glm::vec3& rotVec, float rotation);
 
-    std::unordered_map<ModelId, GameModel> m_data;
-};
+    private:
+        GameModelTable();
+        GameModelTable(const GameModelTable& other) = delete;
+        GameModelTable(const GameModelTable&& other) = delete;
+
+        std::unordered_map<ModelId, GameModel> m_data;
+    };
+} // namespace Thomas

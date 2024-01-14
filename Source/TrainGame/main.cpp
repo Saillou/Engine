@@ -12,7 +12,7 @@ void initGameModels();
 // -- Entry point --
 int main() {
     // Setup
-    Game game;
+    Thomas::Game game;
     game.createScene();
     //Window window(1600, 900, "Sample scene");
     //Controller controller(window.scene(std::make_shared<View>(window.width(), window.height())));
@@ -53,6 +53,6 @@ void initGameModels()
 {
     // Misha: is it really a good way of doing it ?
     // TODO: brainstorm about it
-    GameModelTable::addGameModel(ModelId::Locomotive,   { -0.75f, -1.68f, -0.135f }, { 0.01f, 0.01f, 0.01f }, { 0,0,1 }, -1.5f);
-    GameModelTable::addGameModel(ModelId::Wagon,        { -1.75f, -0.175f, -0.155f }, { 0.01f, 0.01f, 0.01f }, { 1,0,0 }, 0.f);
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::Locomotive,   { -0.75f, -1.68f, -0.135f }, { 0.01f, 0.01f, 0.01f }, { 0,0,1 }, -1.5f);
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::Wagon,        { -1.75f, -0.175f, -0.155f }, { 0.01f, 0.01f, 0.01f }, { 1,0,0 }, 0.f);
 }
