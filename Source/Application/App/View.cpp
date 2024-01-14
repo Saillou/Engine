@@ -21,7 +21,7 @@ View::View(int widthHint, int heightHint):
     m_fireGrid({
         glm::vec3(0, 0, 0),
         { 
-            size_t(5000),
+            size_t(2500),
             std::make_unique<Box>(glm::vec3(0.010f))
         }
     }),
@@ -50,6 +50,7 @@ View::View(int widthHint, int heightHint):
     m_timer.tic();
     {
         _initObjects();
+        _initFilters();
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -67,7 +68,10 @@ void View::mouse_on(int x, int y) {
 }
 
 void View::draw() {
-    float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+    static float dt_since_last_draw = 0.0f;
+    static float dt_draw = 0.0f;
+
+    dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 
     BaseScene::_update_camera();
@@ -75,7 +79,6 @@ void View::draw() {
 
     // Define box position
     const auto box_quat = glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f));
-
 
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
@@ -105,7 +108,6 @@ void View::draw() {
     framebuffer_main.bind();
     framebuffer_main.clear();
     {
-
         // Lights
         for (auto& light : m_lights) {
             m_model_sphere->get(Cookable::CookType::Solid)->use().set("diffuse_color", light.color);
@@ -117,7 +119,7 @@ void View::draw() {
             m_models[obj.id]->draw(m_camera, obj.quat, m_lights);
 
             if (RayCaster::Intersect(m_mousePos, m_camera, *m_models[obj.id], obj.quat)) {
-                m_models[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 1.0f, 1.0f, 1));
+                m_models[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
                 m_models[obj.id]->drawGeometry(m_camera, obj.quat);
             }
         }
@@ -162,20 +164,26 @@ void View::draw() {
         BaseScene::drawFrame(framebuffer_main);
     }
 
-    // For debug
-    std::ostringstream ss;
-    ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
-        << ", y: " << int(m_camera.position.y * 10) / 10.0f
-        << ", z: " << int(m_camera.position.z * 10) / 10.0f;
-    TextEngine::Write(ss.str(), 50.0f, m_height - 100.0f, 1.0f, glm::vec3(1, 1, 1));
+    // Debug texts
+    {
+        std::ostringstream ss;
+        ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
+            << ", y: " << int(m_camera.position.y * 10) / 10.0f
+            << ", z: " << int(m_camera.position.z * 10) / 10.0f;
+        TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
 
-    ss = {};
-    ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
-        << ", y: " << int(m_height * m_mousePos.y * 10) / 10.0f;
-    TextEngine::Write(ss.str(), 50.0f, m_height - 50.0f, 1.0f, glm::vec3(1, 1, 1));
+        ss = {};
+        ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
+            << ", y: " << int(m_height * m_mousePos.y * 10) / 10.0f;
+        TextEngine::Write(ss.str(), 20.0f, m_height - 60.0f, 0.5f, glm::vec3(1, 1, 1));
+
+        ss = {};
+        ss << "draw: " << int(dt_draw * 1000 * 1000) / 1000 << "ms";
+        TextEngine::Write(ss.str(), 20.0f, m_height - 90.0f, 0.5f, glm::vec3(1, 1, 1));
+    }
 
     // Prepare next
-    float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+    dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 }
 
@@ -289,43 +297,8 @@ void View::_initParticles() {
     m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
 }
 
-void View::_setParticles(float dt) {
-    // Move
-    for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
-        glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
-        glm::mat4& model = m_fireGrid.particles.models[particules_id];
-
-        const bool hasEnded = model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f; // also true for first draw
-
-        if (hasEnded) {
-            const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
-            int x = particules_id % SIZE - SIZE / 2;
-            int y = particules_id / SIZE - SIZE / 2;
-
-            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 1.5f, 0.25f + y * 0.002f));
-            speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
-        }
-        else {
-            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * glm::vec3(speed)), glm::vec3(speed.a));
-        }
-    }
-
-    // Update
-    m_fireGrid.particles.object->updateBatch(
-        m_fireGrid.particles.colors,
-        m_fireGrid.particles.models
-    );
-}
-
-void View::_onResize() {
-    framebuffer_main.resize(m_width, m_height);
-    m_filter.resize(m_width, m_height);
-}
-
-
-// Filter struct
-Filter::Filter() : framebuffer(Framebuffer::Unique) {
-    shader.
+void View::_initFilters() {
+    m_filter.shader.
         attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("out", "vec2", "TexCoords")
@@ -358,22 +331,37 @@ Filter::Filter() : framebuffer(Framebuffer::Unique) {
         .link();
 }
 
-void Filter::apply(Framebuffer& fIn) {
-    // Multisample -> Monosample
-    Framebuffer::Blit(fIn, framebuffer);
 
-    // Draw
-    framebuffer.bind();
-    glDisable(GL_DEPTH_TEST);
-    {
-        shader.use();
-        framebuffer.texture().bind();
-        surface.drawElements();
+void View::_setParticles(float dt) {
+    // Move
+    for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
+        glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
+        glm::mat4& model = m_fireGrid.particles.models[particules_id];
+
+        const bool hasEnded = model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f; // also true for first draw
+
+        if (hasEnded) {
+            const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
+            int x = particules_id % SIZE - SIZE / 2;
+            int y = particules_id / SIZE - SIZE / 2;
+
+            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 1.5f, 0.25f + y * 0.002f));
+            speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
+        }
+        else {
+            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * glm::vec3(speed)), glm::vec3(speed.a));
+        }
     }
-    glEnable(GL_DEPTH_TEST);
-    framebuffer.unbind();
+
+    // Update
+    m_fireGrid.particles.object->updateBatch(
+        m_fireGrid.particles.colors,
+        m_fireGrid.particles.models
+    );
 }
 
-void Filter::resize(int width, int height) {
-    framebuffer.resize(width, height);
+
+void View::_onResize() {
+    framebuffer_main.resize(m_width, m_height);
+    m_filter.resize(m_width, m_height);
 }

@@ -12,10 +12,6 @@ public:
 	Shader();
 	virtual ~Shader();
 
-	Shader& operator=(const Shader&)	= delete;
-	Shader(const Shader&)				= delete;
-	Shader(Shader&&)					= delete;
-
 	// First, use on of these:
 	Shader& attachSource(const unsigned int shader_type, const std::string& shaderCode);
 	Shader& attachFile(const unsigned int shader_type, const std::string& shaderPath);

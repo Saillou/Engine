@@ -6,27 +6,14 @@
 
 #include <Engine/Utils/Timer.hpp>
 #include <Engine/Utils/Objects/ShadowRender.hpp>
+#include <Engine/Utils/Filter/BaseFilter.hpp>
 
 #include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
-#include <Engine/Graphic/Base/Shapes/Quad.hpp>
 #include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/ObjectModel.hpp>
-
-#include <Engine/Graphic/Utils/Shader.hpp>
-#include <Engine/Graphic/Utils/Framebuffer.hpp>
-
-struct Filter {
-    Quad surface;
-    Shader shader;
-    Framebuffer framebuffer;
-
-    Filter();
-    void apply(Framebuffer& fIn);
-    void resize(int width, int height);
-};
 
 struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
@@ -54,6 +41,7 @@ private:
 
     void _initObjects();
     void _initParticles();
+    void _initFilters();
 
     void _setParticles(float dt = 0.0f);
     void _onResize() override;
@@ -86,7 +74,7 @@ private:
     } m_fireGrid;
 
     // Other members
-    Filter m_filter;
+    BaseFilter m_filter;
     Framebuffer framebuffer_main;
 
     glm::vec2 m_mousePos;
