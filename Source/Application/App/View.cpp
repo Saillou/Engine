@@ -7,8 +7,7 @@
 #include <sstream>
 #include <Engine/Utils/RayCaster.hpp>
 
-#define DRAW_TEST
-//#define DRAW_REAL
+#define DRAW_REAL
 
 // Random engine
 static std::default_random_engine gen;
@@ -41,99 +40,42 @@ View::View(int widthHint, int heightHint):
     // Load models
     m_timer.tic();
     {
-#ifdef DRAW_REAL
         m_models[_ObjecId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive.glb");
         m_models[_ObjecId::Tree]       = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
         m_models[_ObjecId::Character]  = std::make_unique<ObjectModel>("Resources/objects/character/character.glb");
-#endif
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Populate objects
     m_timer.tic();
     {
-#ifdef DRAW_REAL
         _initObjects();
-#endif
-
-#ifdef DRAW_TEST
-        m_camera.position = glm::vec3(1e-1f, 0.0f, +10.0f);
-
-        // Ground - Grid
-        m_model_sphere = std::make_unique<Sphere>(1.0f);
-        m_model_sphere->addRecipe(Cookable::CookType::Shadow,   glm::vec4(0.5f, 0.5f, 0.5f, 1))
-                      ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
-
-        m_grid = std::make_unique<_Grid>(_Grid{ 1.0f, 1, {} });
-        m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
-        std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
-            {
-                const glm::vec2 cell_pos = glm::vec2(id % N - N / 2, id / N - N / 2);
-                const glm::vec3 T_pos    = S * glm::vec3(cell_pos, 0);
-                const glm::vec3 T_scale  = S * glm::vec3(1);
-
-                id++;
-                return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
-            }
-        );
-#endif
-
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Create particules
     m_timer.tic();
     {
-#ifdef DRAW_REAL
         _initParticles();
-#endif
     }
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-}
-
-#ifdef DRAW_TEST
-void View::draw() {
-    BaseScene::_update_camera();
-    BaseScene::clear();
-
-    for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-        bool highlight = RayCaster::Intersect(m_mousePos, m_camera, *m_model_sphere, cell_quat);
-
-        const glm::vec4 border_color = highlight ?
-            glm::vec4(0.2f, 1.0f, 1.0f, 1):
-            glm::vec4(0.2f, 0.2f, 0.2f, 1);
-
-        m_model_sphere->get(Cookable::CookType::Geometry)->use().set("diffuse_color", border_color);
-        m_model_sphere->draw(m_camera, cell_quat, m_lights);
-    }
-
-    // For debug
-    std::ostringstream ss;
-    ss  << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f 
-        << ", y: "    << int(m_camera.position.y * 10) / 10.0f 
-        << ", z: "    << int(m_camera.position.z * 10) / 10.0f;
-    TextEngine::Write(ss.str(), 50.0f, m_height - 100.0f, 1.0f, glm::vec3(1, 1, 1));
-
-    ss = {};
-    ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
-       << ", y: "      << int(m_height * m_mousePos.y * 10) / 10.0f;
-    TextEngine::Write(ss.str(), 50.0f, m_height - 50.0f, 1.0f, glm::vec3(1, 1, 1));
 }
 
 void View::mouse_on(int x, int y) {
     m_mousePos.x = (float)x / m_width;
     m_mousePos.y = (float)y / m_height;
 }
-#endif
 
-
-#ifdef DRAW_REAL
 void View::draw() {
     float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 
     BaseScene::_update_camera();
     _setParticles(dt_since_last_draw);
+
+    // Define box position
+    const auto box_quat = glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f));
+
 
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
@@ -146,7 +88,7 @@ void View::draw() {
 
         // Box
         {
-            sh.use().set("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)));
+            sh.use().set("model", box_quat);
             m_model_box_shadow->drawElements(sh);
         }
 
@@ -156,6 +98,7 @@ void View::draw() {
             m_model_box->drawElements(sh);
         }
     });
+
 
     // Main scene
     BaseScene::Viewport(width(), height());
@@ -172,11 +115,23 @@ void View::draw() {
         // Draw objects
         for (const _Object& obj : m_objects) {
             m_models[obj.id]->draw(m_camera, obj.quat, m_lights);
+
+            if (RayCaster::Intersect(m_mousePos, m_camera, *m_models[obj.id], obj.quat)) {
+                m_models[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 1.0f, 1.0f, 1));
+                m_models[obj.id]->drawGeometry(m_camera, obj.quat);
+            }
         }
 
         // Draw box
         {
-            m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
+            bool highlight = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box_shadow, box_quat);
+
+            const glm::vec4 border_color = highlight ?
+                glm::vec4(0.2f, 1.0f, 1.0f, 1) :
+                glm::vec4(0.2f, 0.2f, 0.2f, 1);
+
+            m_model_box_shadow->get(Cookable::CookType::Geometry)->use().set("diffuse_color", border_color);
+            m_model_box_shadow->draw(m_camera, box_quat, m_lights);
         }
 
         // Particles
@@ -207,17 +162,22 @@ void View::draw() {
         BaseScene::drawFrame(framebuffer_main);
     }
 
-    // Some static texts
+    // For debug
     std::ostringstream ss;
-    ss << "x: " << m_lights[0].position.x << ", y: " << m_lights[0].position.y << ", z: " << m_lights[0].position.z;
+    ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
+        << ", y: " << int(m_camera.position.y * 10) / 10.0f
+        << ", z: " << int(m_camera.position.z * 10) / 10.0f;
+    TextEngine::Write(ss.str(), 50.0f, m_height - 100.0f, 1.0f, glm::vec3(1, 1, 1));
 
-    TextEngine::Write(ss.str(), 50, 50, 1.0f, glm::vec3(1, 1, 1));
+    ss = {};
+    ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
+        << ", y: " << int(m_height * m_mousePos.y * 10) / 10.0f;
+    TextEngine::Write(ss.str(), 50.0f, m_height - 50.0f, 1.0f, glm::vec3(1, 1, 1));
 
     // Prepare next
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 }
-#endif
 
 void View::_initObjects() {
     // Sky
@@ -232,7 +192,8 @@ void View::_initObjects() {
 
     // Box - Test shadow
     m_model_box_shadow = std::make_unique<Box>(0.3f);
-    m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
+    m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1.0f, 0.7f, 0.3f, 1.0f))
+                      ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
     // Ground - Grid
     m_model_box = std::make_unique<Box>(1.0f);

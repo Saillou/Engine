@@ -25,7 +25,7 @@ void Model::draw(Shader& shader) {
     if (!_root)
         return;
 
-    std::stack<std::unique_ptr<_Node>*> st;
+    std::stack<std::unique_ptr<Node>*> st;
     st.push(&_root);
 
     while (!st.empty()) {
@@ -49,7 +49,7 @@ void Model::drawElements(Shader& shader) {
     if (!_root)
         return;
 
-    std::stack<std::unique_ptr<_Node>*> st;
+    std::stack<std::unique_ptr<Node>*> st;
     st.push(&_root);
 
     while (!st.empty()) {
@@ -69,6 +69,10 @@ void Model::drawElements(Shader& shader) {
     }
 }
 
+const std::unique_ptr<Model::Node>& Model::root() const {
+    return _root;
+}
+
 void Model::_loadModel(const std::string& path) {
     // read file via ASSIMP
     Assimp::Importer importer;
@@ -82,11 +86,11 @@ void Model::_loadModel(const std::string& path) {
     }
 
     // Ok, create and process from root (recursive)
-    _root = std::make_unique<_Node>();
+    _root = std::make_unique<Node>();
     _processNode(scene->mRootNode, scene, _root);
 }
 
-void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::unique_ptr<_Node>& currentNode) {
+void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::unique_ptr<Node>& currentNode) {
     // Relative position
     currentNode->transform = aiMatrix4x4ToGlm(inNnode->mTransformation);
 
@@ -99,7 +103,7 @@ void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::uniqu
     // Continue recursively
     for (unsigned int i = 0; i < inNnode->mNumChildren; i++) {
         // Create and process next child
-        currentNode->children.push_back(std::make_unique<_Node>());
+        currentNode->children.push_back(std::make_unique<Node>());
         _processNode(inNnode->mChildren[i], scene, currentNode->children[i]);
     }
 }
@@ -108,22 +112,22 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
     Mesh& outMesh = *pOutMesh;
 
     // Mesh's vertices
-    outMesh.vertices.resize(inMesh->mNumVertices);
+    outMesh.m_vertices.resize(inMesh->mNumVertices);
 
     for (unsigned int i = 0; i < inMesh->mNumVertices; i++) {
-        outMesh.vertices[i].Position = {
+        outMesh.m_vertices[i].Position = {
             inMesh->mVertices[i].x, inMesh->mVertices[i].y, inMesh->mVertices[i].z
         };
 
         // normals
         if (inMesh->HasNormals()) {
-            outMesh.vertices[i].Normal = {
+            outMesh.m_vertices[i].Normal = {
                 inMesh->mNormals[i].x, inMesh->mNormals[i].y, inMesh->mNormals[i].z
             };
         }
         // texture coordinates (contains up to 8 different texture coordinates. We'll only take the 0th.)
         if (inMesh->mTextureCoords[0] != nullptr) {
-            outMesh.vertices[i].TexCoords = {
+            outMesh.m_vertices[i].TexCoords = {
                 inMesh->mTextureCoords[0][i].x, inMesh->mTextureCoords[0][i].y
             };
         }
@@ -134,7 +138,7 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
         const aiFace& face = inMesh->mFaces[i];
 
         for (unsigned int j = 0; j < face.mNumIndices; j++) {
-            outMesh.indices.push_back(face.mIndices[j]);
+            outMesh.m_indices.push_back(face.mIndices[j]);
         }
     }
 
@@ -148,7 +152,7 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
         texture.id = _TextureFromRawData(rawTextureData);
         texture.type = "texture_diffuse";
 
-        outMesh.textures.push_back(texture);
+        outMesh.m_textures.push_back(texture);
     }
 
     outMesh._setup();

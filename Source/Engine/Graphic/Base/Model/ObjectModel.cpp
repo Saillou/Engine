@@ -1,9 +1,10 @@
 #include "ObjectModel.hpp"
 
 ObjectModel::ObjectModel(const std::string& path) :
-    _object(path)
+    _model(path)
 {
     Cookable::addRecipe(Cookable::CookType::Model);
+    Cookable::addRecipe(Cookable::CookType::ModelGeometry);
 }
 
 void ObjectModel::draw(const Camera& camera, const glm::mat4& model, const std::vector<Light>& lights) {
@@ -21,9 +22,23 @@ void ObjectModel::draw(const Camera& camera, const glm::mat4& model, const std::
             .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
     }
 
-    _object.draw(sh);
+    _model.draw(sh);
+}
+
+void ObjectModel::drawGeometry(const Camera& camera, const glm::mat4& model) {
+    auto& sh = *Cookable::get(Cookable::CookType::ModelGeometry);
+    sh.use()
+        .set("Projection", camera.projection)
+        .set("View", camera.modelview)
+        .set("Model", model);
+
+    _model.draw(sh);
 }
 
 void ObjectModel::drawElements(Shader& shader) {
-    _object.drawElements(shader);
+    _model.drawElements(shader);
+}
+
+const Model& ObjectModel::model() const {
+    return _model;
 }
