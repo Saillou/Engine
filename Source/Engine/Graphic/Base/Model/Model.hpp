@@ -42,8 +42,6 @@ private:
     void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
     void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
 
-    static unsigned int _TextureFromRawData(const aiTexture* rawTextureData);
-
     std::vector<TextureData> _textures_loaded;
     std::unique_ptr<Node> _root;
 };

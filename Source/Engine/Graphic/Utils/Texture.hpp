@@ -2,6 +2,7 @@
 
 #include <string>
 #include <glad/glad.h>
+#include <assimp/scene.h>
 
 class Texture {
 public:
@@ -9,6 +10,7 @@ public:
 	Texture(const std::string& image_path);
 	Texture(unsigned int width, unsigned int height, GLuint texture_type = GL_TEXTURE_2D);
 	Texture(GLenum texture_type, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
+	Texture(const aiTexture* rawTextureData);
 
 	virtual ~Texture();
 

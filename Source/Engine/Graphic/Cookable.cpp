@@ -324,7 +324,7 @@ void Cookable::_set_shader_model(UShader& shader) {
             .add_var("in", "vec3", "FragPos")
             .add_var("in", "vec2", "TexCoords")
 
-            .add_var("uniform", "sampler2D", "texture_diffuse1")
+            .add_var("uniform", "sampler2D", "texture_diffuse")
             .add_var("uniform", "vec3", "CameraPos")
 
             .add_var("uniform", "highp int", "LightNumber")
@@ -365,7 +365,7 @@ void Cookable::_set_shader_model(UShader& shader) {
             )_light_")
 
             .add_func("void", "main", "", R"_main_(
-                vec4 diffuse_color = texture(texture_diffuse1, TexCoords);
+                vec4 diffuse_color = texture(texture_diffuse, TexCoords);
 
                 // Shall use light ?
                 if(LightNumber == 0) {

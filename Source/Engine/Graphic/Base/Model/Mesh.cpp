@@ -8,26 +8,16 @@ Mesh::Mesh() :
 }
 
 // render the mesh
-void Mesh::draw(Shader& shader, const glm::mat4& quat) {
+void Mesh::bindTextures(Shader& shader) {
     // Bind textures
-    unsigned int diffuseNr = 1;
-
     for (unsigned int i = 0; i < m_textures.size(); i++) {
-        glActiveTexture(GL_TEXTURE0 + i);
+        if(!shader.has(m_textures[i].type))
+            continue;
 
-        std::string number;
-        std::string name = m_textures[i].type;
-        if (name == "texture_diffuse")
-            number = std::to_string(diffuseNr++);
-
-        glUniform1i(glGetUniformLocation(shader.getId(), (name + number).c_str()), i);
-        glBindTexture(GL_TEXTURE_2D, m_textures[i].id);
+        Texture::activate(GL_TEXTURE0 + i);
+        shader.set(m_textures[i].type, (int)i);
+        m_textures[i].data->bind();
     }
-
-    drawElements(shader, quat);
-
-    // Unbind textures
-    glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::drawElements(Shader& shader, const glm::mat4& quat) {
