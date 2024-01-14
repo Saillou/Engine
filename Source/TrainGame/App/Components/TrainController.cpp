@@ -60,21 +60,17 @@ namespace Thomas
 
         const float speed = m_rotationSpeed * dt;
         const float epsilon = 0.01f;
-        std::cout << "Forward vecotr: {" << m_forwardVector.x << ", " << m_forwardVector.y << ", " << m_forwardVector.z << "}; Angle: " << angle << "\n";
+
         if (angle > epsilon)
         {
             m_transform->rotation.z -= speed;
-            std::cout << "MINUS!\n";
         }
         else if (angle < -epsilon)
         {
             m_transform->rotation.z += speed;
-            std::cout << "PLUS!\n";
         }
         else
         {
-            //m_transform->rotation += angle;
-            std::cout << "SMOL!\n";
         }
         return false;
     }

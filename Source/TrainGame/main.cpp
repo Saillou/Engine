@@ -55,4 +55,7 @@ void initGameModels()
     // TODO: brainstorm about it
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Locomotive, { { -0.04f, 0.f, -0.12f }, { 1.f, 1.f, 1.f }, {1.57f, -1.57f, 0.f} });
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Wagon, { { -1.75f, -0.175f, -0.155f }, { 0.01f, 0.01f, 0.01f }, { 1,0,0 } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::Track, { { -0.05f, 0.f, -0.245f }, { 1.f, 1.f, 1.f }, { 1.57, -1.57,0 } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackLeft, { { -0.07f, -0.03f, -0.19f }, { 0.6f, 0.6f, 0.6f }, { 1.57f, -0.785,0 } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackRight, { { 0.0f, 0.0f, -0.1f }, { 0.5f, 0.5f, 0.5f }, { 1.57f, -2.355f,0 } });
 }

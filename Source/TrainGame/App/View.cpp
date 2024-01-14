@@ -44,12 +44,7 @@ namespace Thomas
         }
         std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
-        m_timer.tic();
-        {
-            m_gameModels[ModelId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
-            m_gameModels[ModelId::Wagon] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
-        }
-        std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+        loadModels(4);
 
         // Populate objects
         m_timer.tic();
@@ -112,6 +107,7 @@ namespace Thomas
             }
 
             // Draw game objects
+            //m_timer.tic();
             for (auto& model : m_modelsToDraw)
             {
                 const GameModel& gameModel = GameModelTable::getModelById(model.first);
@@ -132,18 +128,9 @@ namespace Thomas
                     worldTransform = glm::scale(worldTransform, t.scale);
 
                     m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
-
-                    // draw debug spheres for the forward vector:
-                    glm::vec3 forwardVector;
-                    forwardVector.x = -std::sin(t.rotation.z);
-                    forwardVector.z = 0.f;
-                    forwardVector.y = std::cos(t.rotation.z);
-
-                    m_model_sphere->draw(m_camera, t.position + forwardVector);
-                    m_model_sphere->draw(m_camera, t.position);
-
                 }
             }
+            //std::cout << "Game models rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
             // Draw box
             {
@@ -188,7 +175,11 @@ namespace Thomas
         m_modelsToDraw.clear();
 
         // Prepare next
-        float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
+        float dt_draw = m_timer.elapsed<Timer::millisecond>();
+        m_count++;
+        m_averageMs += dt_draw;
+        std::cout << "Rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+        std::cout << "Average render time: " << (m_averageMs / m_count) << "ms." << std::endl;
         m_timer.tic();
     }
 
@@ -204,6 +195,9 @@ namespace Thomas
         {
             m_gameModels[ModelId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
             m_gameModels[ModelId::Wagon] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
+            m_gameModels[ModelId::Track] = std::make_unique<ObjectModel>("Resources/objects/train/track_forward.glb");
+            m_gameModels[ModelId::TrackLeft] = std::make_unique<ObjectModel>("Resources/objects/train/track_left.glb");
+            m_gameModels[ModelId::TrackRight] = std::make_unique<ObjectModel>("Resources/objects/train/track_right.glb");
         }
         std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }

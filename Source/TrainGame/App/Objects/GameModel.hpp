@@ -11,7 +11,10 @@ namespace Thomas
     {
         None = 0,
         Locomotive,
-        Wagon
+        Wagon,
+        Track,
+        TrackLeft,
+        TrackRight
     };
 
     struct Transform

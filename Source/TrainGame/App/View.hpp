@@ -101,5 +101,8 @@ namespace Thomas
 
         ShadowRender m_shadowRender;
         Timer::Chronometre m_timer;
+
+        float m_averageMs = 0.f;
+        size_t m_count = 0;
     };
 } // namespace Thomas

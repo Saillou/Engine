@@ -25,32 +25,55 @@ namespace Thomas
     void Game::createScene()
     {
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             TrainController* trainController = new TrainController(&obj->transform);
             obj->components.push_back(trainController);
 
             m_objects[obj->id] = obj;
         }
-
+        /*
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{1.5f,2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.5f,2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{1.5f,-2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.5f,-2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{-1.5f,-2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{-1.5f,-2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{-1.5f,2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{-1.5f,2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             m_objects[obj->id] = obj;
         }
+        */
+        // tracks
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.f,-0.8f,0.2f}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{0.56f,-0.8f,0.2f}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{1.44f,-0.8f,0.2f}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{1.78f,-1.1f,0.2f}, {1.f, 1.f, 1.f}, {0,0,0.785f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.8f,-1.55f,0.2f}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+        
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
