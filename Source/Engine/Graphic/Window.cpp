@@ -126,7 +126,7 @@ void Window::_init(const char* title) {
     if (!m_window)
         return; // Failure, will close
 
-    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     glfwMakeContextCurrent(m_window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress); // Load gl entry points

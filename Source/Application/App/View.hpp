@@ -6,42 +6,29 @@
 
 #include <Engine/Utils/Timer.hpp>
 #include <Engine/Utils/Objects/ShadowRender.hpp>
+#include <Engine/Utils/Filter/BaseFilter.hpp>
 
 #include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
-#include <Engine/Graphic/Base/Shapes/Quad.hpp>
 #include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/ObjectModel.hpp>
 
-#include "Application/TrainGame/TrainGameModels.hpp"
-#include <Engine/Graphic/Utils/Shader.hpp>
-#include <Engine/Graphic/Utils/Framebuffer.hpp>
-
-struct Filter {
-    Quad surface;
-    Shader shader;
-    Framebuffer framebuffer;
-
-    Filter();
-    void apply(Framebuffer& fIn);
-    void resize(int width, int height);
-};
-
 struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
 
     void draw() override;
+    void mouse_on(int x, int y);
 
-    bool enable_filter = true;
+    bool enable_filter = false;
 
     void loadModels(size_t size);
     void draw(ModelId id, const Transform& transform);
 
 private:
     enum class _ObjecId {
-        Character, Tree
+        Character, Tree, Locomotive
     };
 
     struct _Object {
@@ -57,6 +44,7 @@ private:
 
     void _initObjects();
     void _initParticles();
+    void _initFilters();
 
     void _setParticles(float dt = 0.0f);
     void _onResize() override;
@@ -69,7 +57,6 @@ private:
     std::unique_ptr<Sphere> m_model_sphere;
     std::unique_ptr<Box>    m_model_box;
     std::unique_ptr<Box>    m_model_box_shadow;
-    std::unique_ptr<ObjectModel> m_model;
 
     // Scene objects
     std::vector<_Object>    m_objects;
@@ -93,9 +80,10 @@ private:
     } m_fireGrid;
 
     // Other members
-    Filter m_filter;
+    BaseFilter m_filter;
     Framebuffer framebuffer_main;
 
+    glm::vec2 m_mousePos;
     ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

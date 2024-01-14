@@ -27,18 +27,20 @@ class Mesh {
 
 public:
     Mesh();
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures);
-    void draw(Shader& shader);
-    void drawElements();
+    void draw(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
+    void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
+
+    const std::vector<Vertex>&       vertices() const;
+    const std::vector<unsigned int>& indices() const;
 
 private:
     Array m_vao;
     Buffer m_vbo;
     Buffer m_ebo;
 
-    std::vector<Vertex>       vertices = {};
-    std::vector<unsigned int> indices  = {};
-    std::vector<TextureData>  textures = {};
+    std::vector<Vertex>       m_vertices = {};
+    std::vector<unsigned int> m_indices  = {};
+    std::vector<TextureData>  m_textures = {};
 
     void _setup();
 };

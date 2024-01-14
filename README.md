@@ -13,11 +13,13 @@ The game
 Use the command `./generate.ps1` and hope for the best.
 
 Available arguments are:
-| Argument     | Description                           |
-| ------------ | ------------------------------------- |
-| `-Cleanup`   | Clean generated files                 |
-| `-NoBuild`   | Don't build executables and libraries |
-| `-NoInstall` | Don't install resources               |
+| Argument     | Description                            |
+| ------------ | -------------------------------------- |
+| `-Cleanup`   | Clean generated files                  |
+| `-NoBuild`   | Don't build executables and libraries  |
+| `-NoInstall` | Don't install resources                |
+| `-NoCleanup` | Don't clean resources                  |
+| `-VS2019`    | Use Visual Studio 2019 instead of 2022 |
 
 
 ## Generation:
@@ -34,3 +36,4 @@ Available arguments are:
 | `FreeType` (Font renderer)                             | Clone: https://gitlab.freedesktop.org/freetype          |
 | `Assimp` (Model loader)                                | Official website: https://assimp.org/                   |
 | `ReactPhysics3D` (Physic Engine)                       | Clone: https://github.com/DanielChappuis/reactphysics3d |
+| `ImGui` (Gui Engine)                                   | Clone: https://github.com/ocornut/imgui                 |

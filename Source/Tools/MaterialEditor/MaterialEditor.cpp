@@ -11,7 +11,7 @@ MaterialEditor::~MaterialEditor()
 
 void MaterialEditor::onEnter()
 {
-    m_model = std::make_unique<Sphere>(0.15f);
+    m_model = std::make_unique<Sphere>(0.15f, 6);
     m_model->addRecipe(Cookable::CookType::Solid);
 
     m_lights.push_back({ glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } });

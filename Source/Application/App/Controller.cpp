@@ -56,5 +56,6 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
-    // ..
+    auto view = std::dynamic_pointer_cast<View>(m_scene);
+    view->mouse_on(evt.x, evt.y);
 }

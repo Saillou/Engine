@@ -33,6 +33,10 @@ Cookable* Cookable::addRecipe(CookType type) {
         _set_shader_geometry(recipe);
         break;
 
+    case CookType::ModelGeometry:
+        _set_shader_model_geometry(recipe);
+        break;
+
     case CookType::Quad:
         _set_shader_quad(recipe);
         break;
@@ -300,6 +304,7 @@ void Cookable::_set_shader_model(UShader& shader) {
             .add_var("uniform", "mat4", "Projection")
             .add_var("uniform", "mat4", "View")
             .add_var("uniform", "mat4", "Model")
+            .add_var("uniform", "mat4", "LocalModel")
 
             .add_var("out", "vec3", "Normal")
             .add_var("out", "vec3", "FragPos")
@@ -307,8 +312,8 @@ void Cookable::_set_shader_model(UShader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 TexCoords = aTexCoords;
-                FragPos   = vec3(Model * vec4(aPos, 1.0));
-                Normal    = mat3(transpose(inverse(Model))) * aNormal;  
+                FragPos   = vec3(Model * LocalModel * vec4(aPos, 1.0));
+                Normal    = mat3(transpose(inverse(Model * LocalModel))) * aNormal;  
     
                 gl_Position = Projection * View * vec4(FragPos, 1.0);
             )_main_")
@@ -526,6 +531,56 @@ void Cookable::_set_shader_geometry(UShader& shader) {
             )_main_").str()
         );
 }
+
+void Cookable::_set_shader_model_geometry(UShader& shader) {
+    shader->
+        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("layout (location = 1) in", "vec3", "aNormal")
+
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+            .add_var("uniform", "mat4", "Model")
+            .add_var("uniform", "mat4", "LocalModel")
+
+            .add_var("out", "vec3", "Normal")
+            .add_var("out", "vec3", "FragPos")
+
+            .add_func("void", "main", "", R"_main_(
+                FragPos   = vec3(Model * LocalModel * vec4(aPos, 1.0));
+                Normal    = mat3(transpose(inverse(Model * LocalModel))) * aNormal; 
+    
+                gl_Position = Projection * View * vec4(FragPos, 1.0);
+            )_main_").str()
+        )
+        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
+            .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(line_strip, max_vertices = 4)")
+
+            .add_func("void", "main", "", R"_main_(
+                gl_Position     = gl_in[1].gl_Position; EmitVertex();
+                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
+                EndPrimitive();
+
+                gl_Position     = gl_in[0].gl_Position; EmitVertex();
+                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
+                EndPrimitive();
+            )_main_").str()
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec3", "Normal")
+            .add_var("in", "vec3", "FragPos")
+
+            .add_var("uniform", "vec4", "diffuse_color")
+
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                FragColor = diffuse_color;
+            )_main_").str()
+        );
+}
+
 
 void Cookable::_set_shader_quad(UShader& shader) {
     shader->

@@ -22,3 +22,12 @@ void Camera::useOrtho(float aspect) {
     projection = glm::ortho(-aspect, +aspect, -1.0f, 1.0f, near_plane, far_plane);
 }
 
+// Methods
+glm::vec3 Camera::ray(const glm::vec2& screenPos) const {
+    // 4d Homogeneous Clip Coordinates
+    const glm::vec4 vpMousePos(2.0f * screenPos.x - 1.0f, 1.0f - 2.0 * screenPos.y, +1.0f, +1.0f);
+
+    // Un-projection of camera to get ray direction
+    return normalize(glm::vec3(glm::inverse(projection * modelview) * vpMousePos));
+}
+

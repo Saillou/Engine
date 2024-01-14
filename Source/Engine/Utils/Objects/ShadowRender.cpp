@@ -9,8 +9,9 @@ ShadowRender::ShadowRender() :
         attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("uniform", "mat4", "model")
+            .add_var("uniform", "mat4", "LocalModel")
             .add_func("void", "main", "", R"_main_(
-                gl_Position = model * vec4(aPos, 1.0);
+                gl_Position = model * LocalModel * vec4(aPos, 1.0);
             )_main_")
             .str()
         ).

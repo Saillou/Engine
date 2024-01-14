@@ -1,6 +1,9 @@
 #include "BaseShape.hpp"
 #include "glad/glad.h"
 
+#include <iostream>
+#include <glm/gtx/string_cast.hpp>
+
 BaseShape::BaseShape() : 
     m_vbo_vertices(GL_ARRAY_BUFFER), 
     m_vbo_normals(GL_ARRAY_BUFFER),
@@ -96,6 +99,14 @@ int BaseShape::uvsLength() const {
     return (int)m_uvs.size();
 }
 
+const std::vector<unsigned int>& BaseShape::indices() const {
+    return m_indices;
+}
+
+const std::vector<float>& BaseShape::vertices() const {
+    return m_vertices;
+}
+
 // Helpers
 int BaseShape::_addPoint(float x, float y, float z) {
     m_vertices.push_back(x);
@@ -139,10 +150,6 @@ int BaseShape::_addPoint(const glm::vec3& vec, const glm::vec3& norm, const glm:
     );
 }
 
-void BaseShape::_addAsLine(unsigned int i0, unsigned int i1) {
-    m_indices.push_back(i0);
-    m_indices.push_back(i1);
-}
 
 void BaseShape::_addAsTriangle(unsigned int i0, unsigned int i1, unsigned int i2) {
     m_indices.push_back(i0);
@@ -150,12 +157,6 @@ void BaseShape::_addAsTriangle(unsigned int i0, unsigned int i1, unsigned int i2
     m_indices.push_back(i2);
 }
 
-void BaseShape::_addAsQuad(unsigned int i0, unsigned int i1, unsigned int i2, unsigned int i3) {
-    m_indices.push_back(i0);
-    m_indices.push_back(i1);
-    m_indices.push_back(i2);
-    m_indices.push_back(i3);
-}
 
 void BaseShape::_createQuad(const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, const glm::vec3& P3) {
     int i0 = _addPoint(P0);
@@ -166,6 +167,7 @@ void BaseShape::_createQuad(const glm::vec3& P0, const glm::vec3& P1, const glm:
     _addAsTriangle(i0, i1, i2);
     _addAsTriangle(i2, i3, i0);
 };
+
 void BaseShape::_createQuad(const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, const glm::vec3& P3, const glm::vec3& n) {
     int i0 = _addPoint(P0, n);
     int i1 = _addPoint(P1, n);

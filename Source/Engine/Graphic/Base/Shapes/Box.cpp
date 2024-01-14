@@ -87,7 +87,7 @@ void Box::draw(const Camera& camera, const glm::mat4& model, const std::vector<L
         }
 
         // Draw
-        drawElements();
+        drawElements(*recipe.second);
     }
 }
 
@@ -118,7 +118,10 @@ void Box::drawBatch(size_t amount, const Camera& camera) {
     }
 }
 
-void Box::drawElements() {
+void Box::drawElements(Shader& sh) {
+    if(sh.has("LocalModel"))
+        sh.use().set("LocalModel", glm::mat4(1.0f));
+
     bind();
     glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
     unbind();
