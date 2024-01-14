@@ -125,6 +125,15 @@ void View::draw() {
                 worldTransform = glm::scale(worldTransform, t.scale);
 
                 m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
+
+                // draw debug spheres for the forward vector:
+                glm::vec3 forwardVector;
+                forwardVector.x = -std::sin(t.rotation);
+                forwardVector.z = 0.f;
+                forwardVector.y = std::cos(t.rotation);
+
+                m_model_sphere->draw(m_camera, t.position + forwardVector);
+
             }
         }
 

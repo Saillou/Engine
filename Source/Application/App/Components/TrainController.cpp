@@ -48,7 +48,7 @@ bool TrainController::goToPoint(const glm::vec3& pos, float dt)
     m_transform->position += dir * dt * m_speed;
 
     // change angle
-    m_forwardVector.x = std::sin(m_transform->rotation);
+    m_forwardVector.x = -std::sin(m_transform->rotation);
     m_forwardVector.z = 0.f;
     m_forwardVector.y = std::cos(m_transform->rotation);
 
@@ -63,7 +63,7 @@ bool TrainController::goToPoint(const glm::vec3& pos, float dt)
         m_transform->rotation -= speed;
         std::cout << "MINUS!\n";
     }
-    else if(angle < epsilon)
+    else if(angle < -epsilon)
     {
         m_transform->rotation += speed;
         std::cout << "PLUS!\n";
