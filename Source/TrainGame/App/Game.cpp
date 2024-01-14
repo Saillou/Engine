@@ -1,6 +1,6 @@
 #include "Game.hpp"
 
-#include "Application/App/Components/TrainController.h"
+#include "TrainGame/App/Components/TrainController.h"
 
 static uint64_t gs_id = 0;
 

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Application/App/Objects/GameModel.hpp"
+#include "TrainGame/App/Objects/GameModel.hpp"
 
 class Component;
 

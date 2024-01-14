@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "Application/App/Objects/GameModel.hpp"
+#include "TrainGame/App/Objects/GameModel.hpp"
 
 /*
 *  Misha: I don't know if i want to keep it as a Singletone,

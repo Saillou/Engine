@@ -3,7 +3,7 @@
 #include <list>
 
 #include "Component.hpp"
-#include "Application/App/Objects/GameModel.hpp" // for Transform
+#include "TrainGame/App/Objects/GameModel.hpp" // for Transform
 
 class TrainController : public Component
 {

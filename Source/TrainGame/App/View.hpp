@@ -15,7 +15,7 @@
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/ObjectModel.hpp>
 
-#include "Application/TrainGame/TrainGameModels.hpp"
+#include "TrainGame/TrainGame/TrainGameModels.hpp"
 #include <Engine/Graphic/Utils/Shader.hpp>
 #include <Engine/Graphic/Utils/Framebuffer.hpp>
 

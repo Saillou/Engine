@@ -4,8 +4,8 @@
 #include <Engine/Events/CommonEvents.hpp>
 #include <Engine/Utils/Timer.hpp>
 
-#include "Application/App/View.hpp"
-#include "Application/App/Objects/GameObject.hpp"
+#include "TrainGame/App/View.hpp"
+#include "TrainGame/App/Objects/GameObject.hpp"
 
 class Game : private Event::Subscriber
 {

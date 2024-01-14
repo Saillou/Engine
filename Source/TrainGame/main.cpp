@@ -3,7 +3,7 @@
 #include "App/Controller.hpp"
 #include "App/View.hpp"
 
-#include "Application/TrainGame/TrainGameModels.hpp"
+#include "TrainGame/TrainGame/TrainGameModels.hpp"
 
 #include "App/Game.hpp"
 
