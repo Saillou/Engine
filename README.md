@@ -36,4 +36,4 @@ Available arguments are:
 | `FreeType` (Font renderer)                             | Clone: https://gitlab.freedesktop.org/freetype          |
 | `Assimp` (Model loader)                                | Official website: https://assimp.org/                   |
 | `ReactPhysics3D` (Physic Engine)                       | Clone: https://github.com/DanielChappuis/reactphysics3d |
-| `ImGui` (Physic Engine)                                | Clone: https://github.com/ocornut/imgui                 |
+| `ImGui` (Gui Engine)                                   | Clone: https://github.com/ocornut/imgui                 |
