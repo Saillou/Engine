@@ -99,38 +99,44 @@ void ModelEditorMenu::ShowMovableOptions()
     }
 
     ImGui::Text("Rotation");
-    static bool rotationX = state.rotationVector.x > 0.1f;
-    static bool rotationY = state.rotationVector.y > 0.1f;
-    static bool rotationZ = state.rotationVector.z > 0.1f;
-
     {
         if (ImGui::Button("-##7", { 20,20 }))
         {
-            state.rotation -= 0.005f;
+            state.roll -= 0.005f;
         }
         ImGui::SameLine();
-        ImGui::SliderFloat("Angle", &state.rotation, 0.f, 6.28f);
+        ImGui::SliderFloat("Roll", &state.roll, 0.f, 6.28f);
         ImGui::SameLine();
         if (ImGui::Button("+##7", { 20,20 }))
         {
-            state.rotation += 0.005f;
+            state.roll += 0.005f;
+        }
+
+        if (ImGui::Button("-##8", { 20,20 }))
+        {
+            state.pitch -= 0.005f;
+        }
+        ImGui::SameLine();
+        ImGui::SliderFloat("Pitch", &state.pitch, 0.f, 6.28f);
+        ImGui::SameLine();
+        if (ImGui::Button("+##8", { 20,20 }))
+        {
+            state.pitch += 0.005f;
+        }
+
+        if (ImGui::Button("-##9", { 20,20 }))
+        {
+            state.yaw -= 0.005f;
+        }
+        ImGui::SameLine();
+        ImGui::SliderFloat("Yaw", &state.yaw, 0.f, 6.28f);
+        ImGui::SameLine();
+        if (ImGui::Button("+##9", { 20,20 }))
+        {
+            state.yaw += 0.005f;
         }
     }
 
-    if (ImGui::Checkbox("Rotation X", &rotationX))
-    {
-        state.rotationVector.x = rotationX ? 1.f : 0.f;
-    }
-
-    if (ImGui::Checkbox("Rotation Y", &rotationY))
-    {
-        state.rotationVector.y = rotationY ? 1.f : 0.f;
-    }
-
-    if (ImGui::Checkbox("Rotation Z", &rotationZ))
-    {
-        state.rotationVector.z = rotationZ ? 1.f : 0.f;
-    }
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
 
@@ -168,9 +174,10 @@ void ModelEditorMenu::resetState()
     state =
     {
         {0,0,0},                                        // position
-        {1.f,0,0},                                      // rotation vector
         {0.1f,0.1f,0.1f},                               // scale
-        0.f,                                            // rotation
+        0.f,                                            // roll
+        0.f,                                            // pitch
+        0.f,                                            // yaw
         "Resources/objects/train/wagon_no_wheels.glb",  // asset
         true,                                           // should update asset
 

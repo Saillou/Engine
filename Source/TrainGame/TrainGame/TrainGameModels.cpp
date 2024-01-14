@@ -1,5 +1,7 @@
 #include "TrainGameModels.hpp"
 
+#include "TrainGame/App/Objects/GameModel.hpp"
+
 namespace Thomas
 {
 
@@ -34,7 +36,7 @@ namespace Thomas
         //return it == table.m_data.end() ? GameModel() : table.m_data[id];
     }
 
-    bool GameModelTable::addGameModel(ModelId id, const glm::vec3& pos, const glm::vec3& scale, const glm::vec3& rotVec, float rotation)
+    bool GameModelTable::addGameModel(ModelId id, const Transform& transform)
     {
         GameModelTable& table = get();
 
@@ -44,10 +46,7 @@ namespace Thomas
 
         GameModel model;
         model.modelId = id;
-        model.transform.rotation = rotation;
-        model.transform.position = pos;
-        model.transform.scale = scale;
-        model.transform.rotationVector = rotVec;
+        model.transform = transform;
 
         table.m_data[id] = model;
         return true;

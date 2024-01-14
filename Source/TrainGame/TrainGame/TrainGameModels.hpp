@@ -12,6 +12,7 @@
 
 namespace Thomas
 {
+    struct Transform;
 
     class GameModelTable
     {
@@ -19,7 +20,7 @@ namespace Thomas
         static GameModelTable& get();
 
         static const GameModel& getModelById(ModelId id);
-        static bool addGameModel(ModelId id, const glm::vec3& pos, const glm::vec3& scale, const glm::vec3& rotVec, float rotation);
+        static bool addGameModel(ModelId id, const Transform& transform);
 
     private:
         GameModelTable();

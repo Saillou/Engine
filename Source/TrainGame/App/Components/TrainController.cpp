@@ -51,9 +51,9 @@ namespace Thomas
         m_transform->position += dir * dt * m_speed;
 
         // change angle
-        m_forwardVector.x = -std::sin(m_transform->rotation);
+        m_forwardVector.x = -std::sin(m_transform->rotation.z);
         m_forwardVector.z = 0.f;
-        m_forwardVector.y = std::cos(m_transform->rotation);
+        m_forwardVector.y = std::cos(m_transform->rotation.z);
 
         //const float angle2 = glm::angle(m_forwardVector, dir);
         const float angle = -glm::orientedAngle(glm::vec2(m_forwardVector.x, m_forwardVector.y), glm::vec2(dir.x, dir.y));
@@ -63,12 +63,12 @@ namespace Thomas
         std::cout << "Forward vecotr: {" << m_forwardVector.x << ", " << m_forwardVector.y << ", " << m_forwardVector.z << "}; Angle: " << angle << "\n";
         if (angle > epsilon)
         {
-            m_transform->rotation -= speed;
+            m_transform->rotation.z -= speed;
             std::cout << "MINUS!\n";
         }
         else if (angle < -epsilon)
         {
-            m_transform->rotation += speed;
+            m_transform->rotation.z += speed;
             std::cout << "PLUS!\n";
         }
         else

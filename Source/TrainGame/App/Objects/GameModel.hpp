@@ -18,8 +18,7 @@ namespace Thomas
     {
         glm::vec3   position;
         glm::vec3   scale;
-        glm::vec3   rotationVector;
-        float       rotation;
+        glm::vec3   rotation;
     };
 
     struct GameModel

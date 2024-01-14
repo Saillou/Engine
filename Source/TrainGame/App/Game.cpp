@@ -24,11 +24,33 @@ namespace Thomas
 
     void Game::createScene()
     {
-        GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,1}, 0.f } });
-        TrainController* trainController = new TrainController(&obj->transform);
-        obj->components.push_back(trainController);
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            TrainController* trainController = new TrainController(&obj->transform);
+            obj->components.push_back(trainController);
 
-        m_objects[obj->id] = obj;
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{1.5f,2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{1.5f,-2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{-1.5f,-2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{-1.5f,2.f,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            m_objects[obj->id] = obj;
+        }
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
@@ -76,7 +98,7 @@ namespace Thomas
         }
 
         m_objects[0]->transform.position += 0.05f * dir;
-        m_objects[0]->transform.rotation += 0.05f * rot;
+        m_objects[0]->transform.rotation.z += 0.05f * rot;
         m_objects[0]->transform.scale += 0.05f * scale;
     }
 

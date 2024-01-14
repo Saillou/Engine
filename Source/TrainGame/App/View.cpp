@@ -119,23 +119,28 @@ namespace Thomas
                 for (auto& t : model.second)
                 {
                     glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-                    localTransform = glm::rotate(localTransform, gameModel.transform.rotation, gameModel.transform.rotationVector);
+                    localTransform = glm::rotate(localTransform, gameModel.transform.rotation.x, glm::vec3(1, 0, 0));
+                    localTransform = glm::rotate(localTransform, gameModel.transform.rotation.y, glm::vec3(0, 1, 0));
+                    localTransform = glm::rotate(localTransform, gameModel.transform.rotation.z, glm::vec3(0, 0, 1));
                     localTransform = glm::translate(localTransform, gameModel.transform.position);
                     localTransform = glm::scale(localTransform, gameModel.transform.scale);
 
                     glm::mat4 worldTransform = glm::translate(glm::mat4(1.0f), t.position);
-                    worldTransform = glm::rotate(worldTransform, t.rotation, t.rotationVector);
+                    worldTransform = glm::rotate(worldTransform, t.rotation.x, glm::vec3(1, 0, 0));
+                    worldTransform = glm::rotate(worldTransform, t.rotation.y, glm::vec3(0, 1, 0));
+                    worldTransform = glm::rotate(worldTransform, t.rotation.z, glm::vec3(0, 0, 1));
                     worldTransform = glm::scale(worldTransform, t.scale);
 
                     m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
 
                     // draw debug spheres for the forward vector:
                     glm::vec3 forwardVector;
-                    forwardVector.x = -std::sin(t.rotation);
+                    forwardVector.x = -std::sin(t.rotation.z);
                     forwardVector.z = 0.f;
-                    forwardVector.y = std::cos(t.rotation);
+                    forwardVector.y = std::cos(t.rotation.z);
 
                     m_model_sphere->draw(m_camera, t.position + forwardVector);
+                    m_model_sphere->draw(m_camera, t.position);
 
                 }
             }
