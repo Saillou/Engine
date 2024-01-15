@@ -53,27 +53,89 @@ namespace Thomas
         }
         */
         // tracks
+        const float x = 0.75f;
+        const float y = 1.f;
+        const float z = 0.2f;
+
+        const float dX = 0.44f;
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.f,-0.8f,0.2f}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
         }
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{0.56f,-0.8f,0.2f}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - dX,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
         }
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{1.44f,-0.8f,0.2f}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 2),y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
         }
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{1.78f,-1.1f,0.2f}, {1.f, 1.f, 1.f}, {0,0,0.785f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 3),y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
         }
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.8f,-1.55f,0.2f}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 4),y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX + 0.34f,y - 0.3f,z}, {1.f, 1.f, 1.f}, {0,0,0.785f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f,z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - dX,z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - (dX*2),z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - (dX * 3),z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
             m_objects[obj->id] = obj;
         }
         
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX + 0.04f,y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,-0.785f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x,y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - dX,y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 2),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 3),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 4),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
