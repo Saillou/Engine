@@ -2,6 +2,8 @@
 
 #include "TrainGame/App/Components/TrainController.h"
 
+#include "TrainGame/TrainGame/Grid.hpp"
+
 namespace Thomas
 {
     static uint64_t gs_id = 0;
@@ -24,6 +26,8 @@ namespace Thomas
 
     void Game::createScene()
     {
+        Grid::initAtPosition({ 0.f,0.f,0.2f }, { 0.05f,0.05f });
+
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             TrainController* trainController = new TrainController(&obj->transform);
@@ -31,33 +35,48 @@ namespace Thomas
 
             m_objects[obj->id] = obj;
         }
-        /*
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.5f,2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
 
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.5f,-2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{-1.5f,-2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{-1.5f,2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
-        */
         // tracks
         const float x = 0.75f;
         const float y = 1.f;
         const float z = 0.2f;
 
         const float dX = 0.44f;
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(0,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(8,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(16,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(24,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(20,-36), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(16,-20), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(34,-39), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            m_objects[obj->id] = obj;
+        }
+        /*
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
@@ -136,6 +155,7 @@ namespace Thomas
             GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 4),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
         }
+        */
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)

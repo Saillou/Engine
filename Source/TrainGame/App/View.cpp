@@ -128,6 +128,9 @@ namespace Thomas
                     worldTransform = glm::scale(worldTransform, t.scale);
 
                     m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
+
+                    // draw debug center
+                    m_model_sphere->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
                 }
             }
             //std::cout << "Game models rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
