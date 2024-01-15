@@ -10,10 +10,9 @@
 #include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Graphic/Base/Shapes/Box.hpp>
 #include <Engine/Graphic/Base/Shapes/Quad.hpp>
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
-#include <Engine/Graphic/Base/Model/ObjectModel.hpp>
+#include <Engine/Graphic/Base/Model/Entity.hpp>
 
 #include "TrainGame/TrainGame/TrainGameModels.hpp"
 #include <Engine/Graphic/Utils/Shader.hpp>
@@ -37,7 +36,7 @@ namespace Thomas
 
         void draw() override;
 
-        bool enable_filter = true;
+        bool enable_filter = false;
 
         void loadModels(size_t size);
         void draw(ModelId id, const Transform& transform);
@@ -65,14 +64,14 @@ namespace Thomas
         void _onResize() override;
 
         // Object models (vertices, textures..)
-        std::unordered_map<_ObjecId, std::unique_ptr<ObjectModel>> m_models;
-        std::unordered_map<ModelId, std::unique_ptr<ObjectModel>> m_gameModels;
-        std::unordered_map<ModelId, std::vector<Transform>> m_modelsToDraw;
+        std::unordered_map<_ObjecId, std::unique_ptr<Entity>> m_models;
+        std::unordered_map<ModelId,  std::unique_ptr<Entity>> m_gameModels;
+        std::unordered_map<ModelId,  std::vector<Transform>>  m_modelsToDraw;
 
-        std::unique_ptr<Sphere> m_model_sphere;
+        std::unique_ptr<Entity> m_model_sphere;
         std::unique_ptr<Box>    m_model_box;
         std::unique_ptr<Box>    m_model_box_shadow;
-        std::unique_ptr<ObjectModel> m_model;
+        std::unique_ptr<Entity> m_model;
 
         // Scene objects
         std::vector<_Object>    m_objects;

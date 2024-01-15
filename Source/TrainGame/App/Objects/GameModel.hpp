@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <Engine/Graphic/Base/Model/ObjectModel.hpp>
+#include <Engine/Graphic/Base/Model/Entity.hpp>
 
 namespace Thomas
 {

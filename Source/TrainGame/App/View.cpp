@@ -39,8 +39,8 @@ namespace Thomas
         // Load models
         m_timer.tic();
         {
-            m_models[_ObjecId::Tree] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
-            m_models[_ObjecId::Character] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
+            m_models[_ObjecId::Tree] = std::make_unique<Entity>("Resources/objects/train/locomotive_no_wheels.glb");
+            m_models[_ObjecId::Character] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
         }
         std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -97,8 +97,8 @@ namespace Thomas
         {
             // Lights
             for (auto& light : m_lights) {
-                m_model_sphere->get(Cookable::CookType::Solid)->use().set("diffuse_color", light.color);
-                m_model_sphere->draw(m_camera, light.position);
+                m_model_sphere->get(Cookable::CookType::Model)->use().set("diffuse_color", light.color);
+                m_model_sphere->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
             }
 
             // Draw objects
@@ -193,11 +193,11 @@ namespace Thomas
         // Misha: can this part be async at some point ?
         m_timer.tic();
         {
-            m_gameModels[ModelId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive_no_wheels.glb");
-            m_gameModels[ModelId::Wagon] = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
-            m_gameModels[ModelId::Track] = std::make_unique<ObjectModel>("Resources/objects/train/track_forward.glb");
-            m_gameModels[ModelId::TrackLeft] = std::make_unique<ObjectModel>("Resources/objects/train/track_left.glb");
-            m_gameModels[ModelId::TrackRight] = std::make_unique<ObjectModel>("Resources/objects/train/track_right.glb");
+            m_gameModels[ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive_no_wheels.glb");
+            m_gameModels[ModelId::Wagon] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
+            m_gameModels[ModelId::Track] = std::make_unique<Entity>("Resources/objects/train/track_forward.glb");
+            m_gameModels[ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
+            m_gameModels[ModelId::TrackRight] = std::make_unique<Entity>("Resources/objects/train/track_right.glb");
         }
         std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
@@ -240,8 +240,7 @@ namespace Thomas
         });
 
         // Lanterns
-        m_model_sphere = std::make_unique<Sphere>(0.1f);
-        m_model_sphere->addRecipe(Cookable::CookType::Solid);
+        m_model_sphere = std::make_unique<Entity>(Entity::Sphere);
 
         // Trees
         m_objects.push_back({ _ObjecId::Tree,
@@ -264,7 +263,7 @@ namespace Thomas
             )
             });
 
-        m_model = std::make_unique<ObjectModel>("Resources/objects/train/wagon_no_wheels.glb");
+        m_model = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
 
         // Character
         m_objects.push_back({ _ObjecId::Character,
