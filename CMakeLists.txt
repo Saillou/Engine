@@ -86,6 +86,48 @@ add_dependencies(${APPLICATION_NAME}
     ${ENGINE_NAME}
 )
 
+# ------------------------------ Sample executable ------------------------------
+set(SAMPLE_NAME    "Sample")
+set(SAMPLE_SOURCE  "${SOURCE_FOLDER}/Sample")
+file(GLOB_RECURSE _source_s_list CONFIGURE_DEPENDS "${SAMPLE_SOURCE}/*")
+
+add_executable(${SAMPLE_NAME}
+    ${_source_s_list}
+)
+target_include_directories(${SAMPLE_NAME} PRIVATE 
+    "${SOURCE_FOLDER}/"
+
+    "${EXTERNAL_FOLDER}/glm/"
+    "${EXTERNAL_FOLDER}/glad/include/"
+    "${EXTERNAL_FOLDER}/GLFW/include/"
+    "${EXTERNAL_FOLDER}/stb/"
+    "${EXTERNAL_FOLDER}/freetype/include/"
+    "${EXTERNAL_FOLDER}/reactphysics3d/include/"
+    "${EXTERNAL_FOLDER}/assimp/include/"
+)
+target_link_libraries(${SAMPLE_NAME}
+    debug "${OUTPUT_FOLDER}/lib/debug/${ENGINE_NAME}.lib"
+    debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
+    debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
+    debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
+
+    optimized "${OUTPUT_FOLDER}/lib/release/${ENGINE_NAME}.lib"
+    optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
+    optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
+    optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
+
+    "${EXTERNAL_FOLDER}/assimp/lib/assimp-vc143-mt.lib"
+)
+set_target_properties(${SAMPLE_NAME} PROPERTIES 
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+
+    VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+add_dependencies(${SAMPLE_NAME} 
+    ${ENGINE_NAME}
+)
+
 # ------------------------------ Tools executable ------------------------------
 set(TOOLS_NAME     "Tools")
 set(TOOLS_SOURCE   "${SOURCE_FOLDER}/Tools")
@@ -134,8 +176,9 @@ add_dependencies(${TOOLS_NAME}
 # ------------------------------ Global ------------------------------
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${APPLICATION_NAME})
 
-source_group(TREE ${TOOLS_SOURCE}       FILES ${_source_t_list})
 source_group(TREE ${APPLICATION_SOURCE} FILES ${_source_a_list})
+source_group(TREE ${SAMPLE_SOURCE}      FILES ${_source_s_list})
+source_group(TREE ${TOOLS_SOURCE}       FILES ${_source_t_list})
 source_group(TREE ${ENGINE_SOURCE}      FILES ${_source_e_list})
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${_external_list})
