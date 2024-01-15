@@ -30,19 +30,23 @@ View::View(int widthHint, int heightHint):
 {
     // Camera
     m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
-    m_camera.direction = glm::vec3(0.0f, 0.0, 0.0f);
+    m_camera.direction = glm::vec3(0.0f,  0.0f, 0.0f);
 
     // Lightnings
     m_lights = {
         Light(glm::vec3{  0,  0, 0.50f }, glm::vec4{ 1, 0.7, 0.3, 1 })
     };
 
+#ifdef DRAW_REAL
     // Load models
     m_timer.tic();
     {
-        m_models[_ObjecId::Locomotive] = std::make_unique<ObjectModel>("Resources/objects/train/locomotive.glb");
-        m_models[_ObjecId::Tree]       = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
-        m_models[_ObjecId::Character]  = std::make_unique<ObjectModel>("Resources/objects/character/character.glb");
+        m_entities[_ObjectId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive.glb");
+        m_entities[_ObjectId::Tree]       = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
+        m_entities[_ObjectId::Character]  = std::make_unique<Entity>("Resources/objects/character/character.glb");
+
+        m_entities[_ObjectId::Cube]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+        m_entities[_ObjectId::Sphere]     = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -60,6 +64,9 @@ View::View(int widthHint, int heightHint):
         _initParticles();
     }
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+#else
+    m_entities[_ObjectId::Sphere] = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
+#endif
 }
 
 void View::mouse_on(int x, int y) {
@@ -68,6 +75,7 @@ void View::mouse_on(int x, int y) {
 }
 
 void View::draw() {
+#ifdef DRAW_REAL
     static float dt_since_last_draw = 0.0f;
     static float dt_draw = 0.0f;
 
@@ -77,22 +85,13 @@ void View::draw() {
     BaseScene::_update_camera();
     _setParticles(dt_since_last_draw);
 
-    // Define box position
-    const auto box_quat = glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f));
-
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
     m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
         // Draw objects
         for (const _Object& obj : m_objects) {
             sh.use().set("model", obj.quat);
-            m_models[obj.id]->drawElements(sh);
-        }
-
-        // Box
-        {
-            sh.use().set("model", box_quat);
-            m_model_box_shadow->drawElements(sh);
+            m_entities[obj.id]->drawElements(sh);
         }
 
         // Ground
@@ -110,30 +109,27 @@ void View::draw() {
     {
         // Lights
         for (auto& light : m_lights) {
-            m_model_sphere->get(Cookable::CookType::Solid)->use().set("diffuse_color", light.color);
-            m_model_sphere->draw(m_camera, light.position);
+            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Model)
+                                         ->use().set("diffuse_color", light.color);
+
+            m_entities[_ObjectId::Sphere]->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
         }
 
         // Draw objects
         for (const _Object& obj : m_objects) {
-            m_models[obj.id]->draw(m_camera, obj.quat, m_lights);
-
-            if (RayCaster::Intersect(m_mousePos, m_camera, *m_models[obj.id], obj.quat)) {
-                m_models[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
-                m_models[obj.id]->drawGeometry(m_camera, obj.quat);
+            // Cube color
+            if (obj.id == _ObjectId::Cube) {
+                m_entities[obj.id]->get(Cookable::CookType::Model)->use().set("diffuse_color", glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
             }
-        }
 
-        // Draw box
-        {
-            bool highlight = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box_shadow, box_quat);
+            // Draw model
+            m_entities[obj.id]->draw(m_camera, obj.quat, m_lights);
 
-            const glm::vec4 border_color = highlight ?
-                glm::vec4(0.2f, 1.0f, 1.0f, 1) :
-                glm::vec4(0.2f, 0.2f, 0.2f, 1);
-
-            m_model_box_shadow->get(Cookable::CookType::Geometry)->use().set("diffuse_color", border_color);
-            m_model_box_shadow->draw(m_camera, box_quat, m_lights);
+            // Highlight
+            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat)) {
+                m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+                m_entities[obj.id]->drawGeometry(m_camera, obj.quat);
+            }
         }
 
         // Particles
@@ -185,9 +181,28 @@ void View::draw() {
     // Prepare next
     dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
+#else
+    BaseScene::_update_camera();
+    BaseScene::clear();
+
+    // simple shape
+    m_entities[_ObjectId::Sphere]->get(Cookable::CookType::ModelGeometry)
+                                 ->use().set("diffuse_color", glm::vec4(1,1,1,1));
+
+    m_entities[_ObjectId::Sphere]->drawGeometry(m_camera);
+
+    // debug txt
+    std::ostringstream ss;
+    ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
+        << ", y: " << int(m_camera.position.y * 10) / 10.0f
+        << ", z: " << int(m_camera.position.z * 10) / 10.0f;
+    TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
+
+#endif
 }
 
 void View::_initObjects() {
+#ifdef DRAW_REAL
     // Sky
     m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
         "Resources/textures/skybox/right.jpg",
@@ -197,11 +212,6 @@ void View::_initObjects() {
         "Resources/textures/skybox/front.jpg",
         "Resources/textures/skybox/back.jpg"
     });
-
-    // Box - Test shadow
-    m_model_box_shadow = std::make_unique<Box>(0.3f);
-    m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1.0f, 0.7f, 0.3f, 1.0f))
-                      ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
     // Ground - Grid
     m_model_box = std::make_unique<Box>(1.0f);
@@ -221,12 +231,17 @@ void View::_initObjects() {
         }
     );
 
-    // Lanterns
-    m_model_sphere = std::make_unique<Sphere>(0.1f);
-    m_model_sphere->addRecipe(Cookable::CookType::Solid);
+    // Box
+    m_objects.push_back({ _ObjectId::Cube, 
+        glm::scale(
+            glm::translate(
+                glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)), 
+            glm::vec3(0.2f)
+        )
+    });
 
     // Locomotive
-    m_objects.push_back({ _ObjecId::Locomotive,
+    m_objects.push_back({ _ObjectId::Locomotive,
         glm::scale(
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),      // Identity
@@ -237,7 +252,7 @@ void View::_initObjects() {
     });
 
     // Trees
-    m_objects.push_back({_ObjecId::Tree,
+    m_objects.push_back({_ObjectId::Tree,
         glm::scale(
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
@@ -247,7 +262,7 @@ void View::_initObjects() {
         )
     });
 
-    m_objects.push_back({_ObjecId::Tree,
+    m_objects.push_back({_ObjectId::Tree,
         glm::scale(
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
@@ -258,13 +273,14 @@ void View::_initObjects() {
     });
 
     // Character
-    m_objects.push_back({_ObjecId::Character,
+    m_objects.push_back({_ObjectId::Character,
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
                 glm::vec3(-1, 0, 1)           // Translation
         )
     });
+#endif
 }
 
 void View::_initParticles() {

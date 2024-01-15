@@ -20,12 +20,15 @@
 #include <vector>
 #include <stack>
 
-class Model
+struct Model
 {
-public:
-    Model(const std::string& path);
+    friend struct Entity;
 
-    void draw(Shader& shader);
+         Model() = default;
+         Model(const std::string& path);
+
+    // Methods
+    void draw        (Shader& shader);
     void drawElements(Shader& shader);
 
     // Data tree for storing organized meshes
@@ -36,12 +39,12 @@ public:
     };
 
     const std::unique_ptr<Node>& root() const;
-private:
 
-    void _loadModel(const std::string& path);
-    void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
-    void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
+private:
+    void _loadModel     (const std::string& path);
+    void _processNode   (const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
+    void _processMesh   (const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
 
     std::vector<TextureData> _textures_loaded;
-    std::unique_ptr<Node> _root;
+    std::unique_ptr<Node>    _root;
 };

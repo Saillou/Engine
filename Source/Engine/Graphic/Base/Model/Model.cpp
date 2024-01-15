@@ -37,6 +37,7 @@ void Model::draw(Shader& shader) {
         for (const auto& mesh : (*currNode)->meshes) {
             mesh->bindTextures(shader);
             mesh->drawElements(shader, (*currNode)->transform);
+            mesh->unbindTextures();
         }
 
         // Add children

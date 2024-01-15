@@ -325,6 +325,7 @@ void Cookable::_set_shader_model(UShader& shader) {
             .add_var("in", "vec2", "TexCoords")
 
             .add_var("uniform", "sampler2D", "texture_diffuse")
+            .add_var("uniform", "vec4", "diffuse_color")
             .add_var("uniform", "vec3", "CameraPos")
 
             .add_var("uniform", "highp int", "LightNumber")
@@ -365,24 +366,25 @@ void Cookable::_set_shader_model(UShader& shader) {
             )_light_")
 
             .add_func("void", "main", "", R"_main_(
-                vec4 diffuse_color = texture(texture_diffuse, TexCoords);
+                vec2 tex_size = textureSize(texture_diffuse, 0);
+                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, TexCoords) : diffuse_color;
 
                 // Shall use light ?
                 if(LightNumber == 0) {
-                    FragColor = diffuse_color;
+                    FragColor = ambiant_color;
                     return;
                 }
 
                 float ratio = 1.0 / float(LightNumber);
 
                 vec3 light_result = vec3(0,0,0);
-                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_0, LightColor_0.rgb);
-                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_1, LightColor_1.rgb);
-                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_2, LightColor_2.rgb);
-                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_3, LightColor_3.rgb);
-                light_result += ratio * compute_light(diffuse_color.rgb, LightPos_4, LightColor_4.rgb);
+                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_0, LightColor_0.rgb);
+                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_1, LightColor_1.rgb);
+                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_2, LightColor_2.rgb);
+                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_3, LightColor_3.rgb);
+                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_4, LightColor_4.rgb);
 
-                FragColor = vec4(light_result, diffuse_color.a);
+                FragColor = vec4(light_result, ambiant_color.a);
             )_main_")
             .str()
         );

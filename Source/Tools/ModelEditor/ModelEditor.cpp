@@ -11,9 +11,8 @@ ModelEditor::~ModelEditor()
 
 void ModelEditor::onEnter()
 {
-    m_center = std::make_unique<Sphere>(0.015f);
-    m_center->addRecipe(Cookable::CookType::Solid);
-    m_model = std::make_unique<ObjectModel>("Resources/objects/tree/tree.glb");
+    m_center = std::make_unique<Entity>(Entity::Sphere);
+    m_model = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
 
     m_lights.push_back({ glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } });
 
@@ -32,9 +31,6 @@ void ModelEditor::onExit()
 
 void ModelEditor::onUpdate()
 {
-    //UShader& shader = m_model->get(Cookable::CookType::Solid);
-    //shader->use();
-    //shader->set("diffuse_color", glm::vec4(m_menu.state.color.x, m_menu.state.color.y, m_menu.state.color.z, m_menu.state.color.w));
     if (m_menu.state.showWireFrame)
     {
         glPolygonMode(GL_FRONT, GL_LINE);
@@ -66,7 +62,7 @@ void ModelEditor::onUpdate()
     if (m_menu.state.updateAsset)
     {
         m_menu.state.updateAsset = false;
-        m_model = std::make_unique<ObjectModel>(m_menu.state.path);
+        m_model = std::make_unique<Entity>(m_menu.state.path);
     }
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
@@ -79,10 +75,8 @@ void ModelEditor::onUpdate()
     
     m_model->draw(m_window->scene()->camera(), worldPos * model , m_lights);
 
-    UShader& shader = m_center->get(Cookable::CookType::Solid);
-    shader->use();
-    shader->set("diffuse_color", glm::vec4(1, 1, 1, 1));
-    m_center->draw(m_window->scene()->camera(), m_menu.state.centerPosition);
+    m_center->get(Cookable::CookType::Model)->use().set("diffuse_color", glm::vec4(1, 1, 1, 1));
+    m_center->draw(m_window->scene()->camera(), glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)));
 
     m_menu.ShowMovableOptions();
 }

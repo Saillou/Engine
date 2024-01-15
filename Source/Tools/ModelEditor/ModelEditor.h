@@ -3,11 +3,10 @@
 #include <memory>
 #include <vector>
 
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 #include <Engine/Graphic/Window.hpp>
 #include "ModelEditorMenu.hpp"
 
-#include <Engine/Graphic/Base/Model/ObjectModel.hpp>
+#include <Engine/Graphic/Base/Model/Entity.hpp>
 
 class ModelEditor
 {
@@ -22,8 +21,8 @@ public:
 private:
     Window* m_window;
 
-    std::unique_ptr<Sphere>         m_center;
-    std::unique_ptr<ObjectModel>    m_model;
-    std::vector<Light>              m_lights;
-    ModelEditorMenu                 m_menu;
+    std::unique_ptr<Entity>  m_center;
+    std::unique_ptr<Entity>  m_model;
+    std::vector<Light>       m_lights;
+    ModelEditorMenu          m_menu;
 };

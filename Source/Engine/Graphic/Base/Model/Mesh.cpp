@@ -1,7 +1,6 @@
 #include "Mesh.hpp"
 
-
-Mesh::Mesh() :
+Mesh::Mesh():
     m_vbo(GL_ARRAY_BUFFER),
     m_ebo(GL_ELEMENT_ARRAY_BUFFER)
 {
@@ -9,7 +8,6 @@ Mesh::Mesh() :
 
 // render the mesh
 void Mesh::bindTextures(Shader& shader) {
-    // Bind textures
     for (unsigned int i = 0; i < m_textures.size(); i++) {
         if(!shader.has(m_textures[i].type))
             continue;
@@ -17,6 +15,12 @@ void Mesh::bindTextures(Shader& shader) {
         Texture::activate(GL_TEXTURE0 + i);
         shader.set(m_textures[i].type, (int)i);
         m_textures[i].data->bind();
+    }
+}
+
+void Mesh::unbindTextures() {
+    for (unsigned int i = 0; i < m_textures.size(); i++) {
+        m_textures[i].data->unbind();
     }
 }
 
@@ -28,6 +32,7 @@ void Mesh::drawElements(Shader& shader, const glm::mat4& quat) {
     m_vao.unbind();
 }
 
+// Getters
 const std::vector<Vertex>& Mesh::vertices() const {
     return m_vertices;
 }

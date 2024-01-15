@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
+#include <Engine/Graphic/Base/Model/Entity.hpp>
 #include <Engine/Graphic/Window.hpp>
 #include "MaterialEditorMenu.hpp"
 
@@ -20,7 +20,7 @@ public:
 private:
     Window* m_window;
 
-    std::unique_ptr<Sphere> m_model;
+    std::unique_ptr<Entity> m_entity;
     std::vector<Light>      m_lights;
     MaterialEditorMenu      m_menu;
 };
