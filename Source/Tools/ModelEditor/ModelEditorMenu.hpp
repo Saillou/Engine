@@ -16,9 +16,10 @@ struct ModelEditorMenu
 				struct State
 				{
 								glm::vec3 position;
-								glm::vec3 rotationVector;
 								glm::vec3 scale;
-								float rotation;
+								float roll;
+								float pitch;
+								float yaw;
 								std::string path;
 								bool updateAsset;
 

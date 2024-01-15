@@ -66,7 +66,9 @@ void ModelEditor::onUpdate()
     }
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
-    model = glm::rotate(model, m_menu.state.rotation, m_menu.state.rotationVector);
+    model = glm::rotate(model, m_menu.state.roll, glm::vec3(1, 0, 0));
+    model = glm::rotate(model, m_menu.state.pitch, glm::vec3(0, 1, 0));
+    model = glm::rotate(model, m_menu.state.yaw, glm::vec3(0, 0, 1));
     model = glm::translate(model, m_menu.state.centerPosition * -1.f);
     model = glm::translate(model, m_menu.state.position);
     model = glm::scale(model, m_menu.state.scale);

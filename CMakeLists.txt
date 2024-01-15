@@ -128,11 +128,57 @@ add_dependencies(${TOOLS_NAME}
     ${ENGINE_NAME}
 )
 
+# -------------------------- Train game executable ---------------------------
+set(TRAIN_NAME    "TrainGame")
+set(TRAIN_SOURCE  "${SOURCE_FOLDER}/TrainGame")
+file(GLOB_RECURSE _source_tr_list CONFIGURE_DEPENDS "${TRAIN_SOURCE}/*")
+
+add_executable(${TRAIN_NAME}
+    ${_source_tr_list}
+)
+target_include_directories(${TRAIN_NAME} PRIVATE 
+    "${SOURCE_FOLDER}/"
+
+    "${EXTERNAL_FOLDER}/glm/"
+    "${EXTERNAL_FOLDER}/glad/include/"
+    "${EXTERNAL_FOLDER}/GLFW/include/"
+    "${EXTERNAL_FOLDER}/stb/"
+    "${EXTERNAL_FOLDER}/freetype/include/"
+    "${EXTERNAL_FOLDER}/reactphysics3d/include/"
+    "${EXTERNAL_FOLDER}/assimp/include/"
+)
+target_link_libraries(${TRAIN_NAME}
+    debug "${OUTPUT_FOLDER}/lib/debug/${ENGINE_NAME}.lib"
+    debug "${EXTERNAL_FOLDER}/glfw/bin/Debug/glfw3.lib"
+    debug "${EXTERNAL_FOLDER}/freetype/bin/Debug/freetype.lib"
+    debug "${EXTERNAL_FOLDER}/reactphysics3d/bin/Debug/reactphysics3d.lib"
+
+    optimized "${OUTPUT_FOLDER}/lib/release/${ENGINE_NAME}.lib"
+    optimized "${EXTERNAL_FOLDER}/glfw/bin/Release/glfw3.lib"
+    optimized "${EXTERNAL_FOLDER}/freetype/bin/Release/freetype.lib"
+    optimized "${EXTERNAL_FOLDER}/reactphysics3d/bin/Release/reactphysics3d.lib"
+
+    "${EXTERNAL_FOLDER}/assimp/lib/assimp-vc143-mt.lib"
+)
+set_target_properties(${TRAIN_NAME} PROPERTIES 
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+
+    VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+
+    LINK_FLAGS_DEBUG    "/SUBSYSTEM:CONSOLE"
+    LINK_FLAGS_RELEASE  "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+)
+add_dependencies(${TRAIN_NAME} 
+    ${ENGINE_NAME}
+)
+
 # ------------------------------ Global ------------------------------
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${SAMPLE_NAME})
 
 source_group(TREE ${SAMPLE_SOURCE}      FILES ${_source_s_list})
 source_group(TREE ${TOOLS_SOURCE}       FILES ${_source_t_list})
 source_group(TREE ${ENGINE_SOURCE}      FILES ${_source_e_list})
+source_group(TREE ${TRAIN_SOURCE}       FILES ${_source_tr_list})
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${_external_list})
