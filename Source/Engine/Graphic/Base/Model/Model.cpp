@@ -35,7 +35,9 @@ void Model::draw(Shader& shader) {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
-            mesh->draw(shader, (*currNode)->transform);
+            mesh->bindTextures(shader);
+            mesh->drawElements(shader, (*currNode)->transform);
+            mesh->unbindTextures();
         }
 
         // Add children
@@ -148,52 +150,11 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
 
     material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
     if (const aiTexture* rawTextureData = scene->GetEmbeddedTexture(texture_file.C_Str())) {
-        TextureData texture;
-        texture.id = _TextureFromRawData(rawTextureData);
-        texture.type = "texture_diffuse";
-
-        outMesh.m_textures.push_back(texture);
+        outMesh.m_textures.push_back(TextureData{
+            "texture_diffuse",
+            std::make_unique<Texture>(rawTextureData)
+        });
     }
 
     outMesh._setup();
-}
-
-unsigned int Model::_TextureFromRawData(const aiTexture* rawTextureData) {
-    int width, height, nrComponents;
-    unsigned char* data = nullptr;
-
-    stbi_set_flip_vertically_on_load(false);
-    if (rawTextureData->mHeight == 0)
-        data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(rawTextureData->pcData), rawTextureData->mWidth, &width, &height, &nrComponents, 0);
-    else
-        data = stbi_load_from_memory(reinterpret_cast<unsigned char*>(rawTextureData->pcData), rawTextureData->mWidth * rawTextureData->mHeight, &width, &height, &nrComponents, 0);
-
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    if (data)
-    {
-        GLenum format = GL_RGB;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to read at texture." << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureID;
 }

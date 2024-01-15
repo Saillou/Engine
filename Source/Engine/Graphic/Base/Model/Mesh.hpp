@@ -7,6 +7,7 @@
 #include "../../Utils/Shader.hpp"
 #include "../../Utils/Array.hpp"
 #include "../../Utils/Buffer.hpp"
+#include "../../Utils/Texture.hpp"
 
 #include <string>
 #include <vector>
@@ -18,23 +19,26 @@ struct Vertex {
 };
 
 struct TextureData {
-    unsigned int id = 0;
     std::string type;
+    std::unique_ptr<Texture> data;
 };
 
-class Mesh {
-    friend class Model;
+struct Mesh {
+    friend struct Model;
+    friend struct Cube;
+    friend struct Sphere;
 
-public:
     Mesh();
-    void draw(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
+
+    void bindTextures(Shader& shader);
+    void unbindTextures();
     void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
 
     const std::vector<Vertex>&       vertices() const;
     const std::vector<unsigned int>& indices() const;
 
 private:
-    Array m_vao;
+    Array  m_vao;
     Buffer m_vbo;
     Buffer m_ebo;
 

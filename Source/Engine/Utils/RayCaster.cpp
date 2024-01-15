@@ -2,7 +2,7 @@
 
 #include <stack>
 
-bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const ObjectModel& objModel, const glm::mat4& quat)
+bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
 {
 	using namespace glm;
 

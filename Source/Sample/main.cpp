@@ -16,7 +16,7 @@ int main() {
             switch (key) 
             {
             case GLFW_KEY_ESCAPE:
-                window.close();
+                window.close(); 
                 break;
 
             default:

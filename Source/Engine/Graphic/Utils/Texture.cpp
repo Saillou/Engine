@@ -22,7 +22,7 @@ Texture::Texture(const std::string& image_path):
 {
 	glGenTextures(1, &m_textureId);
 	bind();
-	load(m_texture_type, image_path, (int*) & m_width, (int*)&m_height);
+	load(m_texture_type, image_path, (int*)&m_width, (int*)&m_height);
 	_setParameters();
 }
 
@@ -56,6 +56,39 @@ Texture::Texture(GLenum texture_type, GLint level, GLint internalformat, GLsizei
 	);
 	_setParameters();
 }
+
+Texture::Texture(const aiTexture* rawTexture): 
+	m_textureId(0),
+	m_width(0),
+	m_height(0),
+	m_texture_type(GL_TEXTURE_2D)
+{
+	glGenTextures(1, &m_textureId);
+
+	stbi_set_flip_vertically_on_load(false);
+
+	int nrComponents;
+	unsigned char* data = nullptr;
+
+	if (rawTexture->mHeight == 0)
+		data = stbi_load_from_memory((unsigned char*)(rawTexture->pcData), rawTexture->mWidth, (int*)&m_width, (int*)&m_height, &nrComponents, 0);
+	else
+		data = stbi_load_from_memory((unsigned char*)(rawTexture->pcData), rawTexture->mWidth * rawTexture->mHeight, (int*)&m_width, (int*)&m_height, &nrComponents, 0);
+	
+	if (!data) {
+		std::cerr << "[Warning] Texture failed to read at texture." << std::endl;
+		return;
+	}
+
+	const GLenum format = nrComponents == 1 ? GL_RED : nrComponents == 4 ? GL_RGBA : GL_RGB;
+
+	bind();
+	glTexImage2D(m_texture_type, 0, format, (int)m_width, (int)m_height, 0, format, GL_UNSIGNED_BYTE, data);
+	stbi_image_free(data);
+	
+	_setParameters();
+}
+
 
 Texture::~Texture() {
 	glDeleteTextures(1, &m_textureId);
@@ -133,6 +166,8 @@ void Texture::activate(GLuint target) {
 }
 
 void Texture::_setParameters() {
+	glGenerateMipmap(GL_TEXTURE_2D);
+
 	glTexParameteri(m_texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(m_texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(m_texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

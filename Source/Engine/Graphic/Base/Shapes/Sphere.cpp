@@ -1,10 +1,58 @@
+#include <limits>
+
 #include "Sphere.hpp"
 
-Sphere::Sphere(float radius, int smoothness)
+using namespace glm;
+
+// statics
+std::map<std::pair<float, float>, unsigned int> Sphere::_sharedIndices = {};
+std::vector<unsigned int> Sphere::m_indices  = {};
+std::vector<float> Sphere::m_vertices = {};
+std::vector<float> Sphere::m_normals  = {};
+std::vector<float> Sphere::m_uvs      = {};
+
+// Creator
+std::unique_ptr<Mesh> Sphere::CreateMesh(int smoothness)
 {
-    const int subdivision = smoothness;
+    // Reset temporary
+    _sharedIndices.clear();
+    m_indices.clear();
+
+    m_vertices.clear();
+    m_normals.clear();
+    m_uvs.clear();
+
+    // Start
+    std::unique_ptr<Mesh> sphereMesh = std::make_unique<Mesh>();
+    _generate(smoothness, 1.0f);
+
+    // Interleave
+    for (size_t i = 0; i < m_indices.size(); i++) {
+        sphereMesh->m_indices.push_back(m_indices[i]);
+    }
+
+    for (size_t i = 0, j = 0; i < m_vertices.size(); i+=3, j+=2) {
+        Vertex vertex;
+        vertex.Position  = { m_vertices[i + 0], m_vertices[i + 1], m_vertices[i + 2] };
+        vertex.Normal    = { m_normals[i + 0], m_normals[i + 1], m_normals[i + 2] };
+        vertex.TexCoords = { m_uvs[j + 0], m_uvs[j + 1] };
+
+        sphereMesh->m_vertices.push_back(vertex);
+    }
+
+    // Send to gpu
+    sphereMesh->_setup();
+
+    return sphereMesh;
+}
+
+
+// Private
+void Sphere::_generate(int subdivision, float radius)
+{
     const float S_STEP = 186 / 2048.0f;     // horizontal texture step
     const float T_STEP = 322 / 1024.0f;     // vertical texture step
+
     std::vector<float> tmpVertices(12 * 3);
     {
         const float PI = 3.1415926f;
@@ -48,7 +96,7 @@ Sphere::Sphere(float radius, int smoothness)
         tmpVertices[i1 + 1] = 0;
         tmpVertices[i1 + 2] = -radius;
     }
-    
+
     float v[3];                             // vertex
     float n[3];                             // normal
     float scale;                            // scale factor for normalization
@@ -272,88 +320,8 @@ Sphere::Sphere(float radius, int smoothness)
             }
         }
     }
-
-    // Bind
-    _bindArray();
 }
 
-void Sphere::draw(const Camera& camera, const glm::mat4& model, const std::vector<Light>& lights) {
-    for (auto& recipe : m_shaders) {
-        // Setup uniforms
-        recipe.second->
-            use().
-            set("Model", model).
-            set("View", camera.modelview).
-            set("Projection", camera.projection);
-
-        switch (recipe.first)
-        {
-        case CookType::Solid:
-            recipe.second->
-                set("CameraPos", camera.position).
-                set("LightNumber", (int)lights.size());
-
-            for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-                recipe.second->
-                    set("LightPos_" + std::to_string(iLight), lights[iLight].position).
-                    set("LightColor_" + std::to_string(iLight), lights[iLight].color);
-            }
-            break;
-
-        case CookType::Shadow:
-            recipe.second->
-                set("viewPos", camera.position).
-                set("far_plane", camera.far_plane).
-                set("lightPos", lights[0].position).
-                set("lightColor", 0.3f * lights[0].color).
-                set("depthMap", 1);
-
-            break;
-        }
-
-        // Draw
-        drawElements(*recipe.second);
-    }
-}
-
-void Sphere::draw(const Camera& camera, const glm::vec3& position, const glm::vec3& orientation, const std::vector<Light>& lights) {
-    glm::mat4 model(1.0f);
-
-    model = glm::translate(model, position);
-    model = glm::rotate(model, orientation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, orientation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, orientation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    draw(camera, model, lights);
-}
-
-void Sphere::drawBatch(size_t amount, const Camera& camera) {
-    for (auto& recipe : m_shaders) {
-        // Setup uniforms
-        recipe.second->
-            use().
-            set("View", camera.modelview).
-            set("Projection", camera.projection).
-            set("CameraPos", camera.position);
-
-        // Draw
-        bind();
-        glDrawElementsInstanced(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)amount);
-        unbind();
-    }
-}
-
-void Sphere::drawElements(Shader& sh) {
-    if (sh.has("LocalModel"))
-        sh.use().set("LocalModel", glm::mat4(1.0f));
-
-    bind();
-    glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
-    unbind();
-}
-
-
-// Private
 void Sphere::_addVertex(float x, float y, float z)
 {
     m_vertices.push_back(x);
@@ -498,7 +466,7 @@ bool Sphere::_isSharedTexCoord(const float t[2])
 
 bool Sphere::_isOnLineSegment(const float a[2], const float b[2], const float c[2])
 {
-    const float EPSILON = 0.0001f;
+    const float EPSILON = std::numeric_limits<float>::epsilon();
 
     // cross product must be 0 if c is on the line
     float cross = ((b[0] - a[0]) * (c[1] - a[1])) - ((b[1] - a[1]) * (c[0] - a[0]));
