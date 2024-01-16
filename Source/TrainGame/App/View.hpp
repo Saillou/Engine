@@ -78,6 +78,9 @@ namespace Thomas
         std::unique_ptr<Entity> m_model_sphere;
         std::unique_ptr<Box>    m_model_box;
         std::unique_ptr<Box>    m_model_box_shadow;
+        std::unique_ptr<Box>    m_modelGridCellGreen;
+        std::unique_ptr<Box>    m_modelGridCellOrange;
+        std::unique_ptr<Box>    m_modelGridCellRed;
         std::unique_ptr<Entity> m_model;
 
         // Scene objects

@@ -152,7 +152,18 @@ namespace Thomas
                 glm::mat4 mat = glm::translate(glm::mat4(1.0f), cell.second.transform.position);
                 mat = glm::scale(mat, cell.second.transform.scale);
 
-                m_model_box_shadow->draw(m_camera, mat, m_lights);
+                switch (cell.second.type)
+                {
+                case GridCell::CellType::Visible:
+                    m_modelGridCellOrange->draw(m_camera, mat, m_lights);
+                    break;
+                case GridCell::CellType::ConstructOk:
+                    m_modelGridCellGreen->draw(m_camera, mat, m_lights);
+                    break;
+                case GridCell::CellType::ConstructBad:
+                    m_modelGridCellRed->draw(m_camera, mat, m_lights);
+                    break;
+                }                
             }
 
             // Particles
@@ -240,6 +251,19 @@ namespace Thomas
         m_model_box_shadow = std::make_unique<Box>(0.3f);
         m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(0.3f, 0.7f, 0.3f, 0.4f));
         m_model_box_shadow->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.3f, 0.7f, 0.3f, 0.6f));
+
+        // Grid cells
+        m_modelGridCellGreen = std::make_unique<Box>(0.3f);
+        m_modelGridCellGreen->addRecipe(Cookable::CookType::Solid, glm::vec4(0.3f, 0.7f, 0.3f, 0.4f));
+        m_modelGridCellGreen->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.3f, 0.7f, 0.3f, 0.6f));
+
+        m_modelGridCellRed = std::make_unique<Box>(0.3f);
+        m_modelGridCellRed->addRecipe(Cookable::CookType::Solid, glm::vec4(0.7f, 0.3f, 0.3f, 0.4f));
+        m_modelGridCellRed->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.7f, 0.3f, 0.3f, 0.6f));
+
+        m_modelGridCellOrange = std::make_unique<Box>(0.3f);
+        m_modelGridCellOrange->addRecipe(Cookable::CookType::Solid, glm::vec4(0.8f, 0.6f, 0.3f, 0.4f));
+        m_modelGridCellOrange->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.8f, 0.6f, 0.3f, 0.6f));
 
         // Ground - Grid
         m_model_box = std::make_unique<Box>(1.0f);

@@ -61,6 +61,15 @@ namespace Thomas
 
     void GridComponent::onConstruct(float dt)
     {
+        const std::pair<int64_t, int64_t> pos = Grid::getPosition(m_transform->position);
+
+        for (int y = 0; y < m_size.y; y++)
+        {
+            for (int x = 0; x < m_size.x; x++)
+            {
+                Grid::setCellAtPosition(pos.first + x + m_offset.x, pos.second + y + m_offset.y, GridCell::CellType::ConstructOk);
+            }
+        }
     }
 
 } // namespace Thomas

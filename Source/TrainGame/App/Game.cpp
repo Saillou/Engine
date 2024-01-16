@@ -35,7 +35,7 @@ namespace Thomas
             obj->components.push_back(trainController);
 
             GridComponent* gridComponent = new GridComponent(&obj->transform, { 6,6 }, { 0,0 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            gridComponent->setState(GridComponent::GridComponentState::Construct);
             obj->components.push_back(gridComponent);
 
             m_objects[obj->id] = obj;
@@ -90,7 +90,7 @@ namespace Thomas
 
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(16,-20), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 2,5 }, { 0,-2 });
             gridComponent->setState(GridComponent::GridComponentState::Visible);
             obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;

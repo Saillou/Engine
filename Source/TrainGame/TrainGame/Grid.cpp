@@ -60,6 +60,19 @@ namespace Thomas
         cell.transform.position = Grid::getPosition(x, y);
         cell.transform.scale = { 0.3f,0.3f, 0.01f };
 
+        auto it = grid.m_cells.find({ x,y });
+
+        if (it != grid.m_cells.end())
+        {
+            if (it->second.type == GridCell::CellType::ConstructBad)
+                return;
+
+            const bool cond1 = type == GridCell::CellType::ConstructOk && it->second.type == GridCell::CellType::Visible;
+            const bool cond2 = type == GridCell::CellType::Visible && it->second.type == GridCell::CellType::ConstructOk;
+            if (cond1 || cond2)
+                cell.type = GridCell::CellType::ConstructBad;
+        }
+
         grid.m_cells[{x, y}] = cell;
     }
 
