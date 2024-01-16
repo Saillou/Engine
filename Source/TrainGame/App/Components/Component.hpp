@@ -6,7 +6,8 @@ namespace Thomas
     enum class ComponentId
     {
         None = 0,
-        TrainController
+        TrainController,
+        GridComponent
     };
 
     class Component

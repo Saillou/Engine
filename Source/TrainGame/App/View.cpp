@@ -134,21 +134,30 @@ namespace Thomas
                 }
             }
             //std::cout << "Game models rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
+            // Draw ground with shadow
+            m_shadowRender.bindTexture(GL_TEXTURE1);
+            for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
+                m_model_box->draw(m_camera, cell_quat, m_lights);
+            }
 
             // Draw box
             {
-                m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
+                //m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
+            }
+
+            // Draw grid cells
+
+            for (auto& cell : m_gridCells)
+            {
+                glm::mat4 mat = glm::translate(glm::mat4(1.0f), cell.second.transform.position);
+                mat = glm::scale(mat, cell.second.transform.scale);
+
+                m_model_box_shadow->draw(m_camera, mat, m_lights);
             }
 
             // Particles
             {
                 m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
-            }
-
-            // Draw ground with shadow
-            m_shadowRender.bindTexture(GL_TEXTURE1);
-            for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-                m_model_box->draw(m_camera, cell_quat, m_lights);
             }
 
             // Skybox
@@ -210,6 +219,12 @@ namespace Thomas
         m_modelsToDraw[id].push_back(transform);
     }
 
+    void View::drawGrid(const std::map<std::pair<int, int>, GridCell>& cells)
+    {
+        m_gridCells.clear();
+        m_gridCells = cells;
+    }
+
     void View::_initObjects() {
         // Sky
         m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
@@ -223,7 +238,8 @@ namespace Thomas
 
         // Box - Test shadow
         m_model_box_shadow = std::make_unique<Box>(0.3f);
-        m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
+        m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(0.3f, 0.7f, 0.3f, 0.4f));
+        m_model_box_shadow->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.3f, 0.7f, 0.3f, 0.6f));
 
         // Ground - Grid
         m_model_box = std::make_unique<Box>(1.0f);

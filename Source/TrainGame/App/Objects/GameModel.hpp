@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "TrainGame/App/Objects/Transform.h"
 #include <Engine/Graphic/Base/Model/Entity.hpp>
 
 namespace Thomas
@@ -15,13 +16,6 @@ namespace Thomas
         Track,
         TrackLeft,
         TrackRight
-    };
-
-    struct Transform
-    {
-        glm::vec3   position;
-        glm::vec3   scale;
-        glm::vec3   rotation;
     };
 
     struct GameModel

@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <map>
 
 #include <Engine/Utils/Timer.hpp>
 #include <Engine/Utils/Objects/ShadowRender.hpp>
@@ -17,6 +18,8 @@
 #include "TrainGame/TrainGame/TrainGameModels.hpp"
 #include <Engine/Graphic/Utils/Shader.hpp>
 #include <Engine/Graphic/Utils/Framebuffer.hpp>
+
+#include "TrainGame/TrainGame/GridCell.hpp"
 
 namespace Thomas
 {
@@ -39,7 +42,9 @@ namespace Thomas
         bool enable_filter = false;
 
         void loadModels(size_t size);
+
         void draw(ModelId id, const Transform& transform);
+        void drawGrid(const std::map<std::pair<int,int>, GridCell>& cells);
 
     private:
         enum class _ObjecId {
@@ -67,6 +72,8 @@ namespace Thomas
         std::unordered_map<_ObjecId, std::unique_ptr<Entity>> m_models;
         std::unordered_map<ModelId,  std::unique_ptr<Entity>> m_gameModels;
         std::unordered_map<ModelId,  std::vector<Transform>>  m_modelsToDraw;
+
+        std::map<std::pair<int, int>, GridCell> m_gridCells;
 
         std::unique_ptr<Entity> m_model_sphere;
         std::unique_ptr<Box>    m_model_box;
