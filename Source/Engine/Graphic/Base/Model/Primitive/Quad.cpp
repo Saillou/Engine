@@ -1,11 +1,12 @@
 #include "Quad.hpp"
 
+#include "../../../Cookable.hpp"
+
 // - Quad -
 Quad::Quad(float x, float y, float w, float h)
 {
-    // x in [0, 1] -> [x, x+w] -> [-1, 1] (same for y)
-    // transform: val_1 = val * 2.0f - 1.0f
-    
+    Cookable::Set(Cookable::CookType::Quad, shader_quad);
+
     float x1 = x*2.0f - 1.0f;
     float y1 = y*2.0f - 1.0f;
 
@@ -13,26 +14,21 @@ Quad::Quad(float x, float y, float w, float h)
     float y2 = (y+h)*2.0f - 1.0f;
 
     // Shape
-    _createQuad(
+    createQuad(quad_mesh,
         glm::vec3(x1, y2, 0),
         glm::vec3(x1, y1, 0),
         glm::vec3(x2, y1, 0),
         glm::vec3(x2, y2, 0)
     );
-    _bindArray();
 
-    // Cook
-    addRecipe(CookType::Quad);
+    setupGPU(quad_mesh);
 }
 
 void Quad::draw() {
-    get(CookType::Quad)->use();
-
+    shader_quad.use();
     drawElements();
 }
 
 void Quad::drawElements() {
-    bind();
-    glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0);
-    unbind();
+    quad_mesh.drawElements();
 }

@@ -1,12 +1,10 @@
 #pragma once
 
-#include "../TextEngine.hpp"
 #include "../Camera.hpp"
-#include "../Utils/Framebuffer.hpp"
-
-#include "../Light.hpp"
 #include "../Cookable.hpp"
-#include "Shapes/Quad.hpp"
+#include "../Light.hpp"
+#include "../TextEngine.hpp"
+#include "../Utils/Framebuffer.hpp"
 
 // Scene model
 struct BaseScene {
@@ -21,7 +19,7 @@ struct BaseScene {
     static void Viewport(int x, int y, int width, int height);
 
     // utils
-    void drawFrame(Framebuffer& framebuffer);
+    void drawFrame(const Framebuffer& framebuffer);
 
     // getters
     int width() const;

@@ -25,26 +25,38 @@ struct TextureData {
 
 struct Mesh {
     friend struct Model;
-    friend struct Cube;
-    friend struct Sphere;
+    friend struct PrimitiveHelper;
 
     Mesh();
 
+    void createBatch(size_t);
+    void updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models);
+    void drawElementsBatch();
+
     void bindTextures(Shader& shader);
     void unbindTextures();
+
+    void drawElements();
     void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
 
     const std::vector<Vertex>&       vertices() const;
     const std::vector<unsigned int>& indices() const;
 
 private:
+    // Gpu data
     Array  m_vao;
     Buffer m_vbo;
     Buffer m_ebo;
 
+    // .. only for batches
+    Buffer m_colors;
+    Buffer m_instances;
+
+    // Cpu data
     std::vector<Vertex>       m_vertices = {};
     std::vector<unsigned int> m_indices  = {};
     std::vector<TextureData>  m_textures = {};
 
+    // Bind data Cpu to Gpu
     void _setup();
 };

@@ -9,8 +9,6 @@
 #include <Engine/Utils/Filter/BaseFilter.hpp>
 
 #include <Engine/Graphic/Base/BaseScene.hpp>
-#include <Engine/Graphic/Base/Shapes/Box.hpp>
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
 
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
@@ -49,7 +47,6 @@ private:
 
     // Object models (vertices, textures..)
     std::unordered_map<_ObjectId, std::unique_ptr<Entity>> m_entities;
-    std::unique_ptr<Box> m_model_box;
 
     // Scene objects
     std::vector<_Object>    m_objects;                                      
@@ -62,11 +59,9 @@ private:
 
         struct Particles {
             const size_t amount;
-
-            std::unique_ptr<Box> object;
+            std::unique_ptr<Entity> object;
             std::vector<glm::mat4> models;
             std::vector<glm::vec4> colors;
-
             std::vector<glm::vec4> speeds;
         } particles;
     } m_fireGrid;

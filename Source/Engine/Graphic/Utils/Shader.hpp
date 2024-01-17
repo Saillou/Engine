@@ -32,12 +32,12 @@ public:
 	Shader& setBlock(const std::string& name, const int layout);
 
 	bool has(const std::string& name);
-	unsigned int getId() const;
+	unsigned int id() const;
 
 private:
 	static const std::string _readFromFile(const std::string& path);
 
-	unsigned int m_id;
+	unsigned int m_id = 0;
 };
 
 typedef std::unique_ptr<Shader> UShader;

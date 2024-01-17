@@ -23,18 +23,22 @@ public:
 	void unbind();
 
 	unsigned int getId() const;
+	size_t size() const;
 
 protected:
 	unsigned int m_bufferId;
 	unsigned int m_bufferType;
 	unsigned int m_memoryType;
+	size_t		 m_size = 0;
 };
 
 template <typename T> inline
 	void Buffer::bindData(const std::vector<T>& data) 
 {
+	m_size = data.size() * sizeof(T);
+
 	bind();
-	glBufferData(m_bufferType, data.size() * sizeof(T), data.data(), m_memoryType);
+	glBufferData(m_bufferType, m_size, data.data(), m_memoryType);
 }
 
 template <typename T> inline

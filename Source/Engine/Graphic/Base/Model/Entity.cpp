@@ -1,19 +1,20 @@
 #include "Entity.hpp"
 
-#include "../Shapes/Cube.hpp"
-#include "../Shapes/Sphere.hpp"
+#include "Primitive/Cube.hpp"
+#include "Primitive/Sphere.hpp"
 
 Entity::Entity(const std::string& path) :
     m_model(path)
 {
-    Cookable::addRecipe(Cookable::CookType::Model);
-    Cookable::addRecipe(Cookable::CookType::ModelGeometry);
+    addRecipe(CookType::Model);
+    addRecipe(CookType::ModelGeometry);
 }
 
 Entity::Entity(SimpleShape shape)
 {
-    Cookable::addRecipe(Cookable::CookType::Model);
-    Cookable::addRecipe(Cookable::CookType::ModelGeometry);
+    addRecipe(CookType::Batch);
+    addRecipe(CookType::Model);
+    addRecipe(CookType::ModelGeometry);
 
     m_model._root = std::make_unique<Model::Node>();
 
@@ -28,8 +29,17 @@ Entity::Entity(SimpleShape shape)
     }
 }
 
+void Entity::createBatch(size_t amount) {
+    // TODO: change this
+    m_model._root->meshes.front()->createBatch(amount);
+}
+void Entity::updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
+    // TODO: change this
+    m_model._root->meshes.front()->updateBatch(colors, models);
+}
+
 void Entity::draw(const Camera& camera, const glm::mat4& model, const std::vector<Light>& lights) {
-    auto& sh = *Cookable::get(Cookable::CookType::Model);
+    auto& sh = *get(CookType::Model);
 
     sh.use()
         .set("Projection",  camera.projection)
@@ -46,8 +56,19 @@ void Entity::draw(const Camera& camera, const glm::mat4& model, const std::vecto
     m_model.draw(sh);
 }
 
+void Entity::drawBatch(const Camera& camera) {
+    // TODO: change this
+    get(CookType::Batch)->
+        use().
+        set("View",         camera.modelview).
+        set("Projection",   camera.projection).
+        set("CameraPos",    camera.position);
+
+    m_model._root->meshes.front()->drawElementsBatch();
+}
+
 void Entity::drawGeometry(const Camera& camera, const glm::mat4& model) {
-    auto& sh = *Cookable::get(Cookable::CookType::ModelGeometry);
+    auto& sh = *get(CookType::ModelGeometry);
     sh.use()
         .set("Projection", camera.projection)
         .set("View", camera.modelview)

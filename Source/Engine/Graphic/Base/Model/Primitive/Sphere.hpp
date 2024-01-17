@@ -7,9 +7,12 @@
 #include <glm/glm.hpp>
 
 #include <memory>
-#include "../Model/Mesh.hpp"
+#include "PrimitiveHelper.hpp"
+#include "../../Model/Mesh.hpp"
 
-struct Sphere {
+struct Sphere : 
+    private PrimitiveHelper 
+{
     static std::unique_ptr<Mesh> CreateMesh(int smoothness = 3);
 
 private:

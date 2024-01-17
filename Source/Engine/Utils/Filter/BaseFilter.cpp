@@ -1,32 +1,40 @@
 #include "BaseFilter.hpp"
 
-BaseFilter::BaseFilter() : framebuffer(Framebuffer::Unique) 
+BaseFilter::BaseFilter() : _framebuffer(Framebuffer::Unique)
 {
     // ..
 }
 BaseFilter::BaseFilter(Shader& sh) : 
-    framebuffer(Framebuffer::Unique),
-    shader(sh) 
+    _framebuffer(Framebuffer::Unique),
+    _shader(sh)
 {
     // ..
 }
 
 void BaseFilter::apply(Framebuffer& fIn) {
     // Multisample -> Monosample
-    Framebuffer::Blit(fIn, framebuffer);
+    Framebuffer::Blit(fIn, _framebuffer);
 
     // Draw
-    framebuffer.bind();
+    _framebuffer.bind();
     glDisable(GL_DEPTH_TEST);
     {
-        shader.use();
-        framebuffer.texture().bind();
-        surface.drawElements();
+        _shader.use();
+        _framebuffer.texture().bind();
+        _surface.drawElements();
     }
     glEnable(GL_DEPTH_TEST);
-    framebuffer.unbind();
+    _framebuffer.unbind();
 }
 
 void BaseFilter::resize(int width, int height) {
-    framebuffer.resize(width, height);
+    _framebuffer.resize(width, height);
+}
+
+Shader& BaseFilter::shader() {
+    return _shader;
+}
+
+const Framebuffer& BaseFilter::frame() const {
+    return _framebuffer;
 }

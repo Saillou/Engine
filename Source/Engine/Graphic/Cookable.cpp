@@ -1,17 +1,9 @@
 #include "Cookable.hpp"
 
+#include <iostream>
 #include <glad/glad.h>
 
-// - Recipes
-Cookable* Cookable::addRecipe(CookType type) {
-    // Cached
-    if (m_shaders.find(type) != m_shaders.cend())
-        return this;
-
-    // Create
-    m_shaders[type] = std::make_unique<Shader>();
-    UShader& recipe = m_shaders[type];
-
+void Cookable::Set(CookType type, Shader& recipe) {
     switch (type) {
     case CookType::Solid:
         _set_shader_solid(recipe);
@@ -46,10 +38,25 @@ Cookable* Cookable::addRecipe(CookType type) {
         break;
 
     default:
-        return this;
+        std::cerr << "[Warning] No shader created." << std::endl;
+        return;
     }
 
-    recipe->link();
+    recipe.link();
+}
+
+
+// - Recipes
+Cookable* Cookable::addRecipe(CookType type) {
+    // Cached
+    if (m_shaders.find(type) != m_shaders.cend())
+        return this;
+
+    // Create
+    m_shaders[type] = std::make_unique<Shader>();
+    UShader& recipe = m_shaders[type];
+
+    Set(type, *recipe);
 
     return this;
 }
@@ -67,10 +74,11 @@ UShader& Cookable::get(CookType type) {
     return m_shaders[type];
 }
 
+
 // - Shaders
-void Cookable::_set_shader_batch(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_batch(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
@@ -108,9 +116,9 @@ void Cookable::_set_shader_batch(UShader& shader) {
         );
 }
 
-void Cookable::_set_shader_shadow_batch(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_shadow_batch(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
@@ -207,9 +215,9 @@ void Cookable::_set_shader_shadow_batch(UShader& shader) {
 
 
 
-void Cookable::_set_shader_solid(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_solid(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
 
@@ -294,9 +302,9 @@ void Cookable::_set_shader_solid(UShader& shader) {
         );
 }
 
-void Cookable::_set_shader_model(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_model(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
@@ -390,9 +398,9 @@ void Cookable::_set_shader_model(UShader& shader) {
         );
 }
 
-void Cookable::_set_shader_shadow(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_shadow(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
@@ -486,9 +494,9 @@ void Cookable::_set_shader_shadow(UShader& shader) {
         );
 }
 
-void Cookable::_set_shader_geometry(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_geometry(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
 
@@ -534,9 +542,9 @@ void Cookable::_set_shader_geometry(UShader& shader) {
         );
 }
 
-void Cookable::_set_shader_model_geometry(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_model_geometry(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
 
@@ -584,9 +592,9 @@ void Cookable::_set_shader_model_geometry(UShader& shader) {
 }
 
 
-void Cookable::_set_shader_quad(UShader& shader) {
-    shader->
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+void Cookable::_set_shader_quad(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("out", "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(

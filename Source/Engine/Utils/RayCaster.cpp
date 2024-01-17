@@ -37,30 +37,6 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 	return false;
 }
 
-bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const BaseShape& shape, const glm::mat4& quat)
-{
-	using namespace glm;
-
-	// Mouse out screen
-	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return false;
-
-	// Intersect
-	const auto& idx = shape.indices();
-	const auto& v   = shape.vertices();
-
-	// -> can be reaaally optimized, in multiple ways (using bounding rect, fast discard, hull, parallelization, screen segmentation...)
-	for (size_t i = 0; i < idx.size(); i += 3) {
-		if(IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
-			vec3(quat * vec4(v[3 * idx[i + 0] + 0], v[3 * idx[i + 0] + 1], v[3 * idx[i + 0] + 2], +1.0f)),
-			vec3(quat * vec4(v[3 * idx[i + 1] + 0], v[3 * idx[i + 1] + 1], v[3 * idx[i + 1] + 2], +1.0f)),
-			vec3(quat * vec4(v[3 * idx[i + 2] + 0], v[3 * idx[i + 2] + 1], v[3 * idx[i + 2] + 2], +1.0f))
-		})) return true;
-	}
-
-	return false;
-}
-
 bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
 {
 	using namespace glm;

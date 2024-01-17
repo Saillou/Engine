@@ -27,21 +27,11 @@ std::unique_ptr<Mesh> Sphere::CreateMesh(int smoothness)
     _generate(smoothness, 1.0f);
 
     // Interleave
-    for (size_t i = 0; i < m_indices.size(); i++) {
-        sphereMesh->m_indices.push_back(m_indices[i]);
-    }
-
-    for (size_t i = 0, j = 0; i < m_vertices.size(); i+=3, j+=2) {
-        Vertex vertex;
-        vertex.Position  = { m_vertices[i + 0], m_vertices[i + 1], m_vertices[i + 2] };
-        vertex.Normal    = { m_normals[i + 0], m_normals[i + 1], m_normals[i + 2] };
-        vertex.TexCoords = { m_uvs[j + 0], m_uvs[j + 1] };
-
-        sphereMesh->m_vertices.push_back(vertex);
-    }
+    setIndices(*sphereMesh, m_indices);
+    setVertices(*sphereMesh, m_vertices, m_normals, m_uvs);
 
     // Send to gpu
-    sphereMesh->_setup();
+    setupGPU(*sphereMesh);
 
     return sphereMesh;
 }

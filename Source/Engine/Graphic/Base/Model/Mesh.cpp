@@ -2,8 +2,43 @@
 
 Mesh::Mesh():
     m_vbo(GL_ARRAY_BUFFER),
-    m_ebo(GL_ELEMENT_ARRAY_BUFFER)
+    m_ebo(GL_ELEMENT_ARRAY_BUFFER), 
+    m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+    m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
 {
+}
+
+void Mesh::createBatch(size_t size) {
+    m_vao.bind();
+
+    int current_attrib_id = 3;
+
+    m_colors.bindData(size * sizeof(glm::vec4));
+    glVertexAttribPointer(current_attrib_id, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(current_attrib_id);
+    glVertexAttribDivisor(current_attrib_id, 1);
+    current_attrib_id++;
+
+    m_instances.bindData(size * sizeof(glm::mat4));
+    for (int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(current_attrib_id);
+        glVertexAttribPointer(current_attrib_id, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+        glVertexAttribDivisor(current_attrib_id, 1);
+        current_attrib_id++;
+    }
+
+    m_vao.unbind();
+}
+
+void Mesh::updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
+    m_colors.bindData(colors);
+    m_instances.bindData(models);
+}
+
+void Mesh::drawElementsBatch() {
+    m_vao.bind();
+    glDrawElementsInstanced(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)m_instances.size() / sizeof(glm::mat4));
+    m_vao.unbind();
 }
 
 // render the mesh
@@ -24,12 +59,17 @@ void Mesh::unbindTextures() {
     }
 }
 
-void Mesh::drawElements(Shader& shader, const glm::mat4& quat) {
-    shader.use().set("LocalModel", quat);
-
+void Mesh::drawElements() {
     m_vao.bind();
-    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_indices.size()), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, (unsigned int)m_indices.size(), GL_UNSIGNED_INT, 0);
     m_vao.unbind();
+}
+
+void Mesh::drawElements(Shader& shader, const glm::mat4& quat) {
+    if(shader.has("LocalModel"))
+        shader.use().set("LocalModel", quat);
+
+    drawElements();
 }
 
 // Getters

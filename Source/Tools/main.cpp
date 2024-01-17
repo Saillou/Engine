@@ -1,5 +1,5 @@
 #include <Engine/Graphic/Window.hpp>
-#include <Engine/Graphic/Base/Shapes/Sphere.hpp>
+#include <Engine/Graphic/Base/Model/Primitive/Sphere.hpp>
 
 #include "Menu.hpp"
 
