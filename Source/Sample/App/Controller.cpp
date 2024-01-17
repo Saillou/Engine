@@ -1,12 +1,13 @@
 #include "Controller.hpp"
-#include "View.hpp"
 
 #include <memory>
 #include <iostream>
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
-    m_scene(scene)
+    m_view(std::dynamic_pointer_cast<View>(scene))
 {
+    assert(m_view != nullptr);
+
     // Root events
     _subscribe(&Controller::_on_state_update);
     _subscribe(&Controller::_on_key_pressed);
@@ -42,22 +43,19 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
     if (dir != glm::vec3(0, 0, 0)) 
     {
-        m_scene->camera().position += 0.05f * dir;
+        m_view->camera().position += 0.05f * dir;
     }
 
     // Other
-    auto view = std::dynamic_pointer_cast<View>(m_scene);
-
     switch (evt.key)
     {
-        case 'R': view->enable_filter = true;  break;
-        case 'T': view->enable_filter = false; break;
+        case 'R': m_view->enable_filter = true;  break;
+        case 'T': m_view->enable_filter = false; break;
     }
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
-    auto view = std::dynamic_pointer_cast<View>(m_scene);
-    view->mouse_on(evt.x, evt.y);
+    m_view->mouse_on(evt.x, evt.y);
 }
 
 void Controller::_on_mouse_clicked(const CommonEvents::MouseClicked& evt) {

@@ -13,10 +13,14 @@ struct Cookable {
         Solid, 
         Geometry,
         Shadow,
+        
         Model,
         ModelGeometry,
+        
         Quad,
+        
         Batch,
+        BatchGeometry,
         BatchShadow
     };
 
@@ -38,6 +42,7 @@ protected:
     static void _set_shader_shadow(Shader& shader);
     static void _set_shader_shadow_batch(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
+    static void _set_shader_geometry_batch(Shader& shader);
     static void _set_shader_model_geometry(Shader& shader);
     static void _set_shader_quad(Shader& shader);
 

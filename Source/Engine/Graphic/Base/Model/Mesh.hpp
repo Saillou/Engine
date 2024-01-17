@@ -29,15 +29,13 @@ struct Mesh {
 
     Mesh();
 
-    void createBatch(size_t);
     void updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models);
-    void drawElementsBatch();
 
-    void bindTextures(Shader& shader);
-    void unbindTextures();
+    void bindTextures(Shader& shader) const;
+    void unbindTextures() const;
 
-    void drawElements();
-    void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f));
+    void drawElements() const;
+    void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f)) const;
 
     const std::vector<Vertex>&       vertices() const;
     const std::vector<unsigned int>& indices() const;

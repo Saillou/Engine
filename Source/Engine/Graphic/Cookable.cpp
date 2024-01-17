@@ -17,10 +17,6 @@ void Cookable::Set(CookType type, Shader& recipe) {
         _set_shader_shadow(recipe);
         break;
 
-    case CookType::BatchShadow:
-        _set_shader_shadow_batch(recipe);
-        break;
-
     case CookType::Geometry:
         _set_shader_geometry(recipe);
         break;
@@ -35,6 +31,14 @@ void Cookable::Set(CookType type, Shader& recipe) {
 
     case CookType::Batch:
         _set_shader_batch(recipe);
+        break;
+
+    case CookType::BatchGeometry:
+        _set_shader_geometry_batch(recipe);
+        break;
+
+    case CookType::BatchShadow:
+        _set_shader_shadow_batch(recipe);
         break;
 
     default:
@@ -119,6 +123,8 @@ void Cookable::_set_shader_shadow_batch(Shader& shader) {
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+            .add_var("layout (location = 3) in", "vec4", "aColor")
+            .add_var("layout (location = 4) in", "mat4", "aModel")
 
             .add_var("out", "vec2", "TexCoords")
             .add_var("out", "VS_OUT", R"_struct_({
@@ -129,13 +135,12 @@ void Cookable::_set_shader_shadow_batch(Shader& shader) {
 
             .add_var("uniform", "mat4", "Projection")
             .add_var("uniform", "mat4", "View")
-            .add_var("uniform", "mat4", "Model")
 
             .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos = vec3(Model * vec4(aPos, 1.0));
-                vs_out.Normal = transpose(inverse(mat3(Model))) * aNormal;
+                vs_out.FragPos = vec3(aModel * vec4(aPos, 1.0));
+                vs_out.Normal = transpose(inverse(mat3(aModel))) * aNormal;
                 vs_out.TexCoords = aTexCoords;
-                gl_Position = Projection * View * Model * vec4(aPos, 1.0);
+                gl_Position = Projection * View * aModel * vec4(aPos, 1.0);
             )_main_").str()
         ).
         attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
@@ -209,6 +214,48 @@ void Cookable::_set_shader_shadow_batch(Shader& shader) {
         );
 }
 
+void Cookable::_set_shader_geometry_batch(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("layout (location = 1) in", "vec3", "aNormal")
+            .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+            .add_var("layout (location = 3) in", "vec4", "aColor")
+            .add_var("layout (location = 4) in", "mat4", "aModel")
+
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+
+            .add_var("out", "vec3", "FragPos")
+
+            .add_func("void", "main", "", R"_main_(
+                FragPos   = vec3(aModel * vec4(aPos, 1.0));
+                gl_Position = Projection * View * vec4(FragPos, 1.0);
+            )_main_").str()
+        )
+        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
+            .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(line_strip, max_vertices = 4)")
+
+            .add_func("void", "main", "", R"_main_(
+                gl_Position     = gl_in[1].gl_Position; EmitVertex();
+                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
+                EndPrimitive();
+
+                gl_Position     = gl_in[0].gl_Position; EmitVertex();
+                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
+                EndPrimitive();
+            )_main_").str()
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("uniform", "vec4", "diffuse_color")
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                FragColor = diffuse_color;
+            )_main_").str()
+        );
+}
 
 
 
@@ -538,6 +585,7 @@ void Cookable::_set_shader_geometry(Shader& shader) {
             )_main_").str()
         );
 }
+
 
 void Cookable::_set_shader_model_geometry(Shader& shader) {
     shader

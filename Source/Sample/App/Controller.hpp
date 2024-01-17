@@ -4,6 +4,8 @@
 #include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Utils/Timer.hpp>
 
+#include "View.hpp"
+
 struct Controller: private Event::Subscriber {
     Controller(std::shared_ptr<BaseScene> scene);
 
@@ -15,6 +17,6 @@ protected:
     void _on_mouse_clicked(const CommonEvents::MouseClicked& evt);
 
 private:
-    std::shared_ptr<BaseScene> m_scene;
+    std::shared_ptr<View> m_view;
     Timer::Chronometre m_timer;
 };

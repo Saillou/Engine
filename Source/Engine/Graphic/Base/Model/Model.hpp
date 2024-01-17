@@ -28,8 +28,8 @@ struct Model
          Model(const std::string& path);
 
     // Methods
-    void draw        (Shader& shader);
-    void drawElements(Shader& shader);
+    void draw        (Shader& shader) const;
+    void drawElements(Shader& shader) const;
 
     // Data tree for storing organized meshes
     struct Node {

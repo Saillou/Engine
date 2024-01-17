@@ -27,8 +27,8 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(0.0f, -6.0f, 1.0f);
-    m_camera.direction = glm::vec3(0.0f,  0.0f, 0.0f);
+    m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
+    m_camera.direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Lightnings
     m_lights = {
@@ -42,6 +42,7 @@ View::View(int widthHint, int heightHint):
         m_entities[_ObjectId::Tree]       = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
         m_entities[_ObjectId::Character]  = std::make_unique<Entity>("Resources/objects/character/character.glb");
 
+        m_entities[_ObjectId::Grid]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entities[_ObjectId::Cube]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entities[_ObjectId::Sphere]     = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
     }
@@ -83,17 +84,21 @@ void View::draw() {
     m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
         // Draw objects
         for (const _Object& obj : m_objects) {
-            sh.use().set("model", obj.quat);
+            sh.use()
+                .set("isBatch", false)
+                .set("model", obj.quat);
+
             m_entities[obj.id]->drawElements(sh);
         }
 
-        // Ground
-        for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-            sh.use().set("model", cell_quat);
-            m_entities[_ObjectId::Cube]->drawElements(sh);
+        // Particles
+        {
+            sh.use()
+                .set("isBatch", true);
+
+            m_fireGrid.particles.object->drawElements(sh);
         }
     });
-
 
     // Main scene
     BaseScene::Viewport(width(), height());
@@ -112,7 +117,8 @@ void View::draw() {
         for (const _Object& obj : m_objects) {
             // Cube color
             if (obj.id == _ObjectId::Cube) {
-                m_entities[obj.id]->get(Cookable::CookType::Model)->use().set("diffuse_color", glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
+                m_entities[obj.id]->get(Cookable::CookType::Model)
+                                  ->use().set("diffuse_color", glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
             }
 
             // Draw model
@@ -120,7 +126,9 @@ void View::draw() {
 
             // Highlight
             if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat)) {
-                m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+                m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)
+                                  ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+
                 m_entities[obj.id]->drawGeometry(m_camera, obj.quat);
             }
         }
@@ -130,28 +138,36 @@ void View::draw() {
             m_fireGrid.particles.object->drawBatch(m_camera);
         }
 
-        // Draw ground with shadow
-        m_shadowRender.bindTexture(GL_TEXTURE1);
-        for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
+        // Draw ground
+        {
             // Grid
-            m_entities[_ObjectId::Cube]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1));
-            m_entities[_ObjectId::Cube]->drawGeometry(m_camera, cell_quat);
+            {
+                auto& shader = m_entities[_ObjectId::Grid]->get(Cookable::CookType::BatchGeometry);
+                shader->use().
+                        set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1)).
+                        set("View", m_camera.modelview).
+                        set("Projection", m_camera.projection);
+
+                m_entities[_ObjectId::Grid]->drawElements(*shader);
+            }
 
             // Shadow
-            auto& shader_shadow = m_entities[_ObjectId::Cube]->get(Cookable::CookType::Shadow);
+            {
+                m_shadowRender.bindTexture(GL_TEXTURE1);
 
-            shader_shadow->use().
-                set("Model",         cell_quat).
-                set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).
-                set("View",          m_camera.modelview).
-                set("Projection",    m_camera.projection).
-                set("viewPos",       m_camera.position).
-                set("far_plane",     m_camera.far_plane).
-                set("lightPos",      m_lights[0].position).
-                set("lightColor",    m_lights[0].color * 0.3f).
-                set("depthMap",      1);
+                auto& shader = m_entities[_ObjectId::Grid]->get(Cookable::CookType::BatchShadow);
+                shader->use().
+                    set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).
+                    set("View",          m_camera.modelview).
+                    set("Projection",    m_camera.projection).
+                    set("viewPos",       m_camera.position).
+                    set("far_plane",     m_camera.far_plane).
+                    set("lightPos",      m_lights[0].position).
+                    set("lightColor",    m_lights[0].color * 0.3f).
+                    set("depthMap",      1);
 
-            m_entities[_ObjectId::Cube]->drawElements(*shader_shadow);
+                m_entities[_ObjectId::Grid]->drawElements(*shader);
+            }
         }
 
         // Skybox
@@ -174,14 +190,14 @@ void View::draw() {
     // Debug texts
     {
         std::ostringstream ss;
-        ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
-            << ", y: " << int(m_camera.position.y * 10) / 10.0f
-            << ", z: " << int(m_camera.position.z * 10) / 10.0f;
+        ss  << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
+            << ", y: "    << int(m_camera.position.y * 10) / 10.0f
+            << ", z: "    << int(m_camera.position.z * 10) / 10.0f;
         TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
 
         ss = {};
-        ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
-            << ", y: " << int(m_height * m_mousePos.y * 10) / 10.0f;
+        ss  << "Mouse: x: " << int(m_width  * m_mousePos.x * 10) / 10.0f
+            << ", y: "      << int(m_height * m_mousePos.y * 10) / 10.0f;
         TextEngine::Write(ss.str(), 20.0f, m_height - 60.0f, 0.5f, glm::vec3(1, 1, 1));
 
         ss = {};
@@ -206,9 +222,7 @@ void View::_initObjects() {
     });
 
     // Ground - Grid
-    m_entities[_ObjectId::Cube]->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1));
-
-    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 15, {} });
+    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 50, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
     std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
         { 
@@ -220,6 +234,9 @@ void View::_initObjects() {
             return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
         }
     );
+    m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchGeometry);
+    m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchShadow);
+    m_entities[_ObjectId::Grid]->updateBatch({}, m_grid->m_grid_cells);
 
     // Box
     m_objects.push_back({ _ObjectId::Cube, 
@@ -317,8 +334,6 @@ void View::_initParticles() {
     m_fireGrid.particles.colors.resize(m_fireGrid.particles.amount);
 
     // Create batch
-    m_fireGrid.particles.object->createBatch(m_fireGrid.particles.amount);
-
     std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable -> glm::vec4
         {
             particules_id++;

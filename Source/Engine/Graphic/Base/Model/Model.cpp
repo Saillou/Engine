@@ -21,11 +21,11 @@ Model::Model(const std::string& path)
     _loadModel(path);
 }
 
-void Model::draw(Shader& shader) {
+void Model::draw(Shader& shader) const {
     if (!_root)
         return;
 
-    std::stack<std::unique_ptr<Node>*> st;
+    std::stack<const std::unique_ptr<Node>*> st;
     st.push(&_root);
 
     while (!st.empty()) {
@@ -47,11 +47,11 @@ void Model::draw(Shader& shader) {
     }
 }
 
-void Model::drawElements(Shader& shader) {
+void Model::drawElements(Shader& shader) const {
     if (!_root)
         return;
 
-    std::stack<std::unique_ptr<Node>*> st;
+    std::stack<const std::unique_ptr<Node>*> st;
     st.push(&_root);
 
     while (!st.empty()) {
