@@ -29,6 +29,11 @@ int main() {
             (int)window.mousePos().x, (int)window.mousePos().y
         ));
 
+        for (auto button : window.buttonPressed()) {
+            Event::Emit(CommonEvents::MouseClicked(button));
+            break;
+        }
+
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());

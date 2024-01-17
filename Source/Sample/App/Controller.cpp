@@ -11,6 +11,7 @@ Controller::Controller(std::shared_ptr<BaseScene> scene):
     _subscribe(&Controller::_on_state_update);
     _subscribe(&Controller::_on_key_pressed);
     _subscribe(&Controller::_on_mouse_moved);
+    _subscribe(&Controller::_on_mouse_clicked);
 
     // Start
     m_timer.tic();
@@ -50,7 +51,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
     switch (evt.key)
     {
-        case 'R': view->enable_filter = true; break;
+        case 'R': view->enable_filter = true;  break;
         case 'T': view->enable_filter = false; break;
     }
 }
@@ -58,4 +59,12 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
     auto view = std::dynamic_pointer_cast<View>(m_scene);
     view->mouse_on(evt.x, evt.y);
+}
+
+void Controller::_on_mouse_clicked(const CommonEvents::MouseClicked& evt) {
+    switch (evt.button) 
+    {
+        case Button::Left:  std::cout << "Click left"  << std::endl; break;
+        case Button::Right: std::cout << "Click right" << std::endl; break;
+    }
 }

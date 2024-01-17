@@ -16,6 +16,13 @@ CommonEvents::MouseMoved::MouseMoved(int x, int y) :
 {
 	// ..
 }
+CommonEvents::MouseClicked::MouseClicked(int button) :
+	_Base(_Type::EventMouseMoved),
+	button(button)
+{
+	// ..
+}
+
 
 // -- Game events --
 CommonEvents::StateUpdated::StateUpdated() :

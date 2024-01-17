@@ -70,6 +70,22 @@ std::vector<unsigned int> Window::keyPressed() const {
     return keys;
 }
 
+std::vector<unsigned int> Window::buttonPressed() const {
+    if (!m_window)
+        return {};
+
+    std::vector<unsigned int> buttons;
+    buttons.reserve(GLFW_MOUSE_BUTTON_LAST + 1);
+
+    for (unsigned int btn = 0; btn <= GLFW_MOUSE_BUTTON_LAST; btn++) {
+        if (glfwGetMouseButton(m_window, btn) == GLFW_PRESS) {
+            buttons.push_back(btn);
+        }
+    }
+
+    return buttons;
+}
+
 glm::vec2 Window::mousePos() const {
     double x, y;
     glfwGetCursorPos(m_window, &x, &y);

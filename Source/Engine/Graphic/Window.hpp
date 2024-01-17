@@ -21,6 +21,8 @@ struct Window {
     int height() const;
 
     std::vector<unsigned int> keyPressed() const;
+    std::vector<unsigned int> buttonPressed() const;
+
     glm::vec2 mousePos() const;
     std::shared_ptr<BaseScene> scene() const;
     GLFWwindow* backend();
