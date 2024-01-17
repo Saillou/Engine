@@ -222,7 +222,7 @@ void View::_initObjects() {
     });
 
     // Ground - Grid
-    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 50, {} });
+    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 100, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
     std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
         { 
