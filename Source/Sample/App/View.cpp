@@ -349,11 +349,12 @@ void View::_setParticles(float dt) {
             int x = particules_id % SIZE - SIZE / 2;
             int y = particules_id / SIZE - SIZE / 2;
 
-            model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.010f)), glm::vec3(x * 0.007f, 1.5f, 0.25f + y * 0.002f));
-            speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
+            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 1.5f, 0.25f + y * 0.002f));
+            model = glm::scale(model, glm::vec3(0.01f));
+            speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-3f);
         }
         else {
-            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * glm::vec3(speed)), glm::vec3(speed.a));
+            model = glm::scale(glm::translate(model, 100.0f*m_fireGrid.pos + 10.0f * dt * glm::vec3(speed)), glm::vec3(speed.a));
         }
     }
 

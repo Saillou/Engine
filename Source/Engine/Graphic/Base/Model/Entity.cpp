@@ -61,8 +61,7 @@ void Entity::drawBatch(const Camera& camera) {
     get(CookType::Batch)->
         use().
         set("View",         camera.modelview).
-        set("Projection",   camera.projection).
-        set("CameraPos",    camera.position);
+        set("Projection",   camera.projection);
 
     m_model._root->meshes.front()->drawElementsBatch();
 }

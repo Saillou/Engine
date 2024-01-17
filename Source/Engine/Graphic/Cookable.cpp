@@ -105,12 +105,9 @@ void Cookable::_set_shader_batch(Shader& shader) {
             .add_var("in", "vec3", "Normal")
             .add_var("in", "vec4", "Color")
 
-            .add_var("uniform", "vec3", "CameraPos")
-
             .add_var("out", "vec4", "FragColor")
 
             .add_func("void", "main", "", R"_main_(
-                CameraPos;
                 FragColor = Color;
             )_main_").str()
         );
