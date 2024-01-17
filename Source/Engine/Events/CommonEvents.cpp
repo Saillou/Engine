@@ -17,7 +17,7 @@ CommonEvents::MouseMoved::MouseMoved(int x, int y) :
 	// ..
 }
 CommonEvents::MouseClicked::MouseClicked(int button) :
-	_Base(_Type::EventMouseMoved),
+	_Base(_Type::EventMouseClicked),
 	button(button)
 {
 	// ..

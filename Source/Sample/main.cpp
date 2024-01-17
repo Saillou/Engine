@@ -25,9 +25,11 @@ int main() {
             }
         }
 
-        Event::Emit(CommonEvents::MouseMoved(
-            (int)window.mousePos().x, (int)window.mousePos().y
-        ));
+        if (window.mouseMoved()) {
+            Event::Emit(CommonEvents::MouseMoved(
+                (int)window.mousePos().x, (int)window.mousePos().y
+            ));
+        }
 
         for (auto button : window.buttonPressed()) {
             Event::Emit(CommonEvents::MouseClicked(button));
