@@ -354,7 +354,7 @@ void View::_setParticles(float dt) {
             speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
         }
         else {
-            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * glm::vec3(speed)), glm::vec3(speed.a));
+            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * 100.0f * glm::vec3(speed)), glm::vec3(speed.a));
         }
     }
 
