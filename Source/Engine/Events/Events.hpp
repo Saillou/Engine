@@ -49,6 +49,8 @@ public:
 		template <class _subscriber, typename _message> inline
 			void _subscribe(void(_subscriber::*callback)(const _message&));
 
+		void _unsubscribeAll();
+
 	private:
 		// Note: 
 		//	these are temporary callbacks used to crush the _message type to _Base (inherited) type,
