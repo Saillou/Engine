@@ -134,6 +134,7 @@ void View::draw() {
         m_shadowRender.bindTexture(GL_TEXTURE1);
         for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
             // Grid
+            m_entities[_ObjectId::Cube]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1));
             m_entities[_ObjectId::Cube]->drawGeometry(m_camera, cell_quat);
 
             // Shadow
@@ -205,9 +206,7 @@ void View::_initObjects() {
     });
 
     // Ground - Grid
-    m_entities[_ObjectId::Cube]
-        ->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1))
-        ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
+    m_entities[_ObjectId::Cube]->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1));
 
     m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 15, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
