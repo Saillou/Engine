@@ -2,10 +2,10 @@
 
 #include <stack>
 
+using namespace glm;
+
 bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
 {
-	using namespace glm;
-
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return false;
@@ -39,8 +39,6 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 
 bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
 {
-	using namespace glm;
-
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return false;
@@ -63,8 +61,6 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 // Note: It's Möller–Trumbore intersection algorithm
 bool RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle)
 {
-	using namespace glm;
-
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
 	vec3 edge1 = triangle[1] - triangle[0];
