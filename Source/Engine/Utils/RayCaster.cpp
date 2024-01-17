@@ -2,17 +2,17 @@
 
 #include <stack>
 
-bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
+float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
 {
 	using namespace glm;
 
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return false;
+		return -1;
 
 	// Traverse model's nodes
 	if (!objModel.model().root())
-		return false;
+		return -1;
 
 	std::stack<std::unique_ptr<Model::Node> const*> st;
 	st.push(&objModel.model().root());
@@ -24,8 +24,10 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			if (RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform))
-				return true;
+						const float t = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform);
+
+						if (t >= 0)
+										return t;
 		}
 
 		// Add children
@@ -34,16 +36,16 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 		}
 	}
 
-	return false;
+	return -1;
 }
 
-bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const BaseShape& shape, const glm::mat4& quat)
+float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const BaseShape& shape, const glm::mat4& quat)
 {
 	using namespace glm;
 
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return false;
+		return -1;
 
 	// Intersect
 	const auto& idx = shape.indices();
@@ -51,41 +53,48 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 
 	// -> can be reaaally optimized, in multiple ways (using bounding rect, fast discard, hull, parallelization, screen segmentation...)
 	for (size_t i = 0; i < idx.size(); i += 3) {
-		if(IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
+		const float t = IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
 			vec3(quat * vec4(v[3 * idx[i + 0] + 0], v[3 * idx[i + 0] + 1], v[3 * idx[i + 0] + 2], +1.0f)),
 			vec3(quat * vec4(v[3 * idx[i + 1] + 0], v[3 * idx[i + 1] + 1], v[3 * idx[i + 1] + 2], +1.0f)),
 			vec3(quat * vec4(v[3 * idx[i + 2] + 0], v[3 * idx[i + 2] + 1], v[3 * idx[i + 2] + 2], +1.0f))
-		})) return true;
+		});
+
+		if (t >= 0)
+						return t;
 	}
 
-	return false;
+	return -1;
 }
 
-bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
+float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
 {
 	using namespace glm;
 
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return false;
+		return -1;
 
 	// It's almost the same as base shape
 	const auto& idx = mesh.indices();
 	const auto& v = mesh.vertices();
 
 	for (size_t i = 0; i < idx.size(); i += 3) {
-		if (IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
+					const float t = 
+IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
 			vec3(quat* vec4(v[idx[i+0]].Position, +1.0f)),
 			vec3(quat* vec4(v[idx[i+1]].Position, +1.0f)),
 			vec3(quat* vec4(v[idx[i+2]].Position, +1.0f))
-		})) return true;
+		});
+
+					if (t >= 0)
+									return t;
 	}
 
-	return false;
+	return -1;
 }
 
 // Note: It's Möller–Trumbore intersection algorithm
-bool RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle)
+float RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle)
 {
 	using namespace glm;
 
@@ -97,26 +106,26 @@ bool RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& 
 	float det = dot(edge1, ray_cross_e2);
 
 	if (det > -epsilon && det < epsilon)
-		return false;    // This ray is parallel to this triangle.
+		return -1;    // This ray is parallel to this triangle.
 
 	float inv_det = 1.f / det;
 	vec3 s = ray_origin - triangle[0];
 	float u = inv_det * dot(s, ray_cross_e2);
 
 	if (u < 0 || u > 1)
-		return false;
+		return -1;
 
 	vec3 s_cross_e1 = cross(s, edge1);
 	float v = inv_det * dot(ray_vector, s_cross_e1);
 
 	if (v < 0 || u + v > 1)
-		return false;
+		return -1;
 
-	return true;
+	//return true;
 
 	//// At this stage we can compute t to find out where the intersection point is on the line.
-	//float t = inv_det * dot(edge2, s_cross_e1);
-
+	float t = inv_det * dot(edge2, s_cross_e1);
+	return t;
 	//if (t > epsilon) // ray intersection: intersection_point = ray_origin + ray_vector * t;
 	//	return true;
 

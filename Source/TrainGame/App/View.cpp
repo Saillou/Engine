@@ -6,6 +6,13 @@
 
 #include <sstream>
 
+#include <glm/gtx/matrix_decompose.hpp>
+
+#include "Engine/Events/Events.hpp"
+#include "Engine/Events/CommonEvents.hpp"
+
+#include <Engine/Utils/RayCaster.hpp>
+
 namespace Thomas
 {
 
@@ -27,6 +34,8 @@ namespace Thomas
             }),
         framebuffer_main(Framebuffer::Multisample, m_width, m_height)
     {
+        _subscribe(&View::_on_mouse_moved);
+
         // Camera
         m_camera.position = glm::vec3(0.0f, -6.0f, 3.0f);
         m_camera.direction = glm::vec3(0.0f, 0.0, 0.0f);
@@ -44,7 +53,7 @@ namespace Thomas
         }
         std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
-        loadModels(4);
+        loadModels(6);
 
         // Populate objects
         m_timer.tic();
@@ -135,10 +144,40 @@ namespace Thomas
             }
             //std::cout << "Game models rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
             // Draw ground with shadow
-            m_shadowRender.bindTexture(GL_TEXTURE1);
-            for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-                m_model_box->draw(m_camera, cell_quat, m_lights);
+            
+            m_timer.tic();
+            float t = 34343434;
+            size_t id_selected = -1;
+            for (size_t i = 0; i < m_grid->m_grid_cells.size(); i++) {
+                bool see = false;
+                const float tt = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box, m_grid->m_grid_cells[i]);
+
+                if (tt >= 0 && tt < t)
+                {
+                    id_selected = i;
+                    t = tt;
+                }
+                
             }
+
+            m_shadowRender.bindTexture(GL_TEXTURE1);
+
+            for (size_t i = 0; i < m_grid->m_grid_cells.size(); i++) {
+                if(i != id_selected)
+                m_model_box->draw(m_camera, m_grid->m_grid_cells[i], m_lights);
+            }
+
+            {
+                glm::vec3 scale;
+                glm::quat rotation;
+                glm::vec3 translation;
+                glm::vec3 skew;
+                glm::vec4 perspective;
+                glm::decompose(m_grid->m_grid_cells[id_selected], scale, rotation, translation, skew, perspective);
+                m_bigtime = { translation.x, translation.y, 0.05f };
+
+            }
+            
 
             // Draw box
             {
@@ -146,7 +185,6 @@ namespace Thomas
             }
 
             // Draw grid cells
-
             for (auto& cell : m_gridCells)
             {
                 glm::mat4 mat = glm::translate(glm::mat4(1.0f), cell.second.transform.position);
@@ -197,6 +235,8 @@ namespace Thomas
 
         m_modelsToDraw.clear();
 
+        Event::Emit(CommonEvents::SceneFinishedRender());
+
         // Prepare next
         float dt_draw = m_timer.elapsed<Timer::millisecond>();
         m_count++;
@@ -221,6 +261,7 @@ namespace Thomas
             m_gameModels[ModelId::Track] = std::make_unique<Entity>("Resources/objects/train/track_forward.glb");
             m_gameModels[ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
             m_gameModels[ModelId::TrackRight] = std::make_unique<Entity>("Resources/objects/train/track_right.glb");
+            m_gameModels[ModelId::Building1] = std::make_unique<Entity>("Resources/objects/train/building_1.glb");
         }
         std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
@@ -234,6 +275,12 @@ namespace Thomas
     {
         m_gridCells.clear();
         m_gridCells = cells;
+    }
+
+    void View::_on_mouse_moved(const CommonEvents::MouseMoved& evt)
+    {
+        m_mousePos.x = (float)evt.x / m_width;
+        m_mousePos.y = (float)evt.y / m_height;
     }
 
     void View::_initObjects() {

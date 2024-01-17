@@ -35,3 +35,9 @@ CommonEvents::SceneRefresh::SceneRefresh() :
 {
 	// ..
 }
+
+CommonEvents::SceneFinishedRender::SceneFinishedRender() :
+				_Base(_Type::EventSceneFinishedRender)
+{
+				// ..
+}

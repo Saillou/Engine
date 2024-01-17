@@ -15,7 +15,8 @@ namespace Thomas
         Wagon,
         Track,
         TrackLeft,
-        TrackRight
+        TrackRight,
+        Building1
     };
 
     struct GameModel

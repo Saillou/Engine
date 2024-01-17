@@ -17,15 +17,18 @@ struct CommonEvents : public Event {
 
 	// -- State --
 	struct StateUpdated : public _Base {
-		explicit StateUpdated();
+				explicit StateUpdated();
 	};
 
 	// -- Scene --
 	struct SceneRefresh : public _Base {
-		explicit SceneRefresh();
+				explicit SceneRefresh();
 	};
 	struct SceneEnded : public _Base {
-		explicit SceneEnded();
+				explicit SceneEnded();
+	};
+	struct SceneFinishedRender : public _Base {
+				explicit SceneFinishedRender();
 	};
 
 private:
@@ -37,5 +40,6 @@ private:
 
 		EventSceneEnded,
 		EventSceneRefresh,
+		EventSceneFinishedRender
 	};
 };

@@ -21,6 +21,8 @@
 
 #include "TrainGame/TrainGame/GridCell.hpp"
 
+#include <Engine/Events/CommonEvents.hpp>
+
 namespace Thomas
 {
 
@@ -34,7 +36,7 @@ namespace Thomas
         void resize(int width, int height);
     };
 
-    struct View : public BaseScene {
+    struct View : public BaseScene, private Event::Subscriber {
         View(int widthHint = 0, int heightHint = 0);
 
         void draw() override;
@@ -46,7 +48,11 @@ namespace Thomas
         void draw(ModelId id, const Transform& transform);
         void drawGrid(const std::map<std::pair<int,int>, GridCell>& cells);
 
+        glm::vec3 m_bigtime;
+
     private:
+        void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
+
         enum class _ObjecId {
             Character, Tree
         };
@@ -113,5 +119,7 @@ namespace Thomas
 
         float m_averageMs = 0.f;
         size_t m_count = 0;
+
+        glm::vec2 m_mousePos;
     };
 } // namespace Thomas
