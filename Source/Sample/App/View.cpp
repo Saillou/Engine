@@ -129,7 +129,13 @@ void View::draw() {
                 m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)
                                   ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
 
-                m_entities[obj.id]->drawGeometry(m_camera, obj.quat);
+                auto& sh = *m_entities[obj.id]->get(Cookable::CookType::ModelGeometry);
+                sh.use()
+                    .set("Projection", m_camera.projection)
+                    .set("View", m_camera.modelview)
+                    .set("Model", obj.quat);
+
+                m_entities[obj.id]->drawElements(sh);
             }
         }
 
@@ -236,7 +242,7 @@ void View::_initObjects() {
     );
     m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchGeometry);
     m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchShadow);
-    m_entities[_ObjectId::Grid]->updateBatch({}, m_grid->m_grid_cells);
+    m_entities[_ObjectId::Grid]->setBatch({}, m_grid->m_grid_cells);
 
     // Box
     m_objects.push_back({ _ObjectId::Cube, 
@@ -347,7 +353,7 @@ void View::_initParticles() {
 
     // Cook
     m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
-    m_fireGrid.particles.object->updateBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
+    m_fireGrid.particles.object->setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
 }
 
 void View::_setParticles(float dt) {
@@ -373,7 +379,7 @@ void View::_setParticles(float dt) {
     }
 
     // Update
-    m_fireGrid.particles.object->updateBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
+    m_fireGrid.particles.object->setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
 }
 
 

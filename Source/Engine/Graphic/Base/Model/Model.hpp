@@ -24,8 +24,8 @@ struct Model
 {
     friend struct Entity;
 
-         Model() = default;
-         Model(const std::string& path);
+    Model() = default;
+    Model(const std::string& path);
 
     // Methods
     void draw        (Shader& shader) const;

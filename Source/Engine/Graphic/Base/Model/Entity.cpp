@@ -30,11 +30,6 @@ Entity::Entity(SimpleShape shape)
     }
 }
 
-void Entity::updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
-    // TODO: change this
-    m_model._root->meshes.front()->updateBatch(colors, models);
-}
-
 void Entity::draw(const Camera& camera, const glm::mat4& model, const std::vector<Light>& lights) {
     auto& sh = *get(CookType::Model);
 
@@ -62,18 +57,13 @@ void Entity::drawBatch(const Camera& camera) {
     m_model.drawElements(*get(CookType::Batch));
 }
 
-void Entity::drawGeometry(const Camera& camera, const glm::mat4& model) {
-    auto& sh = *get(CookType::ModelGeometry);
-    sh.use()
-        .set("Projection", camera.projection)
-        .set("View", camera.modelview)
-        .set("Model", model);
-
-    m_model.draw(sh);
-}
-
 void Entity::drawElements(Shader& shader) {
     m_model.drawElements(shader);
+}
+
+void Entity::setBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
+    // TODO: change this
+    m_model._root->meshes.front()->updateBatch(colors, models);
 }
 
 const Model& Entity::model() const {
