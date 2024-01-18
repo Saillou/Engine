@@ -147,15 +147,18 @@ namespace Thomas
             
             m_timer.tic();
             float t = 34343434;
-            size_t id_selected = -1;
+            int id_selected = -1;
+            glm::vec3 outPos;
+            glm::vec3 hitPos;
             for (size_t i = 0; i < m_grid->m_grid_cells.size(); i++) {
                 bool see = false;
-                const float tt = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box, m_grid->m_grid_cells[i]);
+                const float tt = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box, m_grid->m_grid_cells[i], outPos);
 
                 if (tt >= 0 && tt < t)
                 {
                     id_selected = i;
                     t = tt;
+                    hitPos = outPos;
                 }
                 
             }
@@ -167,7 +170,9 @@ namespace Thomas
                 m_model_box->draw(m_camera, m_grid->m_grid_cells[i], m_lights);
             }
 
+            if(id_selected >= 0)
             {
+                
                 glm::vec3 scale;
                 glm::quat rotation;
                 glm::vec3 translation;
@@ -175,7 +180,7 @@ namespace Thomas
                 glm::vec4 perspective;
                 glm::decompose(m_grid->m_grid_cells[id_selected], scale, rotation, translation, skew, perspective);
                 m_bigtime = { translation.x, translation.y, 0.05f };
-
+                Event::Emit(CommonEvents::MouseHit(hitPos.x, hitPos.y, 0.05f));
             }
             
 

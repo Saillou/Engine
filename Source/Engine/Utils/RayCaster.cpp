@@ -2,7 +2,7 @@
 
 #include <stack>
 
-float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
+float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat, glm::vec3& outPos)
 {
 	using namespace glm;
 
@@ -24,7 +24,7 @@ float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, cons
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-						const float t = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform);
+						const float t = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform, outPos);
 
 						if (t >= 0)
 										return t;
@@ -39,7 +39,7 @@ float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, cons
 	return -1;
 }
 
-float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const BaseShape& shape, const glm::mat4& quat)
+float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const BaseShape& shape, const glm::mat4& quat, glm::vec3& outPos)
 {
 	using namespace glm;
 
@@ -57,7 +57,7 @@ float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, cons
 			vec3(quat * vec4(v[3 * idx[i + 0] + 0], v[3 * idx[i + 0] + 1], v[3 * idx[i + 0] + 2], +1.0f)),
 			vec3(quat * vec4(v[3 * idx[i + 1] + 0], v[3 * idx[i + 1] + 1], v[3 * idx[i + 1] + 2], +1.0f)),
 			vec3(quat * vec4(v[3 * idx[i + 2] + 0], v[3 * idx[i + 2] + 1], v[3 * idx[i + 2] + 2], +1.0f))
-		});
+		}, outPos);
 
 		if (t >= 0)
 						return t;
@@ -66,7 +66,7 @@ float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, cons
 	return -1;
 }
 
-float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
+float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat, glm::vec3& outPos)
 {
 	using namespace glm;
 
@@ -84,7 +84,7 @@ IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
 			vec3(quat* vec4(v[idx[i+0]].Position, +1.0f)),
 			vec3(quat* vec4(v[idx[i+1]].Position, +1.0f)),
 			vec3(quat* vec4(v[idx[i+2]].Position, +1.0f))
-		});
+		}, outPos);
 
 					if (t >= 0)
 									return t;
@@ -94,7 +94,7 @@ IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
 }
 
 // Note: It's Möller–Trumbore intersection algorithm
-float RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle)
+float RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle, glm::vec3& outPos)
 {
 	using namespace glm;
 
@@ -125,8 +125,9 @@ float RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3&
 
 	//// At this stage we can compute t to find out where the intersection point is on the line.
 	float t = inv_det * dot(edge2, s_cross_e1);
+	outPos = ray_origin + ray_vector * t;
 	return t;
-	//if (t > epsilon) // ray intersection: intersection_point = ray_origin + ray_vector * t;
+	//if (t > epsilon) // ray intersection: intersection_point = ;
 	//	return true;
 
 	//return false;

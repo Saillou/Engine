@@ -31,15 +31,23 @@ struct CommonEvents : public Event {
 				explicit SceneFinishedRender();
 	};
 
+	// -- Ray casting --
+	struct MouseHit : public _Base {
+					explicit MouseHit(float x = 0, float y = 0, float z = 0);
+					float x, y, z;
+	};
+
 private:
 	enum _Type : int {
-		EventKeyPressed,
-		EventMouseMoved,
-
-		EventStateUpdated,
-
-		EventSceneEnded,
-		EventSceneRefresh,
-		EventSceneFinishedRender
+				EventKeyPressed,
+				EventMouseMoved,
+				
+				EventStateUpdated,
+				
+				EventSceneEnded,
+				EventSceneRefresh,
+				EventSceneFinishedRender,
+				
+				EventMouseHit,
 	};
 };

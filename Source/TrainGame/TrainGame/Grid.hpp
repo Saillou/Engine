@@ -17,6 +17,7 @@ namespace Thomas
 
         static glm::vec3 getPosition(int x, int y);
         static std::pair<int64_t, int64_t> getPosition(const glm::vec3& pos);
+        static glm::vec3 alignPosition(const glm::vec3& pos);
 
         static void clearCells();
         static void setCellAtPosition(int x, int y, GridCell::CellType type);

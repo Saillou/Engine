@@ -40,6 +40,17 @@ namespace Thomas
         return {x,y};
     }
 
+    glm::vec3 Grid::alignPosition(const glm::vec3& pos)
+    {
+        Grid& grid = get();
+
+        assert(grid.m_initialised && "Grid is not initialized.");
+
+        // TODO: this is not the good way of doing it (probably)
+        auto pair = getPosition(pos);
+        return getPosition(pair.first, pair.second);
+    }
+
     void Grid::clearCells()
     {
         Grid& grid = get();

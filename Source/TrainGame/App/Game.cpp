@@ -2,6 +2,7 @@
 
 #include "TrainGame/App/Components/TrainController.h"
 #include "TrainGame/App/Components/GridComponent.h"
+#include "TrainGame/App/Components/ConstructComponent.h"
 
 #include "TrainGame/TrainGame/Grid.hpp"
 
@@ -115,7 +116,18 @@ namespace Thomas
             for (auto& comp : obj.second->components)
             {
                 comp->update(dt_ms);
+                if (!comp->isAlive())
+                {
+                    //delete comp;
+                    //comp = nullptr;
+                }
             }
+
+            obj.second->components.erase(std::remove_if(obj.second->components.begin(),
+                obj.second->components.end(),
+                [&](const auto& comp)-> bool
+                { return !comp; }),
+                obj.second->components.end());
 
             m_view->draw(obj.second->modelId, obj.second->transform);
         }
@@ -132,9 +144,14 @@ namespace Thomas
         {
             m_ui->state.building = false;
             GameObject* obj = new GameObject({ gs_id++, ModelId::Building1, {m_view->m_bigtime, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            ConstructComponent* constructComponent = new ConstructComponent(&obj->transform);
+            obj->components.push_back(constructComponent);
+
             GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,5 }, { -2,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            gridComponent->setState(GridComponent::GridComponentState::Construct);
             obj->components.push_back(gridComponent);
+
+            constructComponent->addGridComponent(gridComponent);
             m_objects[obj->id] = obj;
         }
 
@@ -159,7 +176,6 @@ namespace Thomas
         case 'S':             rot = -1.f; break;
         case 'Z':             scale = -1.f; break;
         case 'X':             scale = +1.f; break;
-        case 'G': m_ui->state.building = true; break;
         }
 
         switch (evt.key)

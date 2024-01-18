@@ -126,7 +126,8 @@ void View::draw() {
             m_entities[obj.id]->draw(m_camera, obj.quat, m_lights);
 
             // Highlight
-            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat)) {
+            glm::vec3 hitPos;
+            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat, hitPos)) {
                 m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
                 m_entities[obj.id]->drawGeometry(m_camera, obj.quat);
             }
