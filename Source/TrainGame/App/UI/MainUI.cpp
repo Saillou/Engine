@@ -31,6 +31,8 @@ void MainUI::showBuildingSelection()
 {
     ImGui::Begin("Hello, world!");
 
+    ImGui::Text("Left mouse click to place a building");
+    ImGui::Text("Right mouse click to cancel");
     if (ImGui::Button("Building", { 200,20 }))
     {
         state.building = true;

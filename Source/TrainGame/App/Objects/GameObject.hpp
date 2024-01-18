@@ -15,6 +15,8 @@ namespace Thomas
         ModelId     modelId;
         Transform   transform; // world transform
 
+        bool selectedForDeletion = false;
+
         std::vector<Component*> components;
     };
 } // namespace Thomas

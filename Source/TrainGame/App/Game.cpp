@@ -113,6 +113,10 @@ namespace Thomas
         // game loop
         for (auto& obj : m_objects)
         {
+            // TODO: delete properly
+            if (!obj.second || obj.second->selectedForDeletion)
+                continue;
+
             for (auto& comp : obj.second->components)
             {
                 comp->update(dt_ms);
@@ -152,6 +156,7 @@ namespace Thomas
             obj->components.push_back(gridComponent);
 
             constructComponent->addGridComponent(gridComponent);
+            constructComponent->addObjectDeletionPtr(&obj->selectedForDeletion);
             m_objects[obj->id] = obj;
         }
 

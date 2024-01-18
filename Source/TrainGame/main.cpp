@@ -39,6 +39,11 @@ int main() {
             (int)game.window()->mousePos().x, (int)game.window()->mousePos().y
         ));
 
+        for (auto button : game.window()->buttonPressed()) {
+            Event::Emit(CommonEvents::MouseClicked(button));
+            break;
+        }
+
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());

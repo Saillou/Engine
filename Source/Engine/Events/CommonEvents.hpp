@@ -14,6 +14,10 @@ struct CommonEvents : public Event {
 		int x;
 		int y;
 	};
+	struct MouseClicked : public _Base {
+					explicit MouseClicked(int button = 0);
+					int button;
+	};
 
 	// -- State --
 	struct StateUpdated : public _Base {
@@ -41,6 +45,7 @@ private:
 	enum _Type : int {
 				EventKeyPressed,
 				EventMouseMoved,
+				EventMouseClicked,
 				
 				EventStateUpdated,
 				
