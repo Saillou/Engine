@@ -43,6 +43,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
     if (dir != glm::vec3(0, 0, 0)) 
     {
+        m_view->lights()[0].position += 0.05f * dir;
         m_view->camera().position += 0.05f * dir;
     }
 

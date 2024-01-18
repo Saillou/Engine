@@ -27,12 +27,12 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
+    m_camera.position  = glm::vec3(0.0f, -6.0f, 1.5f);
     m_camera.direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Lightnings
     m_lights = {
-        Light(glm::vec3{  0,  0, 0.50f }, glm::vec4{ 1, 0.7, 0.3, 1 })
+        Light(glm::vec3{  0,  +1.50f, 1.0f }, glm::vec4{ 1, 0.7, 0.3, 1 })
     };
 
     // Load models
@@ -228,7 +228,7 @@ void View::_initObjects() {
     });
 
     // Ground - Grid
-    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 100, {} });
+    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 36, {} });
     m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
     std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
         { 

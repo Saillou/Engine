@@ -10,18 +10,14 @@
 struct Cookable {
     // Basic possibilities
     enum class CookType {
-        Solid, 
-        Geometry,
-        Shadow,
-        
         Model,
         ModelGeometry,
         
-        Quad,
-        
         Batch,
         BatchGeometry,
-        BatchShadow
+        BatchShadow,
+
+        Quad
     };
 
     // Shader helper
@@ -36,14 +32,16 @@ struct Cookable {
     UShader& get(CookType type);
 
 protected:
-    static void _set_shader_batch(Shader& shader);
-    static void _set_shader_solid(Shader& shader);
+    static ShaderSource _init_vertex();
+    static ShaderSource _init_fragment();
+
     static void _set_shader_model(Shader& shader);
-    static void _set_shader_shadow(Shader& shader);
-    static void _set_shader_shadow_batch(Shader& shader);
-    static void _set_shader_geometry(Shader& shader);
-    static void _set_shader_geometry_batch(Shader& shader);
     static void _set_shader_model_geometry(Shader& shader);
+
+    static void _set_shader_batch(Shader& shader);
+    static void _set_shader_shadow_batch(Shader& shader);
+    static void _set_shader_geometry_batch(Shader& shader);
+
     static void _set_shader_quad(Shader& shader);
 
     // Members
