@@ -101,7 +101,7 @@ void View::draw() {
             m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Basic)
                                          ->use().set("diffuse_color", light.color);
 
-            m_entities[_ObjectId::Sphere]->drawOne(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
+            m_entities[_ObjectId::Sphere]->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
         }
 
         // Draw objects
@@ -115,13 +115,13 @@ void View::draw() {
             m_entities[obj.id]->drawShadow(m_camera, m_lights[0]);
 
             // Highlight
-            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quats[0])) {
-                m_entities[obj.id]->get(Cookable::CookType::Geometry)
-                                  ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1))
-                                         .set("Projection", m_camera.projection)
-                                         .set("View", m_camera.modelview);
+            for(const auto& quat : obj.quats) {
+                if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat)) {
+                    m_entities[obj.id]->get(Cookable::CookType::Geometry)
+                                      ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
 
-                m_entities[obj.id]->model.drawElements(*m_entities[obj.id]->get(Cookable::CookType::Geometry));
+                    m_entities[obj.id]->drawOne(Cookable::CookType::Geometry, m_camera, quat, m_lights);
+                }
             }
         }
 
@@ -135,11 +135,9 @@ void View::draw() {
             // Grid
             {
                 m_entities[_ObjectId::Grid]->get(Cookable::CookType::Geometry)
-                                           ->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1))
-                                                  .set("View", m_camera.modelview)
-                                                  .set("Projection", m_camera.projection);
+                                           ->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1));
 
-                m_entities[_ObjectId::Grid]->model.drawElements(*m_entities[_ObjectId::Grid]->get(Cookable::CookType::Geometry));
+                m_entities[_ObjectId::Grid]->drawGeometry(m_camera);
             }
 
             // Shadow
@@ -195,6 +193,8 @@ void View::draw() {
 
 // Allocate static memory
 void View::_initObjects() {
+    constexpr float hpi = glm::half_pi<float>();
+
     // Sky
     m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
         "Resources/textures/skybox/right.jpg",
@@ -235,10 +235,10 @@ void View::_initObjects() {
         {
             glm::scale(
                 glm::translate(
-                    glm::rotate(glm::mat4(1.0f),      // Identity
-                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                    glm::vec3(1.0f, .30f, .0f)), // Translation
-                glm::vec3(2.0f)         // Scale
+                    glm::rotate(glm::mat4(1.0f),    // Identity
+                        hpi, glm::vec3(1, 0, 0)),  // Rotation
+                    glm::vec3(1.0f, .30f, .0f)),    // Translation
+                glm::vec3(2.0f)                     // Scale
             )
         }
     });
@@ -246,7 +246,7 @@ void View::_initObjects() {
     // Trees
     std::vector<glm::mat4> forest;
     forest.resize(100);
-    std::generate(forest.begin(), forest.end(), [id = 0]() mutable
+    std::generate(forest.begin(), forest.end(), [id = 0, hpi]() mutable
         {
             float x = (float)(id % 10 - 5);
             float y = (float)(id / 10 - 5);
@@ -261,8 +261,8 @@ void View::_initObjects() {
             auto transf = glm::scale(
                 glm::translate(
                     glm::rotate(glm::mat4(1.0f),    // Identity
-                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                            tr),                     // Translation
+                        hpi, glm::vec3(1, 0, 0)),  // Rotation
+                            tr),                    // Translation
                 glm::vec3(dstr_one(gen)*3.0f)       // Scale
             );
 
@@ -276,9 +276,9 @@ void View::_initObjects() {
     m_objects.push_back({_ObjectId::Character, glm::vec4(0),
         {
             glm::translate(
-                glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(-1, 0, 1)           // Translation
+                glm::rotate(glm::mat4(1.0f),  // Identity
+                    hpi, glm::vec3(1, 0, 0)), // Rotation
+                glm::vec3(-1, 0.2f, -1.2f)       // Translation
             )
         }
     });

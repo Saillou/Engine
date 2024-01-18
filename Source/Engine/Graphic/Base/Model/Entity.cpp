@@ -30,23 +30,48 @@ Entity::Entity(SimpleShape shape)
     }
 }
 
-void Entity::drawOne(const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
-    auto& sh = *get(CookType::Basic);
+// - - - - - - - - - - - - - - - - - - 
 
-    sh.use()
-        .set("Projection",  camera.projection)
-        .set("View",        camera.modelview)
-        .set("CameraPos",   camera.position)
-        .set("LightNumber", (int)lights.size());
+void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
+    Shader& sh = get(type)->use();
 
-    for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-        sh.set("LightPos_"   + std::to_string(iLight), lights[iLight].position)
-          .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
+    // I don't like that but ok for now
+    switch (type)
+    {
+    case Cookable::CookType::Basic:
+        sh.set("Projection",  camera.projection)
+          .set("View",        camera.modelview)
+          .set("CameraPos",   camera.position)
+          .set("LightNumber", (int)lights.size());
+
+        for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
+            sh.set("LightPos_"   + std::to_string(iLight), lights[iLight].position)
+              .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
+        }
+        break;
+
+    case Cookable::CookType::Shadow:
+        sh.set("Projection", camera.projection)
+          .set("View",       camera.modelview)
+          .set("viewPos",    camera.position)
+          .set("far_plane",  camera.far_plane)
+          .set("lightPos",   lights[0].position)
+          .set("lightColor", lights[0].color * 0.3f);
+        break;
+
+    case Cookable::CookType::Geometry:
+        sh.set("Projection", camera.projection)
+          .set("View",       camera.modelview);
+        break;
     }
 
+    // Careful it will affects subsequent draw
     model.setBatch({}, { quat });
+
     model.draw(sh);
 }
+
+// - - - - - - - - - - - - - - - - - -  
 
 void Entity::drawBatch(const Camera& camera, const std::vector<Light>& lights) {
     auto& sh = *get(CookType::Basic);
@@ -76,4 +101,13 @@ void Entity::drawShadow(const Camera& camera, const Light& light) {
         set("lightColor",   light.color * 0.3f);
 
     model.draw(*get(Cookable::CookType::Shadow));
+}
+
+void Entity::drawGeometry(const Camera& camera) {
+    get(Cookable::CookType::Geometry)->
+        use().
+        set("Projection", camera.projection).
+        set("View",       camera.modelview);
+
+    model.drawElements(*get(Cookable::CookType::Geometry));
 }
