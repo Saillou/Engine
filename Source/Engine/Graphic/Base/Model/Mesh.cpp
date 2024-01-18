@@ -33,20 +33,8 @@ void Mesh::unbindTextures() const {
 
 void Mesh::drawElements() const {
     m_vao.bind();
-
-    if(m_instances.size() == 0)
-        glDrawElements(GL_TRIANGLES, (unsigned int)m_indices.size(), GL_UNSIGNED_INT, 0);
-    else
-        glDrawElementsInstanced(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)m_instances.size() / sizeof(glm::mat4));
-
+    glDrawElementsInstanced(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)m_instances.size() / sizeof(glm::mat4));
     m_vao.unbind();
-}
-
-void Mesh::drawElements(Shader& shader, const glm::mat4& quat) const {
-    if(shader.has("LocalModel"))
-        shader.use().set("LocalModel", quat);
-
-    drawElements();
 }
 
 // Getters

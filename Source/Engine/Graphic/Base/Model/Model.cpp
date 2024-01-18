@@ -35,8 +35,11 @@ void Model::draw(Shader& shader) const {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
+            shader.use()
+                  .set("LocalModel", (*currNode)->transform);
+
             mesh->bindTextures(shader);
-            mesh->drawElements(shader, (*currNode)->transform);
+            mesh->drawElements();
             mesh->unbindTextures();
         }
 
@@ -61,7 +64,9 @@ void Model::drawElements(Shader& shader) const {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
-            mesh->drawElements(shader, (*currNode)->transform);
+            shader.use()
+                  .set("LocalModel", (*currNode)->transform);
+            mesh->drawElements();
         }
 
         // Add children

@@ -107,7 +107,7 @@ void View::draw() {
     {
         // Lights
         for (auto& light : m_lights) {
-            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Model)
+            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Batch)
                                          ->use().set("diffuse_color", light.color);
 
             m_entities[_ObjectId::Sphere]->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
@@ -117,7 +117,7 @@ void View::draw() {
         for (const _Object& obj : m_objects) {
             // Cube color
             if (obj.id == _ObjectId::Cube) {
-                m_entities[obj.id]->get(Cookable::CookType::Model)
+                m_entities[obj.id]->get(Cookable::CookType::Batch)
                                   ->use().set("diffuse_color", glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
             }
 

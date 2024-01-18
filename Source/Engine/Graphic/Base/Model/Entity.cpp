@@ -7,14 +7,12 @@ Entity::Entity(const std::string& path) :
     model(path)
 {
     addRecipe(CookType::Batch);
-    addRecipe(CookType::Model);
     addRecipe(CookType::BatchGeometry);
 }
 
 Entity::Entity(SimpleShape shape)
 {
     addRecipe(CookType::Batch);
-    addRecipe(CookType::Model);
     addRecipe(CookType::BatchGeometry);
 
     model._root = std::make_unique<Model::Node>();
@@ -31,12 +29,11 @@ Entity::Entity(SimpleShape shape)
 }
 
 void Entity::draw(const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
-    auto& sh = *get(CookType::Model);
+    auto& sh = *get(CookType::Batch);
 
     sh.use()
         .set("Projection",  camera.projection)
         .set("View",        camera.modelview)
-        .set("Model",       quat)
         .set("CameraPos",   camera.position)
         .set("LightNumber", (int)lights.size());
 
@@ -45,6 +42,7 @@ void Entity::draw(const Camera& camera, const glm::mat4& quat, const std::vector
           .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
     }
 
+    model.setBatch({}, { quat });
     model.draw(sh);
 }
 

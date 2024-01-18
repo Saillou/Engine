@@ -5,11 +5,6 @@
 
 void Cookable::Set(CookType type, Shader& recipe) {
     switch (type) {
-    case CookType::Model:
-        _set_shader_model(recipe);
-        break;
-
-
     case CookType::Batch:
         _set_shader_batch(recipe);
         break;
@@ -71,7 +66,6 @@ ShaderSource Cookable::_init_vertex() {
 
         .add_var("uniform", "mat4", "Projection")
         .add_var("uniform", "mat4", "View")
-        .add_var("uniform", "mat4", "Model")
         .add_var("uniform", "mat4", "LocalModel")
 
         .add_var("out", "VS_OUT", R"_struct_({
@@ -98,15 +92,16 @@ ShaderSource Cookable::_init_fragment() {
 
 
 // - Shaders
-void Cookable::_set_shader_model(Shader& shader) {
+void Cookable::_set_shader_batch(Shader& shader) {
     shader
         .attachSource(GL_VERTEX_SHADER,
             _init_vertex()
 
             .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos   = vec3(Model * LocalModel * vec4(aPos, 1.0));
-                vs_out.Normal    = mat3(transpose(inverse(Model * LocalModel))) * aNormal;  
+                vs_out.FragPos   = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Normal    = mat3(transpose(inverse(aModel * LocalModel))) * aNormal;  
                 vs_out.TexCoords = aTexCoords;
+                vs_out.Color     = aColor;
     
                 gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_")
@@ -156,7 +151,7 @@ void Cookable::_set_shader_model(Shader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 vec2 tex_size = textureSize(texture_diffuse, 0);
-                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, fs_in.TexCoords) : diffuse_color;
+                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, fs_in.TexCoords) : max(fs_in.Color, diffuse_color);
 
                 // Shall use light ?
                 if(LightNumber == 0) {
@@ -176,28 +171,6 @@ void Cookable::_set_shader_model(Shader& shader) {
                 FragColor = vec4(light_result, ambiant_color.a);
             )_main_")
             .str()
-        );
-}
-
-void Cookable::_set_shader_batch(Shader& shader) {
-    shader
-        .attachSource(GL_VERTEX_SHADER, 
-            _init_vertex()
-
-            .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));
-                vs_out.Normal  = mat3(transpose(inverse(aModel * LocalModel))) * aNormal;  
-                vs_out.Color   = aColor;
-    
-                gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_").str()
-        )
-        .attachSource(GL_FRAGMENT_SHADER, 
-            _init_fragment()
-
-            .add_func("void", "main", "", R"_main_(
-                FragColor = fs_in.Color;
-            )_main_").str()
         );
 }
 

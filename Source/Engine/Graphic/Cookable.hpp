@@ -9,8 +9,7 @@
 // Objects
 struct Cookable {
     // Basic possibilities
-    enum class CookType {
-        Model,        
+    enum class CookType {       
         Batch,
         BatchGeometry,
         BatchShadow,
@@ -30,8 +29,6 @@ struct Cookable {
 protected:
     static ShaderSource _init_vertex();
     static ShaderSource _init_fragment();
-
-    static void _set_shader_model(Shader& shader);
 
     static void _set_shader_batch(Shader& shader);
     static void _set_shader_shadow_batch(Shader& shader);

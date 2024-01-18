@@ -35,7 +35,6 @@ struct Mesh {
     void unbindTextures() const;
 
     void drawElements() const;
-    void drawElements(Shader& shader, const glm::mat4& quat = glm::mat4(1.0f)) const;
 
     const std::vector<Vertex>&       vertices() const;
     const std::vector<unsigned int>& indices() const;
