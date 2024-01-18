@@ -64,11 +64,8 @@ View::View(int widthHint, int heightHint):
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
 
-void View::mouse_on(int x, int y) {
-    m_mousePos.x = (float)x / m_width;
-    m_mousePos.y = (float)y / m_height;
-}
 
+// Methods
 void View::draw() {
     static float dt_since_last_draw = 0.0f;
     static float dt_draw = 0.0f;
@@ -78,24 +75,18 @@ void View::draw() {
 
     BaseScene::_update_camera();
     _setParticles(dt_since_last_draw);
+    _setObjects();
 
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
     m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
         // Draw objects
         for (const _Object& obj : m_objects) {
-            sh.use()
-                .set("isBatch", false)
-                .set("model", obj.quat);
-
             m_entities[obj.id]->model.drawElements(sh);
         }
 
         // Particles
         {
-            sh.use()
-                .set("isBatch", true);
-
             m_fireGrid.particles.object->model.drawElements(sh);
         }
     });
@@ -107,35 +98,30 @@ void View::draw() {
     {
         // Lights
         for (auto& light : m_lights) {
-            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Batch)
+            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Basic)
                                          ->use().set("diffuse_color", light.color);
 
-            m_entities[_ObjectId::Sphere]->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
+            m_entities[_ObjectId::Sphere]->drawOne(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
         }
 
         // Draw objects
         for (const _Object& obj : m_objects) {
-            // Cube color
-            if (obj.id == _ObjectId::Cube) {
-                m_entities[obj.id]->get(Cookable::CookType::Batch)
-                                  ->use().set("diffuse_color", glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
-            }
+            // Normal colors
+            m_shadowRender.bindTexture(GL_TEXTURE1);
+            m_entities[obj.id]->get(Cookable::CookType::Shadow)
+                              ->use().set("diffuse_color", obj.material_color)
+                                     .set("depthMap", 1);
 
-            // Draw model
-            m_entities[obj.id]->draw(m_camera, obj.quat, m_lights);
+            m_entities[obj.id]->drawShadow(m_camera, m_lights[0]);
 
             // Highlight
-            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat)) {
-                m_entities[obj.id]->get(Cookable::CookType::BatchGeometry)
-                                  ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quats[0])) {
+                m_entities[obj.id]->get(Cookable::CookType::Geometry)
+                                  ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1))
+                                         .set("Projection", m_camera.projection)
+                                         .set("View", m_camera.modelview);
 
-                auto& sh = *m_entities[obj.id]->get(Cookable::CookType::BatchGeometry);
-                sh.use()
-                    .set("Projection", m_camera.projection)
-                    .set("View", m_camera.modelview);
-
-                m_entities[obj.id]->model.setBatch({}, { obj.quat });
-                m_entities[obj.id]->model.drawElements(sh);
+                m_entities[obj.id]->model.drawElements(*m_entities[obj.id]->get(Cookable::CookType::Geometry));
             }
         }
 
@@ -148,31 +134,22 @@ void View::draw() {
         {
             // Grid
             {
-                auto& shader = m_entities[_ObjectId::Grid]->get(Cookable::CookType::BatchGeometry);
-                shader->use().
-                        set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1)).
-                        set("View", m_camera.modelview).
-                        set("Projection", m_camera.projection);
+                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Geometry)
+                                           ->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1))
+                                                  .set("View", m_camera.modelview)
+                                                  .set("Projection", m_camera.projection);
 
-                m_entities[_ObjectId::Grid]->model.drawElements(*shader);
+                m_entities[_ObjectId::Grid]->model.drawElements(*m_entities[_ObjectId::Grid]->get(Cookable::CookType::Geometry));
             }
 
             // Shadow
             {
                 m_shadowRender.bindTexture(GL_TEXTURE1);
+                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Shadow)
+                                           ->use().set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).
+                                                   set("depthMap", 1);
 
-                auto& shader = m_entities[_ObjectId::Grid]->get(Cookable::CookType::BatchShadow);
-                shader->use().
-                    set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).
-                    set("View",          m_camera.modelview).
-                    set("Projection",    m_camera.projection).
-                    set("viewPos",       m_camera.position).
-                    set("far_plane",     m_camera.far_plane).
-                    set("lightPos",      m_lights[0].position).
-                    set("lightColor",    m_lights[0].color * 0.3f).
-                    set("depthMap",      1);
-
-                m_entities[_ObjectId::Grid]->model.drawElements(*shader);
+                m_entities[_ObjectId::Grid]->drawShadow(m_camera, m_lights[0]);
             }
         }
 
@@ -216,6 +193,7 @@ void View::draw() {
     m_timer.tic();
 }
 
+// Allocate static memory
 void View::_initObjects() {
     // Sky
     m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
@@ -229,8 +207,8 @@ void View::_initObjects() {
 
     // Ground - Grid
     m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 36, {} });
-    m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
-    std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
+    m_grid->grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
+    std::generate(m_grid->grid_cells.begin(), m_grid->grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
         { 
             const glm::vec2 cell_pos = glm::vec2(id%N - N/2, id/N - N/2);
             const glm::vec3 T_pos    = S * glm::vec3(cell_pos, -0.5f);
@@ -240,57 +218,60 @@ void View::_initObjects() {
             return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
         }
     );
-    m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchShadow);
-    m_entities[_ObjectId::Grid]->model.setBatch({}, m_grid->m_grid_cells);
 
     // Box
-    m_objects.push_back({ _ObjectId::Cube, 
-        glm::scale(
-            glm::translate(
-                glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)), 
-            glm::vec3(0.1f)
-        )
+    m_objects.push_back({ _ObjectId::Cube, glm::vec4(1.0f, 0.7f, 0.3f ,1.0), 
+        {
+            glm::scale(
+                glm::translate(
+                    glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)),
+                glm::vec3(0.1f)
+            )
+        }
     });
 
     // Locomotive
-    m_objects.push_back({ _ObjectId::Locomotive,
-        glm::scale(
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),      // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(1.0f, .30f, .0f)), // Translation
-            glm::vec3(2.0f)         // Scale
-        )
+    m_objects.push_back({ _ObjectId::Locomotive, glm::vec4(0),
+        {
+            glm::scale(
+                glm::translate(
+                    glm::rotate(glm::mat4(1.0f),      // Identity
+                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
+                    glm::vec3(1.0f, .30f, .0f)), // Translation
+                glm::vec3(2.0f)         // Scale
+            )
+        }
     });
 
     // Trees
-    m_objects.push_back({_ObjectId::Tree,
-        glm::scale(
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(1.5f, 0.10f, 0.5f)),  // Translation
-            glm::vec3(2.0f)         // Scale
-        )
-    });
-
-    m_objects.push_back({_ObjectId::Tree,
-        glm::scale(
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(-0.90f, 0.10f, -0.95f)),  // Translation
-            glm::vec3(2.0f)         // Scale
-        )
+    m_objects.push_back({_ObjectId::Tree, glm::vec4(0),
+        {
+            glm::scale(
+                glm::translate(
+                    glm::rotate(glm::mat4(1.0f),    // Identity
+                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
+                    glm::vec3(1.5f, 0.10f, 0.5f)),  // Translation
+                glm::vec3(2.0f)         // Scale
+            ),
+            glm::scale(
+                glm::translate(
+                    glm::rotate(glm::mat4(1.0f),    // Identity
+                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
+                    glm::vec3(-0.90f, 0.10f, -0.95f)),  // Translation
+                glm::vec3(2.0f)         // Scale
+            )
+        }
     });
 
     // Character
-    m_objects.push_back({_ObjectId::Character,
+    m_objects.push_back({_ObjectId::Character, glm::vec4(0),
+        {
             glm::translate(
                 glm::rotate(glm::mat4(1.0f),    // Identity
                     1.5f, glm::vec3(1, 0, 0)),  // Rotation
                 glm::vec3(-1, 0, 1)           // Translation
-        )
+            )
+        }
     });
 }
 
@@ -328,7 +309,6 @@ void View::_initFilters() {
         .link();
 }
 
-
 void View::_initParticles() {
     // - Generate batch parameters
     const glm::vec3 color(1.0f, 0.7f, 0.3f);
@@ -347,14 +327,10 @@ void View::_initParticles() {
             return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         }
     );
-
-    _setParticles();
-
-    // Cook
-    m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
-    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
 }
 
+
+// Update dynamic memory
 void View::_setParticles(float dt) {
     // Move
     for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
@@ -381,6 +357,21 @@ void View::_setParticles(float dt) {
     m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
 }
 
+void View::_setObjects() {
+    // Grid
+    m_entities[_ObjectId::Grid]->model.setBatch({}, m_grid->grid_cells);
+
+    // Objects
+    for (const _Object& obj : m_objects) {
+        m_entities[obj.id]->model.setBatch({}, obj.quats);
+    }
+}
+
+// Callbacks
+void View::mouse_on(int x, int y) {
+    m_mousePos.x = (float)x / m_width;
+    m_mousePos.y = (float)y / m_height;
+}
 
 void View::_onResize() {
     framebuffer_main.resize(m_width, m_height);

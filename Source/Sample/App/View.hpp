@@ -30,13 +30,14 @@ private:
 
     struct _Object {
         _ObjectId id;
-        glm::mat4 quat;
+        glm::vec4 material_color;
+        std::vector<glm::mat4> quats;
     };
 
     struct _Grid {
         float cell_size;
         int n_side;
-        std::vector<glm::mat4> m_grid_cells;
+        std::vector<glm::mat4> grid_cells;
     };
 
     void _initObjects();
@@ -44,6 +45,7 @@ private:
     void _initFilters();
 
     void _setParticles(float dt = 0.0f);
+    void _setObjects();
     void _onResize() override;
 
     // Object models (vertices, textures..)

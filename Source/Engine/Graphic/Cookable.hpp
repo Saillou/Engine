@@ -10,9 +10,9 @@
 struct Cookable {
     // Basic possibilities
     enum class CookType {       
-        Batch,
-        BatchGeometry,
-        BatchShadow,
+        Basic,
+        Shadow,
+        Geometry,
     };
 
     // Shader helper
@@ -30,9 +30,9 @@ protected:
     static ShaderSource _init_vertex();
     static ShaderSource _init_fragment();
 
-    static void _set_shader_batch(Shader& shader);
-    static void _set_shader_shadow_batch(Shader& shader);
-    static void _set_shader_geometry_batch(Shader& shader);
+    static void _set_shader_basic(Shader& shader);
+    static void _set_shader_shadow(Shader& shader);
+    static void _set_shader_geometry(Shader& shader);
 
     // Members
     std::unordered_map<CookType, UShader> m_shaders;

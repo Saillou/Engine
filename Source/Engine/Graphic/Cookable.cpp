@@ -5,18 +5,17 @@
 
 void Cookable::Set(CookType type, Shader& recipe) {
     switch (type) {
-    case CookType::Batch:
-        _set_shader_batch(recipe);
+    case CookType::Basic:
+        _set_shader_basic(recipe);
         break;
 
-    case CookType::BatchGeometry:
-        _set_shader_geometry_batch(recipe);
+    case CookType::Shadow:
+        _set_shader_shadow(recipe);
         break;
 
-    case CookType::BatchShadow:
-        _set_shader_shadow_batch(recipe);
+    case CookType::Geometry:
+        _set_shader_geometry(recipe);
         break;
-
 
     default:
         std::cerr << "[Warning] No shader created." << std::endl;
@@ -92,7 +91,7 @@ ShaderSource Cookable::_init_fragment() {
 
 
 // - Shaders
-void Cookable::_set_shader_batch(Shader& shader) {
+void Cookable::_set_shader_basic(Shader& shader) {
     shader
         .attachSource(GL_VERTEX_SHADER,
             _init_vertex()
@@ -174,23 +173,24 @@ void Cookable::_set_shader_batch(Shader& shader) {
         );
 }
 
-void Cookable::_set_shader_shadow_batch(Shader& shader) {
+void Cookable::_set_shader_shadow(Shader& shader) {
     shader
         .attachSource(GL_VERTEX_SHADER, 
             _init_vertex()
 
             .add_func("void", "main", "", R"_main_(
                 vs_out.FragPos   = vec3(aModel * LocalModel * vec4(aPos, 1.0));
-                vs_out.Normal    = transpose(inverse(mat3(aModel * LocalModel))) * aNormal;
+                vs_out.Normal    = mat3(transpose(inverse(aModel * LocalModel))) * aNormal;  
                 vs_out.TexCoords = aTexCoords;
 
-                gl_Position = Projection * View * aModel * vec4(aPos, 1.0);
+                gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_").str()
         ).
         attachSource(GL_FRAGMENT_SHADER, 
             _init_fragment()
 
             .add_var("uniform", "vec4", "diffuse_color")
+            .add_var("uniform", "sampler2D", "texture_diffuse")
             .add_var("uniform", "samplerCube", "depthMap")
             .add_var("uniform", "vec3", "lightPos")
             .add_var("uniform", "vec4", "lightColor")
@@ -223,7 +223,8 @@ void Cookable::_set_shader_shadow_batch(Shader& shader) {
                 return shadow / float(samples);
             )_fun_")
             .add_func("void", "main", "", R"_main_(
-                vec3 color = diffuse_color.rgb;
+                vec2 tex_size = textureSize(texture_diffuse, 0);
+                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, fs_in.TexCoords) : max(fs_in.Color, diffuse_color);
                 vec3 normal = normalize(fs_in.Normal);
 
                 // ambient
@@ -244,7 +245,7 @@ void Cookable::_set_shader_shadow_batch(Shader& shader) {
   
                 // calculate shadow
                 float shadow = ShadowCalculation(fs_in.FragPos);                      
-                vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
+                vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * ambiant_color.rgb;    
     
                 FragColor = vec4(lighting, 1.0);
             )_main_")
@@ -252,7 +253,7 @@ void Cookable::_set_shader_shadow_batch(Shader& shader) {
         );
 }
 
-void Cookable::_set_shader_geometry_batch(Shader& shader) {
+void Cookable::_set_shader_geometry(Shader& shader) {
     shader
         .attachSource(GL_VERTEX_SHADER, 
             _init_vertex()
@@ -286,4 +287,3 @@ void Cookable::_set_shader_geometry_batch(Shader& shader) {
             )_main_").str()
         );
 }
-

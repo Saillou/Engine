@@ -12,18 +12,10 @@ ShadowRender::ShadowRender() :
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
             .add_var("layout (location = 3) in", "vec4", "aColor")
             .add_var("layout (location = 4) in", "mat4", "aModel")
-            
-            .add_var("uniform", "highp int", "isBatch")
-            .add_var("uniform", "mat4", "model")
 
             .add_var("uniform", "mat4", "LocalModel")
             .add_func("void", "main", "", R"_main_(
-                if(isBatch == 1) {
-                    gl_Position = aModel * LocalModel * vec4(aPos, 1.0);
-                }
-                else {
-                    gl_Position = model * LocalModel * vec4(aPos, 1.0);
-                }
+                gl_Position = aModel * LocalModel * vec4(aPos, 1.0);
             )_main_")
             .str()
         ).
