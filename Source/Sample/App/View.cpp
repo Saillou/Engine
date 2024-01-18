@@ -27,7 +27,7 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(0.0f, -6.0f, 1.5f);
+    m_camera.position  = glm::vec3(+2.0f, -9.0f, 7.0f);
     m_camera.direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Lightnings
@@ -244,24 +244,33 @@ void View::_initObjects() {
     });
 
     // Trees
-    m_objects.push_back({_ObjectId::Tree, glm::vec4(0),
+    std::vector<glm::mat4> forest;
+    forest.resize(100);
+    std::generate(forest.begin(), forest.end(), [id = 0]() mutable
         {
-            glm::scale(
+            float x = (float)(id % 10 - 5);
+            float y = (float)(id / 10 - 5);
+
+            if (abs(x) < 2 && abs(y) < 2) {
+                x = (x > 0 ? 1 : -1) * std::max(3.0f, abs(x)) + x / 10.0f;
+                y = (y > 0 ? 1 : -1) * std::max(3.0f, abs(y)) + y / 10.0f;
+            }
+
+            glm::vec3 tr(-0.90f + x, 0.10f, -0.95f + y);  // Translation
+
+            auto transf = glm::scale(
                 glm::translate(
                     glm::rotate(glm::mat4(1.0f),    // Identity
                         1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                    glm::vec3(1.5f, 0.10f, 0.5f)),  // Translation
-                glm::vec3(2.0f)         // Scale
-            ),
-            glm::scale(
-                glm::translate(
-                    glm::rotate(glm::mat4(1.0f),    // Identity
-                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                    glm::vec3(-0.90f, 0.10f, -0.95f)),  // Translation
-                glm::vec3(2.0f)         // Scale
-            )
+                            tr),                     // Translation
+                glm::vec3(dstr_one(gen)*3.0f)       // Scale
+            );
+
+            id++;
+            return transf;
         }
-    });
+    );
+    m_objects.push_back({_ObjectId::Tree, glm::vec4(0), forest });
 
     // Character
     m_objects.push_back({_ObjectId::Character, glm::vec4(0),
