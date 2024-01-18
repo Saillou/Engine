@@ -71,6 +71,30 @@ void Model::drawElements(Shader& shader) const {
     }
 }
 
+void Model::setBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
+    if (!_root)
+        return;
+
+    std::stack<const std::unique_ptr<Node>*> st;
+    st.push(&_root);
+
+    while (!st.empty()) {
+        // Get next in line
+        const auto currNode = st.top();
+        st.pop();
+
+        // Draw
+        for (const auto& mesh : (*currNode)->meshes) {
+            mesh->updateBatch(colors, models);
+        }
+
+        // Add children
+        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
+            st.push(&(*currNode)->children[i]);
+        }
+    }
+}
+
 const std::unique_ptr<Model::Node>& Model::root() const {
     return _root;
 }

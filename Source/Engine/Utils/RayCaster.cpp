@@ -11,11 +11,11 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 		return false;
 
 	// Traverse model's nodes
-	if (!objModel.model().root())
+	if (!objModel.model.root())
 		return false;
 
 	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&objModel.model().root());
+	st.push(&objModel.model.root());
 
 	while (!st.empty()) {
 		// Get next in line

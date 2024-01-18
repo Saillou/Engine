@@ -10,14 +10,10 @@
 struct Cookable {
     // Basic possibilities
     enum class CookType {
-        Model,
-        ModelGeometry,
-        
+        Model,        
         Batch,
         BatchGeometry,
         BatchShadow,
-
-        Quad
     };
 
     // Shader helper
@@ -36,13 +32,10 @@ protected:
     static ShaderSource _init_fragment();
 
     static void _set_shader_model(Shader& shader);
-    static void _set_shader_model_geometry(Shader& shader);
 
     static void _set_shader_batch(Shader& shader);
     static void _set_shader_shadow_batch(Shader& shader);
     static void _set_shader_geometry_batch(Shader& shader);
-
-    static void _set_shader_quad(Shader& shader);
 
     // Members
     std::unordered_map<CookType, UShader> m_shaders;

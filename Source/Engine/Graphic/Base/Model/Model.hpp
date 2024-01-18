@@ -31,6 +31,9 @@ struct Model
     void draw        (Shader& shader) const;
     void drawElements(Shader& shader) const;
 
+    // Setters
+    void setBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models);
+
     // Data tree for storing organized meshes
     struct Node {
         glm::mat4 transform = glm::mat4(1.0f);

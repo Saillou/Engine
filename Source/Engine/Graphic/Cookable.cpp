@@ -9,10 +9,6 @@ void Cookable::Set(CookType type, Shader& recipe) {
         _set_shader_model(recipe);
         break;
 
-    case CookType::ModelGeometry:
-        _set_shader_model_geometry(recipe);
-        break;
-
 
     case CookType::Batch:
         _set_shader_batch(recipe);
@@ -24,11 +20,6 @@ void Cookable::Set(CookType type, Shader& recipe) {
 
     case CookType::BatchShadow:
         _set_shader_shadow_batch(recipe);
-        break;
-
-
-    case CookType::Quad:
-        _set_shader_quad(recipe);
         break;
 
 
@@ -188,43 +179,6 @@ void Cookable::_set_shader_model(Shader& shader) {
         );
 }
 
-void Cookable::_set_shader_model_geometry(Shader& shader) {
-    shader
-        .attachSource(GL_VERTEX_SHADER,
-            _init_vertex()
-
-            .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos = vec3(Model * LocalModel * vec4(aPos, 1.0));
-                vs_out.Normal  = mat3(transpose(inverse(Model * LocalModel))) * aNormal; 
-    
-                gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_").str()
-        )
-        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
-            .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(line_strip, max_vertices = 4)")
-
-            .add_func("void", "main", "", R"_main_(
-                gl_Position     = gl_in[1].gl_Position; EmitVertex();
-                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
-                EndPrimitive();
-
-                gl_Position     = gl_in[0].gl_Position; EmitVertex();
-                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
-                EndPrimitive();
-            )_main_").str()
-        )
-        .attachSource(GL_FRAGMENT_SHADER,
-            _init_fragment()
-            .add_var("uniform", "vec4", "diffuse_color")
-
-            .add_func("void", "main", "", R"_main_(
-                FragColor = diffuse_color;
-            )_main_").str()
-        );
-}
-
-
 void Cookable::_set_shader_batch(Shader& shader) {
     shader
         .attachSource(GL_VERTEX_SHADER, 
@@ -331,7 +285,7 @@ void Cookable::_set_shader_geometry_batch(Shader& shader) {
             _init_vertex()
 
             .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos  = vec3(aModel * vec4(aPos, 1.0));
+                vs_out.FragPos  = vec3(aModel * LocalModel * vec4(aPos, 1.0));
                 gl_Position     = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_").str()
         )
@@ -360,25 +314,3 @@ void Cookable::_set_shader_geometry_batch(Shader& shader) {
         );
 }
 
-
-void Cookable::_set_shader_quad(Shader& shader) {
-    shader
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
-            .add_var("layout (location = 0) in", "vec3", "aPos")
-            .add_var("out", "vec2", "TexCoords")
-            .add_func("void", "main", "", R"_main_(
-                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-                float tx = aPos.x > 0 ? 1.0 : 0.0;
-                float ty = aPos.y > 0 ? 1.0 : 0.0;
-                TexCoords = vec2(tx, ty);
-            )_main_").str()
-        )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
-            .add_var("in", "vec2", "TexCoords")
-            .add_var("uniform", "sampler2D", "quadTexture")
-            .add_var("out", "vec4", "FragColor")
-            .add_func("void", "main", "", R"_main_(
-                FragColor = texture(quadTexture, TexCoords);
-            )_main_").str()
-        );
-}

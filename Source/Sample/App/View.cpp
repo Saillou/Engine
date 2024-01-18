@@ -88,7 +88,7 @@ void View::draw() {
                 .set("isBatch", false)
                 .set("model", obj.quat);
 
-            m_entities[obj.id]->drawElements(sh);
+            m_entities[obj.id]->model.drawElements(sh);
         }
 
         // Particles
@@ -96,7 +96,7 @@ void View::draw() {
             sh.use()
                 .set("isBatch", true);
 
-            m_fireGrid.particles.object->drawElements(sh);
+            m_fireGrid.particles.object->model.drawElements(sh);
         }
     });
 
@@ -126,16 +126,16 @@ void View::draw() {
 
             // Highlight
             if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat)) {
-                m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)
+                m_entities[obj.id]->get(Cookable::CookType::BatchGeometry)
                                   ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
 
-                auto& sh = *m_entities[obj.id]->get(Cookable::CookType::ModelGeometry);
+                auto& sh = *m_entities[obj.id]->get(Cookable::CookType::BatchGeometry);
                 sh.use()
                     .set("Projection", m_camera.projection)
-                    .set("View", m_camera.modelview)
-                    .set("Model", obj.quat);
+                    .set("View", m_camera.modelview);
 
-                m_entities[obj.id]->drawElements(sh);
+                m_entities[obj.id]->model.setBatch({}, { obj.quat });
+                m_entities[obj.id]->model.drawElements(sh);
             }
         }
 
@@ -154,7 +154,7 @@ void View::draw() {
                         set("View", m_camera.modelview).
                         set("Projection", m_camera.projection);
 
-                m_entities[_ObjectId::Grid]->drawElements(*shader);
+                m_entities[_ObjectId::Grid]->model.drawElements(*shader);
             }
 
             // Shadow
@@ -172,7 +172,7 @@ void View::draw() {
                     set("lightColor",    m_lights[0].color * 0.3f).
                     set("depthMap",      1);
 
-                m_entities[_ObjectId::Grid]->drawElements(*shader);
+                m_entities[_ObjectId::Grid]->model.drawElements(*shader);
             }
         }
 
@@ -240,9 +240,8 @@ void View::_initObjects() {
             return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
         }
     );
-    m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchGeometry);
     m_entities[_ObjectId::Grid]->addRecipe(Cookable::CookType::BatchShadow);
-    m_entities[_ObjectId::Grid]->setBatch({}, m_grid->m_grid_cells);
+    m_entities[_ObjectId::Grid]->model.setBatch({}, m_grid->m_grid_cells);
 
     // Box
     m_objects.push_back({ _ObjectId::Cube, 
@@ -353,7 +352,7 @@ void View::_initParticles() {
 
     // Cook
     m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
-    m_fireGrid.particles.object->setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
+    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
 }
 
 void View::_setParticles(float dt) {
@@ -379,7 +378,7 @@ void View::_setParticles(float dt) {
     }
 
     // Update
-    m_fireGrid.particles.object->setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
+    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
 }
 
 
