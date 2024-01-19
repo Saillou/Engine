@@ -12,33 +12,44 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(0, -5, 1);
+    m_camera.position  = glm::vec3(0, -7, 3);
     m_camera.direction = glm::vec3(0,  0, 0);
 
     // Lightnings
     m_lights = {
-        Light(glm::vec3{  0,  -1.50f, 1.0f }, glm::vec4{ 1, 0.7, 0.3, 1 })
+        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
+        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
 
     // Entities
     m_entities["Cube"]   = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Sphere"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
-    m_entities["Tortle"] = std::make_shared<Entity>("Resources/objects/character/character.glb");
 
-    // Objects
-    m_objects.push_back(_Object{m_entities["Cube"], glm::vec4(1,1,1,1), 
-        glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 0.1f))
-    });
+    // Scene objects
+    m_objects = {
+        { 
+            m_entities["Cube"], glm::vec4(1, 1, 1, 1),
+            glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 0.1f)),
+            Cookable::CookType::Shadow
+        },
+    };
 
-    m_objects.push_back(_Object{m_entities["Cube"], glm::vec4(1,0,0,1), 
-        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(0,0,1.0f))
-    });
+    for (int x = -3; x <= 3; x++) {
+        for (int y = -3; y <= 3; y++) {
+            m_objects.push_back({
+                m_entities["Cube"], glm::vec4(1, 1, 1, 1),
+                glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(3.0f*x, 3.0f*y, 1.0f)),
+                Cookable::CookType::Basic
+            });
+        }
+    }
 
-    m_objects.push_back(_Object{ m_entities["Tortle"], glm::vec4(1, 0.3f, 0.5f, 1),
-        glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0,+0.50f,0.50f)), 1.57f, glm::vec3(1,0,0))
-    });
-
-    m_target = _Object{ m_entities["Sphere"], glm::vec4(0.3f, 1, 1, 0.5f),
+    // Decors
+    m_target = { 
+        m_entities["Sphere"], glm::vec4(0.3f, 1, 1, 0.5f),
         glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f))
     };
 }
@@ -51,6 +62,7 @@ void View::draw() {
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
     m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
         for (const _Object& obj : m_objects) {
+            obj.entity->model.setBatch({ obj.transform });
             obj.entity->model.drawElements(sh);
         }
     });
@@ -59,13 +71,21 @@ void View::draw() {
     BaseScene::Viewport(width(), height());
     BaseScene::clear();
 
+    // Draw lights
+    for (const Light& light : m_lights) {
+        const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
+
+        m_entities["Sphere"]->get(Cookable::CookType::Basic)->use().set("diffuse_color", light.color);
+        m_entities["Sphere"]->drawOne(Cookable::CookType::Basic, m_camera, Q);
+    }
+
     // Draw objects
     m_shadowRender.bindTexture(GL_TEXTURE1);
     for (const _Object& obj : m_objects) {
-        obj.entity->get(Cookable::CookType::Shadow)->use().set("diffuse_color", obj.color).set("depthMap", 1);
-        obj.entity->drawOne(Cookable::CookType::Shadow, m_camera, obj.transform, m_lights);
+        obj.entity->get(obj.shade)->use().set("diffuse_color", obj.color);
+        obj.entity->drawOne(obj.shade, m_camera, obj.transform, m_lights);
 
-        // Intersection
+        // Draw intersections
         auto intersect_result = RayCaster::Intersect(m_mousePos, m_camera, *obj.entity, obj.transform);
         if (!intersect_result.has_value())
             continue;
@@ -76,7 +96,7 @@ void View::draw() {
         m_target.entity->drawOne(Cookable::CookType::Basic, m_camera, Q * m_target.transform);
     }
 
-    // For debug
+    // Draw debug
     _drawText();
 
     m_timer.tic();

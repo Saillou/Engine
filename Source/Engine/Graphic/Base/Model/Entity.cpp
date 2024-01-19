@@ -31,6 +31,28 @@ Entity::Entity(SimpleShape shape)
 }
 
 void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
+    // Careful it will affects subsequent draw
+    model.setBatch({ quat });
+    _setShader(type, camera, lights);
+    model.draw(*get(type));
+}
+
+void Entity::drawBasic(const Camera& camera, const std::vector<Light>& lights) {
+    _setShader(Cookable::CookType::Basic, camera, lights);
+    model.draw(*get(Cookable::CookType::Basic));
+}
+
+void Entity::drawShadow(const Camera& camera, const Light& light) {
+    _setShader(Cookable::CookType::Shadow, camera, {light});
+    model.draw(*get(Cookable::CookType::Shadow));
+}
+
+void Entity::drawGeometry(const Camera& camera) {
+    _setShader(Cookable::CookType::Geometry, camera);
+    model.draw(*get(Cookable::CookType::Geometry));
+}
+
+void Entity::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights) {
     Shader& sh = get(type)->use();
 
     // I don't like that but ok for now
@@ -54,7 +76,8 @@ void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::m
           .set("viewPos",    camera.position)
           .set("far_plane",  camera.far_plane)
           .set("lightPos",   lights[0].position)
-          .set("lightColor", lights[0].color * 0.3f);
+          .set("lightColor", lights[0].color * 0.3f)
+          .set("depthMap",   1); // TODO: change depending on texture bind position
         break;
 
     case Cookable::CookType::Geometry:
@@ -62,48 +85,4 @@ void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::m
           .set("View",       camera.modelview);
         break;
     }
-
-    // Careful it will affects subsequent draw
-    model.setBatch({ quat });
-
-    model.draw(sh);
-}
-
-void Entity::drawBasic(const Camera& camera, const std::vector<Light>& lights) {
-    auto& sh = *get(CookType::Basic);
-
-    sh.use()
-        .set("Projection",  camera.projection)
-        .set("View",        camera.modelview)
-        .set("CameraPos",   camera.position)
-        .set("LightNumber", (int)lights.size());
-
-    for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-        sh.set("LightPos_"   + std::to_string(iLight), lights[iLight].position)
-          .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
-    }
-
-    model.draw(sh);
-}
-
-void Entity::drawShadow(const Camera& camera, const Light& light) {
-    get(Cookable::CookType::Shadow)->
-        use().
-        set("Projection",   camera.projection).
-        set("View",         camera.modelview).
-        set("viewPos",      camera.position).
-        set("far_plane",    camera.far_plane).
-        set("lightPos",     light.position).
-        set("lightColor",   light.color * 0.3f);
-
-    model.draw(*get(Cookable::CookType::Shadow));
-}
-
-void Entity::drawGeometry(const Camera& camera) {
-    get(Cookable::CookType::Geometry)->
-        use().
-        set("Projection", camera.projection).
-        set("View",       camera.modelview);
-
-    model.drawElements(*get(Cookable::CookType::Geometry));
 }

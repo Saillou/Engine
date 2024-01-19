@@ -93,3 +93,6 @@ void ShadowRender::render(const Camera& camera, const Light& light, std::functio
     }
     fbo.unbind();
 }
+
+void ShadowRender::render(const Camera& camera, const std::vector<Light>& light, std::function<void(Shader&)> renderFunc) {
+}
