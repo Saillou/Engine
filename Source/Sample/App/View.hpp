@@ -24,7 +24,7 @@ struct View : public BaseScene {
 private:
     enum class _ObjectId {
         Character, Tree, Locomotive,
-        Cube, Sphere,
+        Cube, Sphere, Target,
         Grid
     };
 

@@ -1,16 +1,14 @@
 #include "View.hpp"
 
-#include <algorithm>
 #include <ctime>
 #include <random>
-
 #include <sstream>
+#include <algorithm>
+
 #include <Engine/Utils/RayCaster.hpp>
 
 // Random engine
 static std::default_random_engine gen;
-
-static std::uniform_real_distribution<float> dstr_pi(-glm::pi<float>(), +glm::pi<float>());
 static std::uniform_real_distribution<float> dstr_one(0.0f, 1.0f);
 static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
@@ -45,6 +43,7 @@ View::View(int widthHint, int heightHint):
         m_entities[_ObjectId::Grid]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entities[_ObjectId::Cube]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entities[_ObjectId::Sphere]     = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
+        m_entities[_ObjectId::Target]     = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -104,6 +103,9 @@ void View::draw() {
             m_entities[_ObjectId::Sphere]->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
         }
 
+        // List of targets
+        std::vector<glm::mat4> targets;
+
         // Draw objects
         for (const _Object& obj : m_objects) {
             // Normal colors
@@ -114,15 +116,33 @@ void View::draw() {
 
             m_entities[obj.id]->drawShadow(m_camera, m_lights[0]);
 
-            // Highlight
+            // Ray cast
             for(const auto& quat : obj.quats) {
-                if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat).has_value()) {
-                    m_entities[obj.id]->get(Cookable::CookType::Geometry)
-                                      ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+                auto cast_res = RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat);
+                if (!cast_res)
+                    continue;
 
-                    m_entities[obj.id]->drawOne(Cookable::CookType::Geometry, m_camera, quat, m_lights);
-                }
+                // Highlight
+                m_entities[obj.id]->get(Cookable::CookType::Geometry)
+                                    ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+
+                m_entities[obj.id]->drawOne(Cookable::CookType::Geometry, m_camera, quat, m_lights);
+
+                // Intersection
+                glm::mat4 target(1.0f);
+                target = glm::translate(target, cast_res.value());
+                target = glm::scale(target, glm::vec3(0.1f, 0.1f, 0.01f));
+                targets.push_back(target);
             }
+        }
+
+        // Draw targets
+        if (!targets.empty()) {
+            m_entities[_ObjectId::Target]->model.setBatch(targets);
+            m_entities[_ObjectId::Target]->get(Cookable::CookType::Basic)
+                                         ->use().set("diffuse_color", glm::vec4(0.2f, 1.0f, 0.7f, 0.5f));
+
+            m_entities[_ObjectId::Target]->drawBasic(m_camera);
         }
 
         // Particles
