@@ -8,6 +8,8 @@
 
 // Scene model
 struct BaseScene {
+    friend struct Window;
+
     BaseScene(int widthHint = 0, int heightHint = 0);
     virtual ~BaseScene();
 

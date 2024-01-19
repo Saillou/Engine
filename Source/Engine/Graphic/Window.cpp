@@ -30,10 +30,10 @@ bool Window::update() {
         return false;
 
     // Render
-    if (m_scene)
+    if (m_scene) {
+        m_scene->_update_camera();
         m_scene->draw();
-
-    
+    }
 
     glfwSwapBuffers(m_window);
 
