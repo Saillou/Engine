@@ -61,7 +61,7 @@ void initGameModels()
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Locomotive, { { -0.04f, 0.f, -0.12f }, { 1.f, 1.f, 1.f }, {1.57f, -1.57f, 0.f} });
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Wagon, { { -1.75f, -0.175f, -0.155f }, { 0.01f, 0.01f, 0.01f }, { 1,0,0 } });
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Track, { { -0.05f, 0.f, -0.245f }, { 1.f, 1.f, 1.f }, { 1.57, -1.57,0 } });
-    Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackLeft, { { -0.075f, 0.f, -0.454f }, { 0.65f, 0.65f, 0.65f }, { 1.57f, 0.785f,0.f } });
-    Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackRight, { { -0.09f, -0.005f, -0.495f }, { 1.f, 1.f, 1.f }, { 1.57f, 0.785f,0 } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackLeft, { { +0.057f, -0.02f, -0.534f }, { 1.f, 1.f, 1.f }, { 1.57f, 0.785f,0.f } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackRight, { { -0.09f, -0.06f, -0.495f }, { 1.f, 1.f, 1.f }, { 1.57f, 0.785f,0 } });
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Building1, { { 0.f, +0.1f, -0.22f }, { 0.75f, 0.75f, 0.75f }, { 1.57f, -1.57f,0 } });
 }

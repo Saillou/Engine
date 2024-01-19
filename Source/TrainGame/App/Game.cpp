@@ -47,12 +47,10 @@ namespace Thomas
         }
 
         // tracks
-        const float x = 0.75f;
-        const float y = 1.f;
-        const float z = 0.2f;
+        const int x = -14;
+        const int y = -14;
 
-        const float dX = 0.44f;
-
+        /*
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(0,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
@@ -84,17 +82,81 @@ namespace Thomas
             obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
+        */
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 5,6 }, { -4,-1 });
+            gridComponent1->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent1);
+
+            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 6,5 }, { -1,-4 });
+            gridComponent2->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent2);
+            m_objects[obj->id] = obj;
+        }
+
+        // bottom horizontal tracks
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(16,-14), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 7,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
             gridComponent->setState(GridComponent::GridComponentState::Visible);
             obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(16,-20), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 11,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 15,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 19,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 23,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 27,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 31,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        // left vertical tracks
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 7), {1.f, 1.f, 1.f}, {0,0,0.f} } });
             GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
             gridComponent->setState(GridComponent::GridComponentState::Visible);
             obj->components.push_back(gridComponent);
@@ -102,9 +164,173 @@ namespace Thomas
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(20,-39), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 11), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 15), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 19), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 23), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y + 30), {1.f, 1.f, 1.f}, {0,0,-1.57f} } });
+            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 6,5 }, { -1,0 });
+            gridComponent1->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent1);
+
+            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 5,6 }, { -4,-4 });
+            gridComponent2->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent2);
+            m_objects[obj->id] = obj;
+        }
+
+        // top horizontal tracks
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 7,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 11,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 15,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 19,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 23,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 27,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 31,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {Grid::getPosition(x + 38,y + 30), {1.f, 1.f, 1.f}, {0,0,0} } });
+            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 6,5 }, { -4,0 });
+            gridComponent1->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent1);
+
+            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 5,6 }, { 0,-4 });
+            gridComponent2->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent2);
+            m_objects[obj->id] = obj;
+        }
+
+        // right vertical tracks
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 23), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 19), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 15), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 11), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 7), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+            m_objects[obj->id] = obj;
+        }
+
+        {
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {Grid::getPosition(x + 38,y), {1.f, 1.f, 1.f}, {0,0,-1.57f} } });
+            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 6,5 }, { -4,-4 });
+            gridComponent1->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent1);
+
+            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 5,6 }, { 0,0 });
+            gridComponent2->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent2);
+            m_objects[obj->id] = obj;
+        }
+
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
