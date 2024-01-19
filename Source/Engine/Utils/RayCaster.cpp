@@ -5,7 +5,7 @@
 using namespace glm;
 
 // Private
-static inline std::optional<glm::vec3> _intersect_mesh(
+static inline std::optional<glm::vec4> _intersect_mesh(
 	const glm::vec2& mousePos, 
 	const glm::vec3& camPos, 
 	const glm::vec3& camDir, 
@@ -30,7 +30,7 @@ static inline std::optional<glm::vec3> _intersect_mesh(
 }
 
 // Public
-std::optional<glm::vec3> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
 {
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
@@ -65,7 +65,7 @@ std::optional<glm::vec3> RayCaster::Intersect(const glm::vec2& mousePos, const C
 	return {};
 }
 
-std::optional<glm::vec3> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
 {
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
@@ -90,7 +90,7 @@ bool RayCaster::IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos,
 }
 
 // Note: It's Möller–Trumbore intersection algorithm
-std::optional<glm::vec3> RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
+std::optional<glm::vec4> RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
 {
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
@@ -116,7 +116,7 @@ std::optional<glm::vec3> RayCaster::IntersectTriangle(const glm::vec3& ray_origi
 		return {};
 
 	float t = inv_det * dot(edge2, s_cross_e1);
-	return ray_origin + ray_vector * t;
+	return glm::vec4(ray_origin + ray_vector * t, t);
 }
 
 bool RayCaster::PointInRect(const glm::vec2& point, const glm::vec2& rectTopLeft, const glm::vec2& rectBotRight)

@@ -129,10 +129,9 @@ void View::draw() {
                 m_entities[obj.id]->drawOne(Cookable::CookType::Geometry, m_camera, quat, m_lights);
 
                 // Intersection
-                glm::mat4 target(1.0f);
-                target = glm::translate(target, cast_res.value());
-                target = glm::scale(target, glm::vec3(0.1f, 0.1f, 0.01f));
-                targets.push_back(target);
+                targets.push_back(
+                    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f))
+                );
             }
         }
 
