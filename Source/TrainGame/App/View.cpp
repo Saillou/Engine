@@ -222,7 +222,7 @@ namespace Thomas
         m_target = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
 
         // Ground - Grid
-        m_groundEntity.transform = { {0,0,-0.1f}, {2.f, 2.f, 0.12f}, {0,0,0} };
+        m_groundEntity.transform = { {0.5f,0.5f,-0.1f}, {3.f, 3.f, 0.12f}, {0,0,0} };
         m_groundEntity.entity = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_groundEntity.entity->model.setBatch({ m_groundEntity.transform.getMat4() }, { {1,1,1,1} });
 

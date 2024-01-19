@@ -50,39 +50,6 @@ namespace Thomas
         const int x = -14;
         const int y = -14;
 
-        /*
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(0,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(4,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(8,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(12,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
-        }
-        */
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y), {1.f, 1.f, 1.f}, {0,0,0.f} } });
             GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 5,6 }, { -4,-1 });
