@@ -16,6 +16,8 @@ namespace Thomas
 
         void update(float dt) override;
 
+        void addPoint(const glm::vec3& pos);
+
     private:
         bool goToPoint(const glm::vec3& pos, float dt);
 

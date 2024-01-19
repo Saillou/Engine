@@ -7,18 +7,13 @@ namespace Thomas
 
     TrainController::TrainController(Transform* transform)
         : m_transform(transform)
-        , m_speed(1.f)
-        , m_rotationSpeed(1.f)
+        , m_speed(0.7f)
+        , m_rotationSpeed(2.5f)
         , m_minDistance(0.01f)
     {
         m_id = ComponentId::TrainController;
 
-        m_points.push_back({ 1.5f, 2.f, 1.f });
-        m_points.push_back({ 1.5f, -2.f, 1.f });
-        m_points.push_back({ -1.5f, -2.f, 1.f });
-        m_points.push_back({ -1.5f, 2.f, 1.f });
-
-        m_currentPoint = m_points.begin();
+        m_currentPoint = m_points.end();
     }
 
     TrainController::~TrainController()
@@ -27,7 +22,9 @@ namespace Thomas
 
     void TrainController::update(float dt)
     {
-        return;
+        if (m_points.empty())
+            return;
+
         if (goToPoint(*m_currentPoint, dt))
         {
             m_currentPoint = std::next(m_currentPoint, 1);
@@ -36,6 +33,14 @@ namespace Thomas
                 m_currentPoint = m_points.begin();
             }
         }
+    }
+
+    void TrainController::addPoint(const glm::vec3& pos)
+    {
+        m_points.push_back(pos);
+
+        if (m_currentPoint == m_points.end())
+            m_currentPoint = m_points.begin();
     }
 
     bool TrainController::goToPoint(const glm::vec3& pos, float dt)

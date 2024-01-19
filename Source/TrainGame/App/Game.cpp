@@ -31,11 +31,14 @@ namespace Thomas
 
     void Game::createScene()
     {
+        const int x = -14;
+        const int y = -14;
+        const float z = 0.15f;
         // todo: see what Z is doing
         Grid::initAtPosition({ 0.f,0.f,0.05f }, { 0.1f,0.1f });
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{Grid::getPosition(x,y).x,Grid::getPosition(x,y).y,z}, {1.f, 1.f, 1.f}, {0,0,0} } });
             TrainController* trainController = new TrainController(&obj->transform);
             obj->components.push_back(trainController);
 
@@ -44,11 +47,30 @@ namespace Thomas
             obj->components.push_back(gridComponent);
 
             m_objects[obj->id] = obj;
+
+            trainController->addPoint({ Grid::getPosition(x, y).x, Grid::getPosition(x, y).y, z }); // turn
+            trainController->addPoint({ Grid::getPosition(x + 4, y - 1).x, Grid::getPosition(x + 4, y - 1).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 7, y - 2).x, Grid::getPosition(x + 7, y - 2).y, z });
+            trainController->addPoint({ Grid::getPosition(x + 31, y - 2).x, Grid::getPosition(x + 31, y - 2).y, z });
+            trainController->addPoint({ Grid::getPosition(x + 35, y - 1).x, Grid::getPosition(x + 35, y - 1).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 38, y).x, Grid::getPosition(x + 38, y).y, z }); // turn
+            trainController->addPoint({ Grid::getPosition(x + 39, y + 4).x, Grid::getPosition(x + 39, y + 4).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 40, y + 7).x, Grid::getPosition(x + 40, y + 7).y, z });
+            trainController->addPoint({ Grid::getPosition(x + 40, y + 23).x, Grid::getPosition(x + 40, y + 23).y, z });
+            trainController->addPoint({ Grid::getPosition(x + 39, y + 27).x, Grid::getPosition(x + 39, y + 27).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 38, y + 30).x, Grid::getPosition(x + 38, y + 30).y, z }); // turn
+            trainController->addPoint({ Grid::getPosition(x + 35, y + 31).x, Grid::getPosition(x + 35, y + 31).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 31, y + 32).x, Grid::getPosition(x + 31, y + 32).y, z });
+            trainController->addPoint({ Grid::getPosition(x + 7, y + 32).x, Grid::getPosition(x + 7, y + 32).y, z });
+            trainController->addPoint({ Grid::getPosition(x + 4, y + 31).x, Grid::getPosition(x + 4, y + 31).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x, y + 30).x, Grid::getPosition(x, y + 30).y, z }); // turn
+            trainController->addPoint({ Grid::getPosition(x - 1, y + 27).x, Grid::getPosition(x - 1, y + 27).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x - 2, y + 23).x, Grid::getPosition(x - 2, y + 23).y, z });
+            trainController->addPoint({ Grid::getPosition(x - 2, y + 7).x, Grid::getPosition(x - 2, y + 7).y, z });
+            trainController->addPoint({ Grid::getPosition(x - 1, y + 4).x, Grid::getPosition(x - 1, y + 4).y, z }); // turn helper
         }
 
         // tracks
-        const int x = -14;
-        const int y = -14;
 
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y), {1.f, 1.f, 1.f}, {0,0,0.f} } });

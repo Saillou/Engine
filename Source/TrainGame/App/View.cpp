@@ -133,7 +133,7 @@ namespace Thomas
         // Misha: can this part be async at some point ?
         m_timer.tic();
         {
-            m_gameModels[ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive_no_wheels.glb");
+            m_gameModels[ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive.glb");
             m_gameModels[ModelId::Wagon] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
             m_gameModels[ModelId::Track] = std::make_unique<Entity>("Resources/objects/train/track_forward.glb");
             m_gameModels[ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
