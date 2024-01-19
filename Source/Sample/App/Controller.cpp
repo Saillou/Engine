@@ -46,12 +46,12 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
         m_view->camera().position += 0.05f * dir;
     }
 
-    // Other
-    switch (evt.key)
-    {
-        case 'R': m_view->enable_filter = true;  break;
-        case 'T': m_view->enable_filter = false; break;
-    }
+    //// Other
+    //switch (evt.key)
+    //{
+    //    case 'R': m_view->enable_filter = true;  break;
+    //    case 'T': m_view->enable_filter = false; break;
+    //}
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {

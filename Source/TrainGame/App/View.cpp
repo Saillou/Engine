@@ -52,8 +52,6 @@ namespace Thomas
         float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
         m_timer.tic();
 
-        BaseScene::_update_camera();
-
         // Main scene
         BaseScene::Viewport(width(), height());
         BaseScene::clear();

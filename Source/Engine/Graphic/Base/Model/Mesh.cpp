@@ -9,8 +9,15 @@ Mesh::Mesh():
 }
 
 void Mesh::updateBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
-    m_colors.bindData(colors);
     m_instances.bindData(models);
+
+    if (colors.size() >= models.size()) {
+        m_colors.bindData(colors);
+    }
+    else {
+        std::vector<glm::vec4> res_colors = colors;
+        res_colors.resize(models.size());
+    }
 }
 
 // render the mesh

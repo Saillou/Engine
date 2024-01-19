@@ -5,6 +5,7 @@
 #include <Engine/Utils/Timer.hpp>
 
 #include "View.hpp"
+#include "ViewForest.hpp"
 
 struct Controller: private Event::Subscriber {
     Controller(std::shared_ptr<BaseScene> scene);

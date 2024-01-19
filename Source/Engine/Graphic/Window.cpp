@@ -30,10 +30,10 @@ bool Window::update() {
         return false;
 
     // Render
-    if (m_scene)
+    if (m_scene) {
+        m_scene->_update_camera();
         m_scene->draw();
-
-    
+    }
 
     glfwSwapBuffers(m_window);
 
@@ -43,7 +43,7 @@ bool Window::update() {
         double x, y;
         glfwGetCursorPos(m_window, &x, &y);
 
-        m_mouse_moved = int(m_mouse_pos.x - x) && int(m_mouse_pos.y - y);
+        m_mouse_moved = true; // int(m_mouse_pos.x - x) && int(m_mouse_pos.y - y);
         m_mouse_pos.x = (float)x;
         m_mouse_pos.y = (float)y;
     }

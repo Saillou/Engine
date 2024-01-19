@@ -27,4 +27,7 @@ struct Entity : public Cookable
 
     // Getters
     Model model;
+
+private:
+    void _setShader(Cookable::CookType, const Camera&, const std::vector<Light> & = {});
 };

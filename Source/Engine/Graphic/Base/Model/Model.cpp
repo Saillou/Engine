@@ -66,6 +66,7 @@ void Model::drawElements(Shader& shader) const {
         for (const auto& mesh : (*currNode)->meshes) {
             shader.use()
                   .set("LocalModel", (*currNode)->transform);
+
             mesh->drawElements();
         }
 

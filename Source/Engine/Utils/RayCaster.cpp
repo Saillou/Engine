@@ -15,6 +15,8 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 	const auto& idx = mesh.indices();
 	const auto& v = mesh.vertices();
 
+	std::optional<glm::vec4> result;
+
 	for (size_t i = 0; i < idx.size(); i += 3) {
 		auto optIntersect = RayCaster::IntersectTriangle(camPos, camDir, RayCaster::Triangle{
 			vec3(quat * vec4(v[idx[i + 0]].Position, +1.0f)),
@@ -22,11 +24,13 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 			vec3(quat * vec4(v[idx[i + 2]].Position, +1.0f))
 		});
 
-		if (optIntersect.has_value())
-			return optIntersect;
+		if (optIntersect.has_value()) {
+			if (!result.has_value() || optIntersect.value().w < result.value().w)
+				result = optIntersect;
+		}
 	}
 
-	return {};
+	return result;
 }
 
 // Public
