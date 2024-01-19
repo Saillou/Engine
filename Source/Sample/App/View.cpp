@@ -37,11 +37,12 @@ View::View(int widthHint, int heightHint):
         },
     };
 
-    for (int x = -3; x <= 3; x++) {
-        for (int y = -3; y <= 3; y++) {
+    const int n_side = 4;
+    for (int x = -n_side; x <= n_side; x++) {
+        for (int y = -n_side; y <= n_side; y++) {
             m_objects.push_back({
                 m_entities["Cube"], glm::vec4(1, 1, 1, 1),
-                glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(3.0f*x, 3.0f*y, 1.0f)),
+                glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(3.5f*x, 3.5f*y, 1.0f)),
                 Cookable::CookType::Basic
             });
         }
