@@ -116,7 +116,7 @@ void View::draw() {
 
             // Highlight
             for(const auto& quat : obj.quats) {
-                if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat)) {
+                if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat).has_value()) {
                     m_entities[obj.id]->get(Cookable::CookType::Geometry)
                                       ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
 
