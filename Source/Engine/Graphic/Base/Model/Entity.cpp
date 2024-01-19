@@ -30,8 +30,6 @@ Entity::Entity(SimpleShape shape)
     }
 }
 
-// - - - - - - - - - - - - - - - - - - 
-
 void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
     Shader& sh = get(type)->use();
 
@@ -66,14 +64,12 @@ void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::m
     }
 
     // Careful it will affects subsequent draw
-    model.setBatch({}, { quat });
+    model.setBatch({ quat });
 
     model.draw(sh);
 }
 
-// - - - - - - - - - - - - - - - - - -  
-
-void Entity::drawBatch(const Camera& camera, const std::vector<Light>& lights) {
+void Entity::drawBasic(const Camera& camera, const std::vector<Light>& lights) {
     auto& sh = *get(CookType::Basic);
 
     sh.use()

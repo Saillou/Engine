@@ -1,5 +1,5 @@
+#include "../Graphic/Base/Model/Primitive/Cube.hpp"
 #include "RayCaster.hpp"
-
 #include <stack>
 
 using namespace glm;
@@ -43,12 +43,18 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return false;
 
-	// It's almost the same as base shape
+	const glm::vec3 camera_ray = camera.ray(mousePos);
+
+	// Check bounding rect
+	if (!Intersect(mousePos, camera.position, camera_ray, quat * mesh.obb()))
+		return false;
+
+	// Check each meshes individually
 	const auto& idx = mesh.indices();
 	const auto& v = mesh.vertices();
 
 	for (size_t i = 0; i < idx.size(); i += 3) {
-		if (IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
+		if (IntersectTriangle(camera.position, camera_ray, Triangle{
 			vec3(quat* vec4(v[idx[i+0]].Position, +1.0f)),
 			vec3(quat* vec4(v[idx[i+1]].Position, +1.0f)),
 			vec3(quat* vec4(v[idx[i+2]].Position, +1.0f))
@@ -58,8 +64,27 @@ bool RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const
 	return false;
 }
 
+bool RayCaster::Intersect(const glm::vec2& mousePos, const glm::vec3& camPos, const glm::vec3& camDir, const glm::mat4& quat)
+{
+	static auto s_cubeMesh = Cube::CreateMesh(false);
+
+	const auto& mesh = *s_cubeMesh;
+	const auto& idx  = mesh.indices();
+	const auto& v    = mesh.vertices();
+
+	for (size_t i = 0; i < idx.size(); i += 3) {
+		if (IntersectTriangle(camPos, camDir, Triangle {
+			vec3(quat* vec4(v[idx[i + 0]].Position, +1.0f)),
+			vec3(quat* vec4(v[idx[i + 1]].Position, +1.0f)),
+			vec3(quat* vec4(v[idx[i + 2]].Position, +1.0f))
+		})) return true;
+	}
+
+	return false;
+}
+
 // Note: It's Möller–Trumbore intersection algorithm
-bool RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle)
+bool RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
 {
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 

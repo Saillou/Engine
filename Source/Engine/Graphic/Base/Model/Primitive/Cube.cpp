@@ -6,7 +6,7 @@
 
 using namespace glm;
 
-std::unique_ptr<Mesh> Cube::CreateMesh() {
+std::unique_ptr<Mesh> Cube::CreateMesh(bool sendToGpu) {
 	std::unique_ptr<Mesh> cubeMesh = std::make_unique<Mesh>();
 
     const mat3 world(1.0f);
@@ -44,7 +44,8 @@ std::unique_ptr<Mesh> Cube::CreateMesh() {
     createQuad(*cubeMesh, pA, pB, pF, pE, +v, tA, tB, tC, tD);
 
     // Send to gpu
-    setupGPU(*cubeMesh);
+    if(sendToGpu)
+        setupGPU(*cubeMesh);
 
 	return cubeMesh;
 }

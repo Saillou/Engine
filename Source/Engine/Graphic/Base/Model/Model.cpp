@@ -76,7 +76,7 @@ void Model::drawElements(Shader& shader) const {
     }
 }
 
-void Model::setBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
+void Model::setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
     if (!_root)
         return;
 
@@ -90,7 +90,7 @@ void Model::setBatch(const std::vector<glm::vec4>& colors, const std::vector<glm
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
-            mesh->updateBatch(colors, models);
+            mesh->updateBatch(models, colors);
         }
 
         // Add children

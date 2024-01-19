@@ -29,7 +29,7 @@ struct Mesh {
 
     Mesh();
 
-    void updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models);
+    void updateBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
 
     void bindTextures(Shader& shader) const;
     void unbindTextures() const;
@@ -37,16 +37,15 @@ struct Mesh {
     void drawElements() const;
 
     const std::vector<Vertex>&       vertices() const;
-    const std::vector<unsigned int>& indices() const;
+    const std::vector<unsigned int>& indices()  const;
+    const glm::mat4&                 obb()      const;
 
 private:
     // Gpu data
     Array  m_vao;
     Buffer m_vbo;
     Buffer m_ebo;
-
-    // .. only for batches
-    Buffer m_colors;
+    Buffer m_colors;    // TODO: Change for material
     Buffer m_instances;
 
     // Cpu data
@@ -54,6 +53,10 @@ private:
     std::vector<unsigned int> m_indices  = {};
     std::vector<TextureData>  m_textures = {};
 
+    // Simplification
+    glm::mat4 m_obb = glm::mat4(1.0f);
+
     // Bind data Cpu to Gpu
     void _setup();
+    void _compute_obb();
 };

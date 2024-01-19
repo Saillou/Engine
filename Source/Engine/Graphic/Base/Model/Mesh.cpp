@@ -8,7 +8,7 @@ Mesh::Mesh():
 {
 }
 
-void Mesh::updateBatch(const std::vector<glm::vec4>& colors, const std::vector<glm::mat4>& models) {
+void Mesh::updateBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
     m_colors.bindData(colors);
     m_instances.bindData(models);
 }
@@ -46,6 +46,10 @@ const std::vector<unsigned int>& Mesh::indices() const {
     return m_indices;
 }
 
+const glm::mat4& Mesh::obb() const {
+    return m_obb;
+}
+
 // initializes all the buffer objects/arrays
 void Mesh::_setup() {
     m_vao.bind();
@@ -78,4 +82,26 @@ void Mesh::_setup() {
     }
 
     m_vao.unbind();
+
+    _compute_obb();
+}
+
+void Mesh::_compute_obb() {
+    // Get the centroid
+    glm::vec3 centroid(0.0f);
+    glm::vec3 min_vert = m_vertices.front().Position;
+    glm::vec3 max_vert = m_vertices.front().Position;
+
+    for (const Vertex& vertex : m_vertices) {
+        centroid += vertex.Position;
+        min_vert = glm::min(min_vert, vertex.Position);
+        max_vert = glm::max(max_vert, vertex.Position);
+    }
+    centroid /= (float)(m_vertices.size());
+
+    // Extends
+    glm::vec3 ext_vert = max_vert - min_vert;
+
+    // Final transformation
+    m_obb = glm::scale(glm::translate(m_obb, centroid), ext_vert*0.5f);
 }

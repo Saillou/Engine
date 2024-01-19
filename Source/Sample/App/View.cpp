@@ -27,7 +27,7 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(+2.0f, -9.0f, 7.0f);
+    m_camera.position  = glm::vec3(1, -4, 3);
     m_camera.direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Lightnings
@@ -127,7 +127,7 @@ void View::draw() {
 
         // Particles
         {
-            m_fireGrid.particles.object->drawBatch(m_camera);
+            m_fireGrid.particles.object->drawBasic(m_camera);
         }
 
         // Draw ground
@@ -363,16 +363,16 @@ void View::_setParticles(float dt) {
     }
 
     // Update
-    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.colors, m_fireGrid.particles.models);
+    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.models, m_fireGrid.particles.colors);
 }
 
 void View::_setObjects() {
     // Grid
-    m_entities[_ObjectId::Grid]->model.setBatch({}, m_grid->grid_cells);
+    m_entities[_ObjectId::Grid]->model.setBatch(m_grid->grid_cells);
 
     // Objects
     for (const _Object& obj : m_objects) {
-        m_entities[obj.id]->model.setBatch({}, obj.quats);
+        m_entities[obj.id]->model.setBatch(obj.quats);
     }
 }
 
