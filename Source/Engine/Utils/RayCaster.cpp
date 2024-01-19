@@ -89,7 +89,7 @@ bool RayCaster::IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos,
 	return _intersect_mesh(mousePos, camPos, camDir, *s_cubeMesh, quat).has_value();
 }
 
-// Note: It's Möller–Trumbore intersection algorithm
+// Note: It's Muller-Trumbore intersection algorithm
 std::optional<glm::vec4> RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
 {
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();

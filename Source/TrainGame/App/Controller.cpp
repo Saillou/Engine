@@ -48,14 +48,6 @@ namespace Thomas
             m_scene->lights()[0].position += 0.05f * dir;
         }
 
-        // Other
-        auto view = std::dynamic_pointer_cast<View>(m_scene);
-
-        switch (evt.key)
-        {
-        case 'R': view->enable_filter = true; break;
-        case 'T': view->enable_filter = false; break;
-        }
     }
 
     void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {

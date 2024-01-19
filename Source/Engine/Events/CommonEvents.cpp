@@ -42,3 +42,15 @@ CommonEvents::SceneRefresh::SceneRefresh() :
 {
 	// ..
 }
+
+CommonEvents::SceneFinishedRender::SceneFinishedRender() :
+				_Base(_Type::EventSceneFinishedRender)
+{
+				// ..
+}
+
+CommonEvents::MouseHit::MouseHit(float x, float y, float z) :
+				_Base(_Type::EventMouseHit),
+				x(x), y(y), z(z)
+{
+}

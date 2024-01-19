@@ -33,6 +33,8 @@ bool Window::update() {
     if (m_scene)
         m_scene->draw();
 
+    
+
     glfwSwapBuffers(m_window);
 
     // Inputs

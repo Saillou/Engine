@@ -27,6 +27,7 @@ namespace Thomas
 
     void TrainController::update(float dt)
     {
+        return;
         if (goToPoint(*m_currentPoint, dt))
         {
             m_currentPoint = std::next(m_currentPoint, 1);

@@ -21,15 +21,24 @@ struct CommonEvents : public Event {
 
 	// -- State --
 	struct StateUpdated : public _Base {
-		explicit StateUpdated();
+				explicit StateUpdated();
 	};
 
 	// -- Scene --
 	struct SceneRefresh : public _Base {
-		explicit SceneRefresh();
+				explicit SceneRefresh();
 	};
 	struct SceneEnded : public _Base {
-		explicit SceneEnded();
+				explicit SceneEnded();
+	};
+	struct SceneFinishedRender : public _Base {
+				explicit SceneFinishedRender();
+	};
+
+	// -- Ray casting --
+	struct MouseHit : public _Base {
+					explicit MouseHit(float x = 0, float y = 0, float z = 0);
+					float x, y, z;
 	};
 
 private:
@@ -37,10 +46,13 @@ private:
 		EventKeyPressed,
 		EventMouseMoved,
 		EventMouseClicked,
-
+		
 		EventStateUpdated,
-
+		
 		EventSceneEnded,
 		EventSceneRefresh,
+		EventSceneFinishedRender,
+		
+		EventMouseHit,
 	};
 };

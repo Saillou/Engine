@@ -1,6 +1,10 @@
 #include "Game.hpp"
 
 #include "TrainGame/App/Components/TrainController.h"
+#include "TrainGame/App/Components/GridComponent.h"
+#include "TrainGame/App/Components/ConstructComponent.h"
+
+#include "TrainGame/TrainGame/Grid.hpp"
 
 namespace Thomas
 {
@@ -11,10 +15,13 @@ namespace Thomas
         _subscribe(&Game::onStateUpdate);
         _subscribe(&Game::onKeyPressed);
         _subscribe(&Game::onMouseMoved);
+        _subscribe(&Game::onSceneFinishedRender);
 
         m_window = std::make_unique<Window>(1600, 900, "Train game");
         m_view = std::make_shared<View>(m_window->width(), m_window->height());
         m_window->scene(m_view);
+
+        m_ui = std::make_unique<MainUI>(m_window->backend());
     }
 
     Game::~Game()
@@ -24,116 +31,78 @@ namespace Thomas
 
     void Game::createScene()
     {
+        // todo: see what Z is doing
+        Grid::initAtPosition({ 0.f,0.f,0.05f }, { 0.1f,0.1f });
+
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{0,0,1.f}, {1.f, 1.f, 1.f}, {0,0,0} } });
             TrainController* trainController = new TrainController(&obj->transform);
             obj->components.push_back(trainController);
 
-            m_objects[obj->id] = obj;
-        }
-        /*
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.5f,2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 6,6 }, { 0,0 });
+            gridComponent->setState(GridComponent::GridComponentState::Construct);
+            obj->components.push_back(gridComponent);
+
             m_objects[obj->id] = obj;
         }
 
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{1.5f,-2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{-1.5f,-2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{-1.5f,2.f,0.8f}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            m_objects[obj->id] = obj;
-        }
-        */
         // tracks
         const float x = 0.75f;
         const float y = 1.f;
         const float z = 0.2f;
 
         const float dX = 0.44f;
+
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(0,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
+
             m_objects[obj->id] = obj;
         }
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - dX,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 2),y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 3),y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 4),y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX,y,z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX + 0.34f,y - 0.3f,z}, {1.f, 1.f, 1.f}, {0,0,0.785f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f,z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(4,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - dX,z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(8,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - (dX*2),z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(12,-14), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - (dX * 3),z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            m_objects[obj->id] = obj;
-        }
-        
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX + 0.34f + 0.02f,y - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            m_objects[obj->id] = obj;
-        }
-
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {{x + dX + 0.04f,y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,-0.785f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(16,-14), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,2 }, { -2,0 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x,y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(16,-20), {1.f, 1.f, 1.f}, {0,0,0.f} } });
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Visible);
+            obj->components.push_back(gridComponent);
             m_objects[obj->id] = obj;
         }
+
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - dX,y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 2),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 3),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            m_objects[obj->id] = obj;
-        }
-        {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {{x - (dX * 4),y - 0.35f - 0.3f - 0.45f - (dX * 4),z}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(20,-39), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             m_objects[obj->id] = obj;
         }
     }
@@ -145,12 +114,51 @@ namespace Thomas
         // game loop
         for (auto& obj : m_objects)
         {
+            // TODO: delete properly
+            if (!obj.second || obj.second->selectedForDeletion)
+                continue;
+
             for (auto& comp : obj.second->components)
             {
                 comp->update(dt_ms);
+                if (!comp->isAlive())
+                {
+                    //delete comp;
+                    //comp = nullptr;
+                }
             }
 
+            obj.second->components.erase(std::remove_if(obj.second->components.begin(),
+                obj.second->components.end(),
+                [&](const auto& comp)-> bool
+                { return !comp; }),
+                obj.second->components.end());
+
             m_view->draw(obj.second->modelId, obj.second->transform);
+        }
+
+        m_view->drawGrid(Grid::getCells());
+        Grid::clearCells();
+
+        m_ui->Prepare();
+
+        m_ui->showBuildingSelection();
+        m_ui->ready = true;
+
+        if (m_ui->state.building)
+        {
+            m_ui->state.building = false;
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Building1, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            ConstructComponent* constructComponent = new ConstructComponent(&obj->transform);
+            obj->components.push_back(constructComponent);
+
+            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,5 }, { -2,-2 });
+            gridComponent->setState(GridComponent::GridComponentState::Construct);
+            obj->components.push_back(gridComponent);
+
+            constructComponent->addGridComponent(gridComponent);
+            constructComponent->addObjectDeletionPtr(&obj->selectedForDeletion);
+            m_objects[obj->id] = obj;
         }
 
         m_timer.tic();
@@ -176,12 +184,6 @@ namespace Thomas
         case 'X':             scale = +1.f; break;
         }
 
-        switch (evt.key)
-        {
-        case 'R': m_view->enable_filter = true; break;
-        case 'T': m_view->enable_filter = false; break;
-        }
-
         m_objects[0]->transform.position += 0.05f * dir;
         m_objects[0]->transform.rotation.z += 0.05f * rot;
         m_objects[0]->transform.scale += 0.05f * scale;
@@ -190,5 +192,10 @@ namespace Thomas
     void Game::onMouseMoved(const CommonEvents::MouseMoved& evt)
     {
 
+    }
+    void Game::onSceneFinishedRender(const CommonEvents::SceneFinishedRender& evt)
+    {
+        if(m_ui && m_ui->ready)
+            m_ui->Render();
     }
 } // namespace Thomas
