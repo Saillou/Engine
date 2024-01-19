@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "Engine/Events/Events.hpp"
 #include "Engine/Events/CommonEvents.hpp"
@@ -24,15 +25,7 @@ namespace Thomas
     static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
     View::View(int widthHint, int heightHint) :
-        BaseScene(widthHint, heightHint),
-        m_fireGrid({
-            glm::vec3(0, 0, 0),
-            {
-                size_t(2500),
-                std::make_unique<Box>(glm::vec3(0.010f))
-            }
-            }),
-        framebuffer_main(Framebuffer::Multisample, m_width, m_height)
+        BaseScene(widthHint, heightHint)
     {
         _subscribe(&View::_on_mouse_moved);
 
@@ -45,14 +38,6 @@ namespace Thomas
             Light(glm::vec3{  0,  0, 0.50f }, glm::vec4{ 1, 0.7, 0.3, 1 })
         };
 
-        // Load models
-        m_timer.tic();
-        {
-            m_models[_ObjecId::Tree] = std::make_unique<Entity>("Resources/objects/train/locomotive_no_wheels.glb");
-            m_models[_ObjecId::Character] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
-        }
-        std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-
         loadModels(6);
 
         // Populate objects
@@ -61,13 +46,6 @@ namespace Thomas
             _initObjects();
         }
         std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-
-        // Create particules
-        m_timer.tic();
-        {
-            _initParticles();
-        }
-        std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
 
     void View::draw() {
@@ -75,48 +53,18 @@ namespace Thomas
         m_timer.tic();
 
         BaseScene::_update_camera();
-        _setParticles(dt_since_last_draw);
-
-        // Shadow scene
-        BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
-        m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
-            // Draw objects
-            for (const _Object& obj : m_objects) {
-                sh.use().set("model", obj.quat);
-                m_models[obj.id]->drawElements(sh);
-            }
-
-            // Box
-            {
-                sh.use().set("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)));
-                m_model_box_shadow->drawElements(sh);
-            }
-
-            // Ground
-            for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-                sh.use().set("model", cell_quat);
-                m_model_box->drawElements(sh);
-            }
-            });
 
         // Main scene
         BaseScene::Viewport(width(), height());
-        framebuffer_main.bind();
-        framebuffer_main.clear();
+        BaseScene::clear();
         {
             // Lights
             for (auto& light : m_lights) {
-                m_model_sphere->get(Cookable::CookType::Model)->use().set("diffuse_color", light.color);
-                m_model_sphere->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
-            }
-
-            // Draw objects
-            for (const _Object& obj : m_objects) {
-                m_models[obj.id]->draw(m_camera, obj.quat, m_lights);
+                m_model_sphere->get(Cookable::CookType::Basic)->use().set("diffuse_color", light.color);
+                m_model_sphere->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
             }
 
             // Draw game objects
-            //m_timer.tic();
             for (auto& model : m_modelsToDraw)
             {
                 const GameModel& gameModel = GameModelTable::getModelById(model.first);
@@ -136,99 +84,30 @@ namespace Thomas
                     worldTransform = glm::rotate(worldTransform, t.rotation.z, glm::vec3(0, 0, 1));
                     worldTransform = glm::scale(worldTransform, t.scale);
 
-                    m_gameModels[model.first]->draw(m_camera, worldTransform * localTransform, m_lights);
+                    m_gameModels[model.first]->drawOne(Cookable::CookType::Basic, m_camera, worldTransform * localTransform, m_lights);
 
                     // draw debug center
-                    m_model_sphere->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
+                    m_model_sphere->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
+                    m_model_sphere->drawOne(Cookable::CookType::Geometry, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
                 }
             }
-            //std::cout << "Game models rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-            // Draw ground with shadow
             
-            m_timer.tic();
-            float t = 34343434;
-            int id_selected = -1;
-            glm::vec3 outPos;
-            glm::vec3 hitPos;
-            for (size_t i = 0; i < m_grid->m_grid_cells.size(); i++) {
-                bool see = false;
-                const float tt = RayCaster::Intersect(m_mousePos, m_camera, *m_model_box, m_grid->m_grid_cells[i], outPos);
+            auto cast_res = RayCaster::Intersect(m_mousePos, m_camera, *m_groundEntity.entity, m_groundEntity.transform.getMat4());
 
-                if (tt >= 0 && tt < t)
-                {
-                    id_selected = i;
-                    t = tt;
-                    hitPos = outPos;
-                }
-                
-            }
-
-            m_shadowRender.bindTexture(GL_TEXTURE1);
-
-            for (size_t i = 0; i < m_grid->m_grid_cells.size(); i++) {
-                if(i != id_selected)
-                m_model_box->draw(m_camera, m_grid->m_grid_cells[i], m_lights);
-            }
-
-            if(id_selected >= 0)
+            if (cast_res.has_value())
             {
-                
-                glm::vec3 scale;
-                glm::quat rotation;
-                glm::vec3 translation;
-                glm::vec3 skew;
-                glm::vec4 perspective;
-                glm::decompose(m_grid->m_grid_cells[id_selected], scale, rotation, translation, skew, perspective);
-                m_bigtime = { translation.x, translation.y, 0.05f };
-                Event::Emit(CommonEvents::MouseHit(hitPos.x, hitPos.y, 0.05f));
+                Event::Emit(CommonEvents::MouseHit(cast_res.value().x, cast_res.value().y, 0.05f));
+
+                m_target->get(Cookable::CookType::Basic)->use().set("diffuse_color", glm::vec4(1, 1, 1, 1));
+                m_target->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f)));
             }
+            m_groundEntity.entity->drawBasic(m_camera, m_lights);
             
 
-            // Draw box
-            {
-                //m_model_box_shadow->draw(m_camera, glm::translate(glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.15f)), m_lights);
-            }
-
-            // Draw grid cells
-            for (auto& cell : m_gridCells)
-            {
-                glm::mat4 mat = glm::translate(glm::mat4(1.0f), cell.second.transform.position);
-                mat = glm::scale(mat, cell.second.transform.scale);
-
-                switch (cell.second.type)
-                {
-                case GridCell::CellType::Visible:
-                    m_modelGridCellOrange->draw(m_camera, mat, m_lights);
-                    break;
-                case GridCell::CellType::ConstructOk:
-                    m_modelGridCellGreen->draw(m_camera, mat, m_lights);
-                    break;
-                case GridCell::CellType::ConstructBad:
-                    m_modelGridCellRed->draw(m_camera, mat, m_lights);
-                    break;
-                }                
-            }
-
-            // Particles
-            {
-                m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
-            }
+            drawGrid();
 
             // Skybox
             m_skybox->draw(m_camera);
-        }
-        framebuffer_main.unbind();
-
-        // Draw on final frame
-        BaseScene::clear();
-
-        // Apply filter
-        if (enable_filter) {
-            m_filter.apply(framebuffer_main);
-            BaseScene::drawFrame(m_filter.framebuffer);
-        }
-        else {
-            BaseScene::drawFrame(framebuffer_main);
         }
 
         // Some static texts
@@ -243,11 +122,6 @@ namespace Thomas
         Event::Emit(CommonEvents::SceneFinishedRender());
 
         // Prepare next
-        float dt_draw = m_timer.elapsed<Timer::millisecond>();
-        m_count++;
-        m_averageMs += dt_draw;
-        std::cout << "Rendered in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-        std::cout << "Average render time: " << (m_averageMs / m_count) << "ms." << std::endl;
         m_timer.tic();
     }
 
@@ -278,8 +152,46 @@ namespace Thomas
 
     void View::drawGrid(const std::map<std::pair<int, int>, GridCell>& cells)
     {
+        // TODO: optimize this part please (veri bad performance)
+        // TODO: add Geometry as a second batch
+
         m_gridCells.clear();
         m_gridCells = cells;
+
+        m_entityGridCells.cells = cells;
+
+        std::vector<glm::mat4> mats;
+        std::vector<glm::vec4> colors;
+
+        mats.reserve(cells.size());
+        colors.reserve(cells.size());
+
+        for (auto& c : m_entityGridCells.cells)
+        {
+            glm::vec4 color = {0,0,0,0};
+            switch (c.second.type)
+            {
+            case GridCell::CellType::Visible:
+                color = {0.7f,0.6f,0.3f,0.5f};
+                break;
+            case GridCell::CellType::ConstructOk:
+                color = { 0.3f,0.6f,0.3f,0.5f };
+                break;
+            case GridCell::CellType::ConstructBad:
+                color = { 0.7f,0.3f,0.3f,0.5f };
+                break;
+            }
+
+            colors.push_back(color);
+            mats.push_back(c.second.transform.getMat4());
+        }
+
+        m_entityGridCells.entity->model.setBatch(mats, colors);
+    }
+
+    void View::drawGrid()
+    {
+        m_entityGridCells.entity->drawBasic(m_camera);
     }
 
     void View::_on_mouse_moved(const CommonEvents::MouseMoved& evt)
@@ -300,76 +212,24 @@ namespace Thomas
         });
 
         // Box - Test shadow
-        m_model_box_shadow = std::make_unique<Box>(0.3f);
-        m_model_box_shadow->addRecipe(Cookable::CookType::Solid, glm::vec4(0.3f, 0.7f, 0.3f, 0.4f));
-        m_model_box_shadow->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.3f, 0.7f, 0.3f, 0.6f));
+        m_model_box_shadow = std::make_unique<Entity>(Entity::SimpleShape::Cube);
 
         // Grid cells
-        m_modelGridCellGreen = std::make_unique<Box>(0.3f);
-        m_modelGridCellGreen->addRecipe(Cookable::CookType::Solid, glm::vec4(0.3f, 0.7f, 0.3f, 0.4f));
-        m_modelGridCellGreen->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.3f, 0.7f, 0.3f, 0.6f));
+        m_entityGridCells.entity = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+        m_entityGridCells.cells.clear();
 
-        m_modelGridCellRed = std::make_unique<Box>(0.3f);
-        m_modelGridCellRed->addRecipe(Cookable::CookType::Solid, glm::vec4(0.7f, 0.3f, 0.3f, 0.4f));
-        m_modelGridCellRed->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.7f, 0.3f, 0.3f, 0.6f));
-
-        m_modelGridCellOrange = std::make_unique<Box>(0.3f);
-        m_modelGridCellOrange->addRecipe(Cookable::CookType::Solid, glm::vec4(0.8f, 0.6f, 0.3f, 0.4f));
-        m_modelGridCellOrange->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.8f, 0.6f, 0.3f, 0.6f));
+        // Target
+        m_target = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
 
         // Ground - Grid
-        m_model_box = std::make_unique<Box>(1.0f);
-        m_model_box->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1))
-            ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
-
-        m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 15, {} });
-        m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
-        std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
-        {
-            const glm::vec2 cell_pos = glm::vec2(id % N - N / 2, id / N - N / 2);
-            const glm::vec3 T_pos = S * glm::vec3(cell_pos, -0.5f);
-            const glm::vec3 T_scale = S * glm::vec3(1);
-
-            id++;
-            return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
-        });
+        m_groundEntity.transform = { {0,0,-0.1f}, {2.f, 2.f, 0.12f}, {0,0,0} };
+        m_groundEntity.entity = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+        m_groundEntity.entity->model.setBatch({ m_groundEntity.transform.getMat4() }, { {1,1,1,1} });
 
         // Lanterns
         m_model_sphere = std::make_unique<Entity>(Entity::Sphere);
 
-        // Trees
-        m_objects.push_back({ _ObjecId::Tree,
-            glm::scale(
-                glm::translate(
-                    glm::rotate(glm::mat4(1.0f),    // Identity
-                        1.57f, glm::vec3(0, 0, 1)),  // Rotation
-                    glm::vec3(-1.4f, 0, +0.95f)),  // Translation
-                glm::vec3(0.01f, 0.01f, 0.01f)         // Scale
-            )
-            });
-
-        m_objects.push_back({ _ObjecId::Tree,
-            glm::scale(
-                glm::translate(
-                    glm::rotate(glm::mat4(1.0f),    // Identity
-                        1.57f, glm::vec3(0, 1, 0)),  // Rotation
-                    glm::vec3(-0.90f, 0, -0.95f)),  // Translation
-                glm::vec3(0.1f, 0.1f, 0.1f)         // Scale
-            )
-            });
-
         m_model = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
-
-        // Character
-        m_objects.push_back({ _ObjecId::Character,
-            glm::scale(
-                glm::translate(
-                    glm::rotate(glm::mat4(1.0f),    // Identity
-                        1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                    glm::vec3(-1, 0, 1)),           // Translation
-                glm::vec3(0.01f, 0.01f, 0.01f)      // Scale
-            )
-            });
 
         // GameObjects:
         m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Locomotive, { 0,0,0 }));
@@ -377,126 +237,7 @@ namespace Thomas
         m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Wagon, { 2,2,2 }));
     }
 
-    void View::_initParticles() {
-        // - Generate batch parameters
-        const glm::vec3 color(1.0f, 0.7f, 0.3f);
-
-        // Define particles
-        m_fireGrid.particles.models.resize(m_fireGrid.particles.amount);
-        m_fireGrid.particles.speeds.resize(m_fireGrid.particles.amount);
-        m_fireGrid.particles.colors.resize(m_fireGrid.particles.amount);
-
-        // Create batch
-        m_fireGrid.particles.object->createBatch(
-            m_fireGrid.particles.colors,
-            m_fireGrid.particles.models
-        );
-
-        std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable->glm::vec4
-        {
-            particules_id++;
-            float ratio = particules_id / float(m_fireGrid.particles.amount);
-
-            return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        });
-
-        _setParticles();
-
-        // Cook
-        m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
-    }
-
-    void View::_setParticles(float dt) {
-        // Move
-        for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
-            glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
-            glm::mat4& model = m_fireGrid.particles.models[particules_id];
-
-            const bool hasEnded = model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f; // also true for first draw
-
-            if (hasEnded) {
-                const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
-                int x = particules_id % SIZE - SIZE / 2;
-                int y = particules_id / SIZE - SIZE / 2;
-
-                model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 0.0f, 0.5f + y * 0.002f));
-                speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
-            }
-            else {
-                model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * glm::vec3(speed)), glm::vec3(speed.a));
-            }
-        }
-
-        // Update
-        m_fireGrid.particles.object->updateBatch(
-            m_fireGrid.particles.colors,
-            m_fireGrid.particles.models
-        );
-
-    }
-
     void View::_onResize() {
-        framebuffer_main.resize(m_width, m_height);
-        m_filter.resize(m_width, m_height);
-    }
-
-
-    // Filter struct
-    Filter::Filter() : framebuffer(Framebuffer::Unique) {
-        shader.
-            attachSource(GL_VERTEX_SHADER, ShaderSource{}
-                .add_var("layout (location = 0) in", "vec3", "aPos")
-                .add_var("out", "vec2", "TexCoords")
-                .add_func("void", "main", "", R"_main_(
-                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-                float tx = aPos.x > 0 ? 1.0 : 0.0;
-                float ty = aPos.y > 0 ? 1.0 : 0.0;
-                TexCoords = vec2(tx, ty);
-            )_main_").str()
-            )
-            .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
-                .add_var("in", "vec2", "TexCoords")
-                .add_var("uniform", "sampler2D", "quadTexture")
-                .add_var("uniform", "highp int", "seed")
-                .add_var("out", "vec4", "FragColor")
-                .add_func("void", "main", "", R"_main_(
-                vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
-                vec2 tex_offset = 1.0 / tex_size;
-                vec2 tex_id     = TexCoords/tex_offset;
-
-                int pix_id = int(tex_id.x + tex_id.y * tex_size.x);
-                if((seed*0 + pix_id) % 4 != 0) {
-                    FragColor = vec4(0, 0, 0, 1);
-                    return;
-                }
-
-                vec4 texture_color = texture(quadTexture, TexCoords);
-                vec3 night_color = vec3(0.0, 0.5f*texture_color.r + 0.5f*texture_color.g, texture_color.b);
-                FragColor = vec4(night_color.rgb, texture_color.a);
-            )_main_").str()
-            )
-            .link();
-    }
-
-    void Filter::apply(Framebuffer& fIn) {
-        // Multisample -> Monosample
-        Framebuffer::Blit(fIn, framebuffer);
-
-        // Draw
-        framebuffer.bind();
-        glDisable(GL_DEPTH_TEST);
-        {
-            static int seed = 0; seed++;
-            shader.use().set("seed", seed / 10);
-            framebuffer.texture().bind();
-            surface.drawElements();
-        }
-        glEnable(GL_DEPTH_TEST);
-        framebuffer.unbind();
-    }
-
-    void Filter::resize(int width, int height) {
-        framebuffer.resize(width, height);
     }
 
 } // namespace Thomas

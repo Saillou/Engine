@@ -9,11 +9,11 @@ Array::~Array() {
 	glDeleteVertexArrays(1, &m_array_id);
 }
 
-void Array::bind() {
+void Array::bind() const {
 	glBindVertexArray(m_array_id);
 }
 
-void Array::unbind() {
+void Array::unbind() const {
 	glBindVertexArray(0);
 }
 

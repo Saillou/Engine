@@ -31,6 +31,7 @@ namespace Thomas
 
     void Game::createScene()
     {
+        // todo: see what Z is doing
         Grid::initAtPosition({ 0.f,0.f,0.05f }, { 0.1f,0.1f });
 
         {
@@ -147,7 +148,7 @@ namespace Thomas
         if (m_ui->state.building)
         {
             m_ui->state.building = false;
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Building1, {m_view->m_bigtime, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
+            GameObject* obj = new GameObject({ gs_id++, ModelId::Building1, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             ConstructComponent* constructComponent = new ConstructComponent(&obj->transform);
             obj->components.push_back(constructComponent);
 
@@ -181,12 +182,6 @@ namespace Thomas
         case 'S':             rot = -1.f; break;
         case 'Z':             scale = -1.f; break;
         case 'X':             scale = +1.f; break;
-        }
-
-        switch (evt.key)
-        {
-        case 'R': m_view->enable_filter = true; break;
-        case 'T': m_view->enable_filter = false; break;
         }
 
         m_objects[0]->transform.position += 0.05f * dir;

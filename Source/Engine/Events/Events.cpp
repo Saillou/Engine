@@ -10,7 +10,12 @@ Event::Subscriber::Subscriber() {
 }
 
 Event::Subscriber::~Subscriber() {
+	_unsubscribeAll();
 	_allSubscribers.erase(this);
+}
+
+void Event::Subscriber::_unsubscribeAll() {
+	_callbacks.clear();
 }
 
 Event::_Base::_Base(_Type type) : m_type(type)

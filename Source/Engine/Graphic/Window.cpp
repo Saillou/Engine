@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <iostream>
 
 Window::Window(int width, int height, const char* title, bool start_fs) : 
     m_width(width), 
@@ -18,25 +19,34 @@ Window::~Window() {
 
 // Public
 bool Window::update() {
-    // To be called in the same thread as the m_window constructor
+    // Update has to be called in the same thread as its constructor
     glfwMakeContextCurrent(m_window);
 
-    // Can't continue states
+    // Can't continue
     if (!m_window)
         return false;
 
     if (glfwWindowShouldClose(m_window))
         return false;
 
-    // Ok
+    // Render
     if (m_scene)
         m_scene->draw();
 
     
 
     glfwSwapBuffers(m_window);
-    glfwPollEvents();
 
+    // Inputs
+    glfwPollEvents();
+    {
+        double x, y;
+        glfwGetCursorPos(m_window, &x, &y);
+
+        m_mouse_moved = int(m_mouse_pos.x - x) && int(m_mouse_pos.y - y);
+        m_mouse_pos.x = (float)x;
+        m_mouse_pos.y = (float)y;
+    }
     return true;
 }
 
@@ -72,8 +82,7 @@ std::vector<unsigned int> Window::keyPressed() const {
     return keys;
 }
 
-std::vector<unsigned int> Window::buttonPressed() const
-{
+std::vector<unsigned int> Window::buttonPressed() const {
     if (!m_window)
         return {};
 
@@ -89,10 +98,12 @@ std::vector<unsigned int> Window::buttonPressed() const
     return buttons;
 }
 
+bool Window::mouseMoved() const {
+    return m_mouse_moved;
+}
+
 glm::vec2 Window::mousePos() const {
-    double x, y;
-    glfwGetCursorPos(m_window, &x, &y);
-    return glm::vec2(x, y);
+    return m_mouse_pos;
 }
 
 std::shared_ptr<BaseScene> Window::scene() const {

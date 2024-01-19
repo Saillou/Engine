@@ -24,12 +24,15 @@ struct Model
 {
     friend struct Entity;
 
-         Model() = default;
-         Model(const std::string& path);
+    Model() = default;
+    Model(const std::string& path);
 
     // Methods
-    void draw        (Shader& shader);
-    void drawElements(Shader& shader);
+    void draw        (Shader& shader) const;
+    void drawElements(Shader& shader) const;
+
+    // Setters
+    void setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
 
     // Data tree for storing organized meshes
     struct Node {

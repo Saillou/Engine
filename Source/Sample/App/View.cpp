@@ -1,18 +1,14 @@
 #include "View.hpp"
 
-#include <algorithm>
 #include <ctime>
 #include <random>
-
 #include <sstream>
-#include <Engine/Utils/RayCaster.hpp>
+#include <algorithm>
 
-#define DRAW_REAL
+#include <Engine/Utils/RayCaster.hpp>
 
 // Random engine
 static std::default_random_engine gen;
-
-static std::uniform_real_distribution<float> dstr_pi(-glm::pi<float>(), +glm::pi<float>());
 static std::uniform_real_distribution<float> dstr_one(0.0f, 1.0f);
 static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
@@ -22,22 +18,21 @@ View::View(int widthHint, int heightHint):
         glm::vec3(0, 0, 0),
         { 
             size_t(2500),
-            std::make_unique<Box>(glm::vec3(0.010f))
+            std::make_unique<Entity>(Entity::SimpleShape::Cube)
         }
     }),
     framebuffer_main(Framebuffer::Multisample, m_width, m_height),
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(0.0f, -6.0f, 3.0f);
-    m_camera.direction = glm::vec3(0.0f,  0.0f, 0.0f);
+    m_camera.position  = glm::vec3(1, -4, 3);
+    m_camera.direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Lightnings
     m_lights = {
-        Light(glm::vec3{  0,  0, 0.50f }, glm::vec4{ 1, 0.7, 0.3, 1 })
+        Light(glm::vec3{  0,  +1.50f, 1.0f }, glm::vec4{ 1, 0.7, 0.3, 1 })
     };
 
-#ifdef DRAW_REAL
     // Load models
     m_timer.tic();
     {
@@ -45,8 +40,10 @@ View::View(int widthHint, int heightHint):
         m_entities[_ObjectId::Tree]       = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
         m_entities[_ObjectId::Character]  = std::make_unique<Entity>("Resources/objects/character/character.glb");
 
+        m_entities[_ObjectId::Grid]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entities[_ObjectId::Cube]       = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entities[_ObjectId::Sphere]     = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
+        m_entities[_ObjectId::Target]     = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -64,18 +61,11 @@ View::View(int widthHint, int heightHint):
         _initParticles();
     }
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-#else
-    m_entities[_ObjectId::Sphere] = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
-#endif
 }
 
-void View::mouse_on(int x, int y) {
-    m_mousePos.x = (float)x / m_width;
-    m_mousePos.y = (float)y / m_height;
-}
 
+// Methods
 void View::draw() {
-#ifdef DRAW_REAL
     static float dt_since_last_draw = 0.0f;
     static float dt_draw = 0.0f;
 
@@ -84,23 +74,21 @@ void View::draw() {
 
     BaseScene::_update_camera();
     _setParticles(dt_since_last_draw);
+    _setObjects();
 
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
     m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
         // Draw objects
         for (const _Object& obj : m_objects) {
-            sh.use().set("model", obj.quat);
-            m_entities[obj.id]->drawElements(sh);
+            m_entities[obj.id]->model.drawElements(sh);
         }
 
-        // Ground
-        for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-            sh.use().set("model", cell_quat);
-            m_model_box->drawElements(sh);
+        // Particles
+        {
+            m_fireGrid.particles.object->model.drawElements(sh);
         }
     });
-
 
     // Main scene
     BaseScene::Viewport(width(), height());
@@ -109,39 +97,77 @@ void View::draw() {
     {
         // Lights
         for (auto& light : m_lights) {
-            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Model)
+            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Basic)
                                          ->use().set("diffuse_color", light.color);
 
-            m_entities[_ObjectId::Sphere]->draw(m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
+            m_entities[_ObjectId::Sphere]->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
         }
+
+        // List of targets
+        std::vector<glm::mat4> targets;
 
         // Draw objects
         for (const _Object& obj : m_objects) {
-            // Cube color
-            if (obj.id == _ObjectId::Cube) {
-                m_entities[obj.id]->get(Cookable::CookType::Model)->use().set("diffuse_color", glm::vec4(1.0f, 0.7f, 0.3f, 1.0f));
-            }
+            // Normal colors
+            m_shadowRender.bindTexture(GL_TEXTURE1);
+            m_entities[obj.id]->get(Cookable::CookType::Shadow)
+                              ->use().set("diffuse_color", obj.material_color)
+                                     .set("depthMap", 1);
 
-            // Draw model
-            m_entities[obj.id]->draw(m_camera, obj.quat, m_lights);
+            m_entities[obj.id]->drawShadow(m_camera, m_lights[0]);
 
-            // Highlight
-            glm::vec3 hitPos;
-            if (RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], obj.quat, hitPos)) {
-                m_entities[obj.id]->get(Cookable::CookType::ModelGeometry)->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
-                m_entities[obj.id]->drawGeometry(m_camera, obj.quat);
+            // Ray cast
+            for(const auto& quat : obj.quats) {
+                auto cast_res = RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat);
+                if (!cast_res)
+                    continue;
+
+                // Highlight
+                m_entities[obj.id]->get(Cookable::CookType::Geometry)
+                                    ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
+
+                m_entities[obj.id]->drawOne(Cookable::CookType::Geometry, m_camera, quat, m_lights);
+
+                // Intersection
+                targets.push_back(
+                    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f))
+                );
             }
+        }
+
+        // Draw targets
+        if (!targets.empty()) {
+            m_entities[_ObjectId::Target]->model.setBatch(targets);
+            m_entities[_ObjectId::Target]->get(Cookable::CookType::Basic)
+                                         ->use().set("diffuse_color", glm::vec4(0.2f, 1.0f, 0.7f, 0.5f));
+
+            m_entities[_ObjectId::Target]->drawBasic(m_camera);
         }
 
         // Particles
         {
-            m_fireGrid.particles.object->drawBatch(m_fireGrid.particles.amount, m_camera);
+            m_fireGrid.particles.object->drawBasic(m_camera);
         }
 
-        // Draw ground with shadow
-        m_shadowRender.bindTexture(GL_TEXTURE1);
-        for (const glm::mat4& cell_quat : m_grid->m_grid_cells) {
-            m_model_box->draw(m_camera, cell_quat, m_lights);
+        // Draw ground
+        {
+            // Grid
+            {
+                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Geometry)
+                                           ->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1));
+
+                m_entities[_ObjectId::Grid]->drawGeometry(m_camera);
+            }
+
+            // Shadow
+            {
+                m_shadowRender.bindTexture(GL_TEXTURE1);
+                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Shadow)
+                                           ->use().set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).
+                                                   set("depthMap", 1);
+
+                m_entities[_ObjectId::Grid]->drawShadow(m_camera, m_lights[0]);
+            }
         }
 
         // Skybox
@@ -155,7 +181,7 @@ void View::draw() {
     // Apply filter
     if(enable_filter) {
         m_filter.apply(framebuffer_main);
-        BaseScene::drawFrame(m_filter.framebuffer);
+        BaseScene::drawFrame(m_filter.frame());
     }
     else {
         BaseScene::drawFrame(framebuffer_main);
@@ -164,14 +190,14 @@ void View::draw() {
     // Debug texts
     {
         std::ostringstream ss;
-        ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
-            << ", y: " << int(m_camera.position.y * 10) / 10.0f
-            << ", z: " << int(m_camera.position.z * 10) / 10.0f;
+        ss  << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
+            << ", y: "    << int(m_camera.position.y * 10) / 10.0f
+            << ", z: "    << int(m_camera.position.z * 10) / 10.0f;
         TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
 
         ss = {};
-        ss << "Mouse: x: " << int(m_width * m_mousePos.x * 10) / 10.0f
-            << ", y: " << int(m_height * m_mousePos.y * 10) / 10.0f;
+        ss  << "Mouse: x: " << int(m_width  * m_mousePos.x * 10) / 10.0f
+            << ", y: "      << int(m_height * m_mousePos.y * 10) / 10.0f;
         TextEngine::Write(ss.str(), 20.0f, m_height - 60.0f, 0.5f, glm::vec3(1, 1, 1));
 
         ss = {};
@@ -182,28 +208,12 @@ void View::draw() {
     // Prepare next
     dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
-#else
-    BaseScene::_update_camera();
-    BaseScene::clear();
-
-    // simple shape
-    m_entities[_ObjectId::Sphere]->get(Cookable::CookType::ModelGeometry)
-                                 ->use().set("diffuse_color", glm::vec4(1,1,1,1));
-
-    m_entities[_ObjectId::Sphere]->drawGeometry(m_camera);
-
-    // debug txt
-    std::ostringstream ss;
-    ss << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
-        << ", y: " << int(m_camera.position.y * 10) / 10.0f
-        << ", z: " << int(m_camera.position.z * 10) / 10.0f;
-    TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
-
-#endif
 }
 
+// Allocate static memory
 void View::_initObjects() {
-#ifdef DRAW_REAL
+    constexpr float hpi = glm::half_pi<float>();
+
     // Sky
     m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
         "Resources/textures/skybox/right.jpg",
@@ -215,17 +225,13 @@ void View::_initObjects() {
     });
 
     // Ground - Grid
-    m_model_box = std::make_unique<Box>(1.0f);
-    m_model_box->addRecipe(Cookable::CookType::Shadow, glm::vec4(0.5f, 0.5f, 0.5f, 1))
-               ->addRecipe(Cookable::CookType::Geometry, glm::vec4(0.2f, 0.2f, 0.2f, 1));
-
-    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 15, {} });
-    m_grid->m_grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
-    std::generate(m_grid->m_grid_cells.begin(), m_grid->m_grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
+    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 36, {} });
+    m_grid->grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
+    std::generate(m_grid->grid_cells.begin(), m_grid->grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
         { 
             const glm::vec2 cell_pos = glm::vec2(id%N - N/2, id/N - N/2);
             const glm::vec3 T_pos    = S * glm::vec3(cell_pos, -0.5f);
-            const glm::vec3 T_scale  = S * glm::vec3(1);
+            const glm::vec3 T_scale  = S * glm::vec3(0.5f);
 
             id++;
             return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
@@ -233,90 +239,73 @@ void View::_initObjects() {
     );
 
     // Box
-    m_objects.push_back({ _ObjectId::Cube, 
-        glm::scale(
-            glm::translate(
-                glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)), 
-            glm::vec3(0.2f)
-        )
+    m_objects.push_back({ _ObjectId::Cube, glm::vec4(1.0f, 0.7f, 0.3f ,1.0), 
+        {
+            glm::scale(
+                glm::translate(
+                    glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)),
+                glm::vec3(0.1f)
+            )
+        }
     });
 
     // Locomotive
-    m_objects.push_back({ _ObjectId::Locomotive,
-        glm::scale(
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),      // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(1.0f, .30f, .0f)), // Translation
-            glm::vec3(2.0f)         // Scale
-        )
+    m_objects.push_back({ _ObjectId::Locomotive, glm::vec4(0),
+        {
+            glm::scale(
+                glm::translate(
+                    glm::rotate(glm::mat4(1.0f),    // Identity
+                        hpi, glm::vec3(1, 0, 0)),  // Rotation
+                    glm::vec3(1.0f, .30f, .0f)),    // Translation
+                glm::vec3(2.0f)                     // Scale
+            )
+        }
     });
 
     // Trees
-    m_objects.push_back({_ObjectId::Tree,
-        glm::scale(
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(1.5f, 0.10f, 0.5f)),  // Translation
-            glm::vec3(2.0f)         // Scale
-        )
-    });
-
-    m_objects.push_back({_ObjectId::Tree,
-        glm::scale(
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(-0.90f, 0.10f, -0.95f)),  // Translation
-            glm::vec3(2.0f)         // Scale
-        )
-    });
-
-    // Character
-    m_objects.push_back({_ObjectId::Character,
-            glm::translate(
-                glm::rotate(glm::mat4(1.0f),    // Identity
-                    1.5f, glm::vec3(1, 0, 0)),  // Rotation
-                glm::vec3(-1, 0, 1)           // Translation
-        )
-    });
-#endif
-}
-
-void View::_initParticles() {
-    // - Generate batch parameters
-    const glm::vec3 color(1.0f, 0.7f, 0.3f);
-
-    // Define particles
-    m_fireGrid.particles.models.resize(m_fireGrid.particles.amount);
-    m_fireGrid.particles.speeds.resize(m_fireGrid.particles.amount);
-    m_fireGrid.particles.colors.resize(m_fireGrid.particles.amount);
-
-    // Create batch
-    m_fireGrid.particles.object->createBatch(
-        m_fireGrid.particles.colors,
-        m_fireGrid.particles.models
-    );
-
-    std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable -> glm::vec4
+    std::vector<glm::mat4> forest;
+    forest.resize(100);
+    std::generate(forest.begin(), forest.end(), [id = 0, hpi]() mutable
         {
-            particules_id++;
-            float ratio = particules_id / float(m_fireGrid.particles.amount);
+            float x = (float)(id % 10 - 5);
+            float y = (float)(id / 10 - 5);
 
-            return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            if (abs(x) < 2 && abs(y) < 2) {
+                x = (x > 0 ? 1 : -1) * std::max(3.0f, abs(x)) + x / 10.0f;
+                y = (y > 0 ? 1 : -1) * std::max(3.0f, abs(y)) + y / 10.0f;
+            }
+
+            glm::vec3 tr(-0.90f + x, 0.10f, -0.95f + y);  // Translation
+
+            auto transf = glm::scale(
+                glm::translate(
+                    glm::rotate(glm::mat4(1.0f),    // Identity
+                        hpi, glm::vec3(1, 0, 0)),  // Rotation
+                            tr),                    // Translation
+                glm::vec3(dstr_one(gen)*3.0f)       // Scale
+            );
+
+            id++;
+            return transf;
         }
     );
+    m_objects.push_back({_ObjectId::Tree, glm::vec4(0), forest });
 
-    _setParticles();
-
-    // Cook
-    m_fireGrid.particles.object->addRecipe(Cookable::CookType::Batch);
+    // Character
+    m_objects.push_back({_ObjectId::Character, glm::vec4(0),
+        {
+            glm::translate(
+                glm::rotate(glm::mat4(1.0f),  // Identity
+                    hpi, glm::vec3(1, 0, 0)), // Rotation
+                glm::vec3(-1, 0.2f, -1.2f)       // Translation
+            )
+        }
+    });
 }
 
 void View::_initFilters() {
-    m_filter.shader.
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+    m_filter.shader()
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("out", "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(
@@ -348,35 +337,69 @@ void View::_initFilters() {
         .link();
 }
 
+void View::_initParticles() {
+    // - Generate batch parameters
+    const glm::vec3 color(1.0f, 0.7f, 0.3f);
 
+    // Define particles
+    m_fireGrid.particles.models.resize(m_fireGrid.particles.amount);
+    m_fireGrid.particles.speeds.resize(m_fireGrid.particles.amount);
+    m_fireGrid.particles.colors.resize(m_fireGrid.particles.amount);
+
+    // Create batch
+    std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable -> glm::vec4
+        {
+            particules_id++;
+            float ratio = particules_id / float(m_fireGrid.particles.amount);
+
+            return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        }
+    );
+}
+
+
+// Update dynamic memory
 void View::_setParticles(float dt) {
     // Move
     for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
         glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
         glm::mat4& model = m_fireGrid.particles.models[particules_id];
 
-        const bool hasEnded = model[0][0] < 1e-2f || model[1][1] < 1e-2f || model[2][2] < 1e-2f; // also true for first draw
+        const bool hasEnded = model[0][0] < 1e-4f || model[1][1] < 1e-4f || model[2][2] < 1e-4f; // also true for first draw
 
         if (hasEnded) {
             const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
             int x = particules_id % SIZE - SIZE / 2;
             int y = particules_id / SIZE - SIZE / 2;
 
-            model = glm::translate(glm::mat4(1.0f), glm::vec3(x * 0.007f, 1.5f, 0.25f + y * 0.002f));
+            model = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+            model = glm::translate(model, glm::vec3(x * 0.7f, 50.0f, 25.0f + y * 0.5f));
             speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
         }
         else {
-            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * glm::vec3(speed)), glm::vec3(speed.a));
+            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * 100.0f * glm::vec3(speed)), glm::vec3(speed.a));
         }
     }
 
     // Update
-    m_fireGrid.particles.object->updateBatch(
-        m_fireGrid.particles.colors,
-        m_fireGrid.particles.models
-    );
+    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.models, m_fireGrid.particles.colors);
 }
 
+void View::_setObjects() {
+    // Grid
+    m_entities[_ObjectId::Grid]->model.setBatch(m_grid->grid_cells);
+
+    // Objects
+    for (const _Object& obj : m_objects) {
+        m_entities[obj.id]->model.setBatch(obj.quats);
+    }
+}
+
+// Callbacks
+void View::mouse_on(int x, int y) {
+    m_mousePos.x = (float)x / m_width;
+    m_mousePos.y = (float)y / m_height;
+}
 
 void View::_onResize() {
     framebuffer_main.resize(m_width, m_height);

@@ -14,18 +14,17 @@ struct Entity : public Cookable
         Custom, Cube, Sphere
     };
 
-             Entity(SimpleShape shape = SimpleShape::Custom);
-             Entity(const std::string& path);
+    Entity(SimpleShape shape = SimpleShape::Custom);
+    Entity(const std::string& path);
+
     virtual ~Entity() = default;
 
     // Methods
-    void     draw        (const Camera& camera, const glm::mat4& model = glm::mat4(1.0f), const std::vector<Light>& = {});
-    void     drawGeometry(const Camera& camera, const glm::mat4& model = glm::mat4(1.0f));
-    void     drawElements(Shader& shader);
+    void drawOne     (Cookable::CookType, const Camera&, const glm::mat4& quat = glm::mat4(1.0f), const std::vector<Light>& = {});
+    void drawBasic   (const Camera&, const std::vector<Light>& = {});
+    void drawShadow  (const Camera&, const Light&);
+    void drawGeometry(const Camera&);
 
     // Getters
-    const Model& model() const;
-
- protected:
-    Model m_model;
+    Model model;
 };

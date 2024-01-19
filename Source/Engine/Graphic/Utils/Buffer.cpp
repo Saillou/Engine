@@ -12,8 +12,10 @@ Buffer::~Buffer() {
 }
 
 void Buffer::bindData(const size_t size) {
+	m_size = size;
+
 	bind();
-	glBufferData(m_bufferType, size, nullptr, m_memoryType);
+	glBufferData(m_bufferType, m_size, nullptr, m_memoryType);
 }
 
 void Buffer::bind() {
@@ -26,4 +28,8 @@ void Buffer::unbind() {
 
 unsigned int Buffer::getId() const {
 	return m_bufferId;
+}
+
+size_t Buffer::size() const {
+	return m_size;
 }

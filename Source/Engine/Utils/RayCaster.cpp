@@ -1,21 +1,47 @@
+#include "../Graphic/Base/Model/Primitive/Cube.hpp"
 #include "RayCaster.hpp"
-
 #include <stack>
 
-float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat, glm::vec3& outPos)
-{
-	using namespace glm;
+using namespace glm;
 
+// Private
+static inline std::optional<glm::vec4> _intersect_mesh(
+	const glm::vec2& mousePos, 
+	const glm::vec3& camPos, 
+	const glm::vec3& camDir, 
+	const Mesh& mesh, 
+	const glm::mat4& quat)
+{
+	const auto& idx = mesh.indices();
+	const auto& v = mesh.vertices();
+
+	for (size_t i = 0; i < idx.size(); i += 3) {
+		auto optIntersect = RayCaster::IntersectTriangle(camPos, camDir, RayCaster::Triangle{
+			vec3(quat * vec4(v[idx[i + 0]].Position, +1.0f)),
+			vec3(quat * vec4(v[idx[i + 1]].Position, +1.0f)),
+			vec3(quat * vec4(v[idx[i + 2]].Position, +1.0f))
+		});
+
+		if (optIntersect.has_value())
+			return optIntersect;
+	}
+
+	return {};
+}
+
+// Public
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
+{
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return -1;
+		return {};
 
 	// Traverse model's nodes
-	if (!objModel.model().root())
-		return -1;
+	if (!objModel.model.root())
+		return {};
 
 	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&objModel.model().root());
+	st.push(&objModel.model.root());
 
 	while (!st.empty()) {
 		// Get next in line
@@ -24,10 +50,10 @@ float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, cons
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-						const float t = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform, outPos);
+			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform);
 
-						if (t >= 0)
-										return t;
+			if (optIntersect.has_value())
+				return optIntersect;
 		}
 
 		// Add children
@@ -36,68 +62,36 @@ float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, cons
 		}
 	}
 
-	return -1;
+	return {};
 }
 
-float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const BaseShape& shape, const glm::mat4& quat, glm::vec3& outPos)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
 {
-	using namespace glm;
-
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return -1;
+		return {};
 
-	// Intersect
-	const auto& idx = shape.indices();
-	const auto& v   = shape.vertices();
+	const glm::vec3 camera_ray = camera.ray(mousePos);
 
-	// -> can be reaaally optimized, in multiple ways (using bounding rect, fast discard, hull, parallelization, screen segmentation...)
-	for (size_t i = 0; i < idx.size(); i += 3) {
-		const float t = IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
-			vec3(quat * vec4(v[3 * idx[i + 0] + 0], v[3 * idx[i + 0] + 1], v[3 * idx[i + 0] + 2], +1.0f)),
-			vec3(quat * vec4(v[3 * idx[i + 1] + 0], v[3 * idx[i + 1] + 1], v[3 * idx[i + 1] + 2], +1.0f)),
-			vec3(quat * vec4(v[3 * idx[i + 2] + 0], v[3 * idx[i + 2] + 1], v[3 * idx[i + 2] + 2], +1.0f))
-		}, outPos);
+	// Check bounding rect
+	if (!IntersectBox(mousePos, camera.position, camera_ray, quat * mesh.obb()))
+		return {};
 
-		if (t >= 0)
-						return t;
-	}
-
-	return -1;
+	// Check each triangle in meshes individually
+	return _intersect_mesh(mousePos, camera.position, camera_ray, mesh, quat);
 }
 
-float RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat, glm::vec3& outPos)
+bool RayCaster::IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos, const glm::vec3& camDir, const glm::mat4& quat)
 {
-	using namespace glm;
+	// Create cube mesh if needed
+	static auto s_cubeMesh = Cube::CreateMesh(false);
 
-	// Mouse out screen
-	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
-		return -1;
-
-	// It's almost the same as base shape
-	const auto& idx = mesh.indices();
-	const auto& v = mesh.vertices();
-
-	for (size_t i = 0; i < idx.size(); i += 3) {
-					const float t = 
-IntersectTriangle(camera.position, camera.ray(mousePos), std::array<vec3, 3> {
-			vec3(quat* vec4(v[idx[i+0]].Position, +1.0f)),
-			vec3(quat* vec4(v[idx[i+1]].Position, +1.0f)),
-			vec3(quat* vec4(v[idx[i+2]].Position, +1.0f))
-		}, outPos);
-
-					if (t >= 0)
-									return t;
-	}
-
-	return -1;
+	return _intersect_mesh(mousePos, camPos, camDir, *s_cubeMesh, quat).has_value();
 }
 
-// Note: It's Möller–Trumbore intersection algorithm
-float RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const std::array<glm::vec3, 3>& triangle, glm::vec3& outPos)
+// Note: It's Muller-Trumbore intersection algorithm
+std::optional<glm::vec4> RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
 {
-	using namespace glm;
-
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
 	vec3 edge1 = triangle[1] - triangle[0];
@@ -106,31 +100,23 @@ float RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3&
 	float det = dot(edge1, ray_cross_e2);
 
 	if (det > -epsilon && det < epsilon)
-		return -1;    // This ray is parallel to this triangle.
+		return {};    // This ray is parallel to this triangle.
 
 	float inv_det = 1.f / det;
 	vec3 s = ray_origin - triangle[0];
 	float u = inv_det * dot(s, ray_cross_e2);
 
 	if (u < 0 || u > 1)
-		return -1;
+		return {};
 
 	vec3 s_cross_e1 = cross(s, edge1);
 	float v = inv_det * dot(ray_vector, s_cross_e1);
 
 	if (v < 0 || u + v > 1)
-		return -1;
+		return {};
 
-	//return true;
-
-	//// At this stage we can compute t to find out where the intersection point is on the line.
 	float t = inv_det * dot(edge2, s_cross_e1);
-	outPos = ray_origin + ray_vector * t;
-	return t;
-	//if (t > epsilon) // ray intersection: intersection_point = ;
-	//	return true;
-
-	//return false;
+	return glm::vec4(ray_origin + ray_vector * t, t);
 }
 
 bool RayCaster::PointInRect(const glm::vec2& point, const glm::vec2& rectTopLeft, const glm::vec2& rectBotRight)

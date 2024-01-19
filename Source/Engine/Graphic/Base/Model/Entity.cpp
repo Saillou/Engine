@@ -1,40 +1,80 @@
 #include "Entity.hpp"
 
-#include "../Shapes/Cube.hpp"
-#include "../Shapes/Sphere.hpp"
+#include "Primitive/Cube.hpp"
+#include "Primitive/Sphere.hpp"
 
 Entity::Entity(const std::string& path) :
-    m_model(path)
+    model(path)
 {
-    Cookable::addRecipe(Cookable::CookType::Model);
-    Cookable::addRecipe(Cookable::CookType::ModelGeometry);
+    addRecipe(CookType::Basic);
+    addRecipe(CookType::Shadow);
+    addRecipe(CookType::Geometry);
 }
 
 Entity::Entity(SimpleShape shape)
 {
-    Cookable::addRecipe(Cookable::CookType::Model);
-    Cookable::addRecipe(Cookable::CookType::ModelGeometry);
+    addRecipe(CookType::Basic);
+    addRecipe(CookType::Shadow);
+    addRecipe(CookType::Geometry);
 
-    m_model._root = std::make_unique<Model::Node>();
+    model._root = std::make_unique<Model::Node>();
 
     switch (shape) {
     case Entity::Cube: 
-        m_model._root->meshes.push_back(Cube::CreateMesh());
+        model._root->meshes.push_back(Cube::CreateMesh());
         break;
 
     case Entity::Sphere: 
-        m_model._root->meshes.push_back(Sphere::CreateMesh());
+        model._root->meshes.push_back(Sphere::CreateMesh());
         break;
     }
 }
 
-void Entity::draw(const Camera& camera, const glm::mat4& model, const std::vector<Light>& lights) {
-    auto& sh = *Cookable::get(Cookable::CookType::Model);
+void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
+    Shader& sh = get(type)->use();
+
+    // I don't like that but ok for now
+    switch (type)
+    {
+    case Cookable::CookType::Basic:
+        sh.set("Projection",  camera.projection)
+          .set("View",        camera.modelview)
+          .set("CameraPos",   camera.position)
+          .set("LightNumber", (int)lights.size());
+
+        for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
+            sh.set("LightPos_"   + std::to_string(iLight), lights[iLight].position)
+              .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
+        }
+        break;
+
+    case Cookable::CookType::Shadow:
+        sh.set("Projection", camera.projection)
+          .set("View",       camera.modelview)
+          .set("viewPos",    camera.position)
+          .set("far_plane",  camera.far_plane)
+          .set("lightPos",   lights[0].position)
+          .set("lightColor", lights[0].color * 0.3f);
+        break;
+
+    case Cookable::CookType::Geometry:
+        sh.set("Projection", camera.projection)
+          .set("View",       camera.modelview);
+        break;
+    }
+
+    // Careful it will affects subsequent draw
+    model.setBatch({ quat });
+
+    model.draw(sh);
+}
+
+void Entity::drawBasic(const Camera& camera, const std::vector<Light>& lights) {
+    auto& sh = *get(CookType::Basic);
 
     sh.use()
         .set("Projection",  camera.projection)
         .set("View",        camera.modelview)
-        .set("Model",       model)
         .set("CameraPos",   camera.position)
         .set("LightNumber", (int)lights.size());
 
@@ -43,23 +83,27 @@ void Entity::draw(const Camera& camera, const glm::mat4& model, const std::vecto
           .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
     }
 
-    m_model.draw(sh);
+    model.draw(sh);
 }
 
-void Entity::drawGeometry(const Camera& camera, const glm::mat4& model) {
-    auto& sh = *Cookable::get(Cookable::CookType::ModelGeometry);
-    sh.use()
-        .set("Projection", camera.projection)
-        .set("View", camera.modelview)
-        .set("Model", model);
+void Entity::drawShadow(const Camera& camera, const Light& light) {
+    get(Cookable::CookType::Shadow)->
+        use().
+        set("Projection",   camera.projection).
+        set("View",         camera.modelview).
+        set("viewPos",      camera.position).
+        set("far_plane",    camera.far_plane).
+        set("lightPos",     light.position).
+        set("lightColor",   light.color * 0.3f);
 
-    m_model.draw(sh);
+    model.draw(*get(Cookable::CookType::Shadow));
 }
 
-void Entity::drawElements(Shader& shader) {
-    m_model.drawElements(shader);
-}
+void Entity::drawGeometry(const Camera& camera) {
+    get(Cookable::CookType::Geometry)->
+        use().
+        set("Projection", camera.projection).
+        set("View",       camera.modelview);
 
-const Model& Entity::model() const {
-    return m_model;
+    model.drawElements(*get(Cookable::CookType::Geometry));
 }

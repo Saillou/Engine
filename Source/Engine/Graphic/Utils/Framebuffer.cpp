@@ -55,7 +55,7 @@ bool Framebuffer::CurrIsUsable() {
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void Framebuffer::Blit(Framebuffer& src, Framebuffer& dst) {
+void Framebuffer::Blit(const Framebuffer& src, Framebuffer& dst) {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src.id());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst.id());
 
@@ -73,7 +73,7 @@ unsigned int Framebuffer::id() const {
 	return m_framebufferId;
 }
 
-Texture& Framebuffer::texture() {
+const Texture& Framebuffer::texture() const {
 	return m_texture_attached;
 }
 

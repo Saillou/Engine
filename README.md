@@ -29,9 +29,9 @@ Available arguments are:
 # Dependencies:
 | Library                                                | Description                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
-| `GLM`  (OpenGL Mathematics)                            | Clone: https://github.com/g-truc/glm                    |
-| `Glad` (Get entry points for `opengl32.dll`'s methods) | Generated at: https://glad.dav1d.de                     |
 | `Glfw` (Windows and inputs helper)                     | Official website: https://www.glfw.org                  |
+| `Glad` (Get entry points for `opengl32.dll`'s methods) | Generated at: https://glad.dav1d.de                     |
+| `GLM`  (OpenGL Mathematics)                            | Clone: https://github.com/g-truc/glm                    |
 | `stb_image` (Load image)                               | Clone: https://github.com/nothings/stb                  |
 | `FreeType` (Font renderer)                             | Clone: https://gitlab.freedesktop.org/freetype          |
 | `Assimp` (Model loader)                                | Official website: https://assimp.org/                   |

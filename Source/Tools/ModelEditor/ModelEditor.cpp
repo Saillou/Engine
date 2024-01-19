@@ -75,10 +75,10 @@ void ModelEditor::onUpdate()
 
     glm::mat4 worldPos = glm::translate(glm::mat4(1.f), m_menu.state.worldPosition);
     
-    m_model->draw(m_window->scene()->camera(), worldPos * model , m_lights);
+    m_model->drawOne(Cookable::CookType::Basic, m_window->scene()->camera(), worldPos * model , m_lights);
 
-    m_center->get(Cookable::CookType::Model)->use().set("diffuse_color", glm::vec4(1, 1, 1, 1));
-    m_center->draw(m_window->scene()->camera(), glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)));
+    m_center->get(Cookable::CookType::Basic)->use().set("diffuse_color", glm::vec4(1, 1, 1, 1));
+    m_center->drawOne(Cookable::CookType::Basic, m_window->scene()->camera(), glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)));
 
     m_menu.ShowMovableOptions();
 }

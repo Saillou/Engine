@@ -23,6 +23,7 @@ struct Window {
     std::vector<unsigned int> keyPressed() const;
     std::vector<unsigned int> buttonPressed() const;
 
+    bool mouseMoved() const;
     glm::vec2 mousePos() const;
     std::shared_ptr<BaseScene> scene() const;
     GLFWwindow* backend();
@@ -37,9 +38,14 @@ private:
 
     // Members
     GLFWwindow* m_window = nullptr;
+    std::string m_title;
+
     int m_width;
     int m_height;
     bool m_is_fullscreen;
-    std::string m_title;
+
+    bool m_mouse_moved    = false;
+    glm::vec2 m_mouse_pos = {};
+
     std::shared_ptr<BaseScene> m_scene = nullptr;
 };

@@ -27,7 +27,7 @@ void BaseScene::_onResize() {
     // to be overrided
 }
 
-void BaseScene::drawFrame(Framebuffer& framebuffer) {
+void BaseScene::drawFrame(const Framebuffer& framebuffer) {
     glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 
     // Need to blit multisample to mono

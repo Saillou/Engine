@@ -16,6 +16,14 @@ namespace Thomas
         grid.m_position = pos;
         grid.m_size = size;
     }
+    glm::vec3 Grid::getCellSize()
+    {
+        Grid& grid = get();
+
+        assert(grid.m_initialised && "Grid is not initialized.");
+
+        return glm::vec3(grid.m_size, 0.1f);
+    }
     glm::vec3 Grid::getPosition(int x, int y)
     {
         Grid& grid = get();
@@ -69,7 +77,8 @@ namespace Thomas
         GridCell cell;
         cell.type = type;
         cell.transform.position = Grid::getPosition(x, y);
-        cell.transform.scale = { 0.3f,0.3f, 0.01f };
+        cell.transform.scale = 0.15f * glm::vec3{ 0.3f,0.3f, 0.01f };
+        cell.transform.rotation = { 0,0,0 };
 
         auto it = grid.m_cells.find({ x,y });
 

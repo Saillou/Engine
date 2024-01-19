@@ -29,6 +29,7 @@ add_library(${ENGINE_NAME}
 )
 target_include_directories(${ENGINE_NAME} PRIVATE 
     "${EXTERNAL_FOLDER}/glm/"
+    "${EXTERNAL_FOLDER}/eigen3/"
     "${EXTERNAL_FOLDER}/glad/include/"
     "${EXTERNAL_FOLDER}/GLFW/include/"
     "${EXTERNAL_FOLDER}/stb/"

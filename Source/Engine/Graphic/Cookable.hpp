@@ -1,23 +1,22 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <memory>
+#include <unordered_map>
 
 #include "Utils/Shader.hpp"
-#include "../Utils/Caster.hpp"
 
 // Objects
-struct Cookable : public FlatObject {
+struct Cookable {
     // Basic possibilities
-    enum class CookType {
-        Solid, 
-        Geometry,
+    enum class CookType {       
+        Basic,
         Shadow,
-        Model,
-        ModelGeometry,
-        Quad,
-        Batch,
-        BatchShadow
+        Geometry,
     };
+
+    // Shader helper
+    static void Set(CookType type, Shader& shader);
 
     // Instance
     virtual ~Cookable() = default;
@@ -28,14 +27,12 @@ struct Cookable : public FlatObject {
     UShader& get(CookType type);
 
 protected:
-    virtual void _set_shader_batch(UShader& shader);
-    virtual void _set_shader_solid(UShader& shader);
-    virtual void _set_shader_model(UShader& shader);
-    virtual void _set_shader_shadow(UShader& shader);
-    virtual void _set_shader_shadow_batch(UShader& shader);
-    virtual void _set_shader_geometry(UShader& shader);
-    virtual void _set_shader_model_geometry(UShader& shader);
-    virtual void _set_shader_quad(UShader& shader);
+    static ShaderSource _init_vertex();
+    static ShaderSource _init_fragment();
+
+    static void _set_shader_basic(Shader& shader);
+    static void _set_shader_shadow(Shader& shader);
+    static void _set_shader_geometry(Shader& shader);
 
     // Members
     std::unordered_map<CookType, UShader> m_shaders;

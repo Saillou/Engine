@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include "../Base/Model/Primitive/Quad.hpp"
 #include "Texture.hpp"
 
 class Framebuffer {
@@ -20,10 +21,10 @@ public:
 	Framebuffer(Framebuffer&&)					= delete;
 
 	static bool CurrIsUsable();
-	static void Blit(Framebuffer& src, Framebuffer& dst);
+	static void Blit(const Framebuffer& src, Framebuffer& dst);
 
 	unsigned int id() const;
-	Texture& texture();
+	const Texture& texture() const;
 
 	void resize(unsigned int width, unsigned int height);
 	unsigned int width() const;

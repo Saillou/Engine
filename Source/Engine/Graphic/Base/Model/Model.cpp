@@ -21,11 +21,11 @@ Model::Model(const std::string& path)
     _loadModel(path);
 }
 
-void Model::draw(Shader& shader) {
+void Model::draw(Shader& shader) const {
     if (!_root)
         return;
 
-    std::stack<std::unique_ptr<Node>*> st;
+    std::stack<const std::unique_ptr<Node>*> st;
     st.push(&_root);
 
     while (!st.empty()) {
@@ -35,8 +35,11 @@ void Model::draw(Shader& shader) {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
+            shader.use()
+                  .set("LocalModel", (*currNode)->transform);
+
             mesh->bindTextures(shader);
-            mesh->drawElements(shader, (*currNode)->transform);
+            mesh->drawElements();
             mesh->unbindTextures();
         }
 
@@ -47,11 +50,11 @@ void Model::draw(Shader& shader) {
     }
 }
 
-void Model::drawElements(Shader& shader) {
+void Model::drawElements(Shader& shader) const {
     if (!_root)
         return;
 
-    std::stack<std::unique_ptr<Node>*> st;
+    std::stack<const std::unique_ptr<Node>*> st;
     st.push(&_root);
 
     while (!st.empty()) {
@@ -61,7 +64,33 @@ void Model::drawElements(Shader& shader) {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
-            mesh->drawElements(shader, (*currNode)->transform);
+            shader.use()
+                  .set("LocalModel", (*currNode)->transform);
+            mesh->drawElements();
+        }
+
+        // Add children
+        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
+            st.push(&(*currNode)->children[i]);
+        }
+    }
+}
+
+void Model::setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
+    if (!_root)
+        return;
+
+    std::stack<const std::unique_ptr<Node>*> st;
+    st.push(&_root);
+
+    while (!st.empty()) {
+        // Get next in line
+        const auto currNode = st.top();
+        st.pop();
+
+        // Draw
+        for (const auto& mesh : (*currNode)->meshes) {
+            mesh->updateBatch(models, colors);
         }
 
         // Add children
