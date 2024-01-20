@@ -33,7 +33,7 @@ void AnimatedText::draw() {
 uAText FadeIn(const ATextD& state, float start_time, float duration) {
     return std::make_shared<AnimatedText>
         (
-            ATextD{ state.text, state.pos, state.size, glm::vec3(0.05f, 0.05f, 0.06f) },
+            ATextD{ state.text, state.pos, state.size, glm::vec4(0.05f, 0.05f, 0.06f, 1.0f) },
             state,
             start_time, duration,
             Animator::Tweet::Type::Quadratic
@@ -44,7 +44,7 @@ uAText FadeOut(const ATextD& state, float start_time, float duration) {
     return std::make_shared<AnimatedText>
         (
             state,
-            ATextD{ state.text, state.pos, state.size, glm::vec3(0.05f, 0.05f, 0.06f) },
+            ATextD{ state.text, state.pos, state.size, glm::vec4(0.05f, 0.05f, 0.06f, 1.0f) },
             start_time, duration,
             Animator::Tweet::Type::Quadratic
         );

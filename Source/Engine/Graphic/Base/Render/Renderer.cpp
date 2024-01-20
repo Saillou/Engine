@@ -44,6 +44,10 @@ void Renderer::draw(Render::DrawType type, const Entity& entity) {
     }
 }
 
+void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
+    TextEngine::Write(text, x, y, scale, color);
+}
+
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     addRecipe(type);
 

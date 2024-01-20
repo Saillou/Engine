@@ -14,6 +14,7 @@ struct Renderer : private Cookable {
 
 	// Methods
 	void draw(Render::DrawType, const Entity& entity);
+	void text(const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
 private:
 	Renderer();

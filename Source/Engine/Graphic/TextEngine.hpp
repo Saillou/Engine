@@ -13,7 +13,7 @@
 
 // (It's a hidden Singleton)
 struct TextEngine {
-    static void Write(std::string text, float x, float y, float scale, glm::vec3 color);
+    static void Write(const std::string& text, float x, float y, float scale, const glm::vec4& color);
     static void SetViewport(int x, int y, int width, int height);
 
 private:
@@ -29,7 +29,7 @@ private:
 
     // Instance
     TextEngine();
-    void _render(std::string text, float x, float y, float scale, glm::vec3 color);
+    void _render(const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
     Array m_vao;
     Buffer m_vbo;

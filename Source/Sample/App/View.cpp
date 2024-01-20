@@ -24,7 +24,7 @@ View::View(int widthHint, int heightHint):
     // Scene objects
     Material stone = { glm::vec4(0.7f, 0.7f, 0.7f, 1.0f) };
     Material metal = { glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) };
-    Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f) };
+    Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f), false };
 
     m_entities["Ground"]->material = stone;
     m_entities["Ground"]->setLocalPose(glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)));
@@ -69,6 +69,9 @@ void View::_prepare_draw() {
 
 void View::_draw_shadow(Shader& sh) {
     for (auto& obj : m_scene_objects) {
+        if (!obj->material.cast_shadow)
+            continue;
+
         obj->model.drawElements(sh);
     }
 }
@@ -112,12 +115,12 @@ void View::_draw() {
 void View::_drawText() {
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000.0f;
 
-    TextEngine::Write("Cam: " + glm::to_string(camera().position),
-        15.0f, m_height - 20.0f, 0.4f, glm::vec3(1, 1, 1));
+    renderer().text("Cam: " + glm::to_string(camera().position),
+        15.0f, m_height - 20.0f, 0.4f, glm::vec4(1, 1, 1, 1));
 
-    TextEngine::Write("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y),
-        15.0f, m_height - 40.0f, 0.4f, glm::vec3(1, 1, 1));
+    renderer().text("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y),
+        15.0f, m_height - 40.0f, 0.4f, glm::vec4(1, 1, 1, 1));
 
-    TextEngine::Write("draw: " + std::to_string(dt_draw) + "ms", 
-        15.0f, m_height - 60.0f, 0.4f, glm::vec3(1, 1, 1));
+    renderer().text("draw: " + std::to_string(dt_draw) + "ms",
+        15.0f, m_height - 60.0f, 0.4f, glm::vec4(1, 1, 1, 1));
 }

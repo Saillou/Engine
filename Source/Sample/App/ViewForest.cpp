@@ -181,16 +181,16 @@ void ViewForest::_draw() {
         ss  << "Cam: x: " << int(camera().position.x * 10) / 10.0f
             << ", y: "    << int(camera().position.y * 10) / 10.0f
             << ", z: "    << int(camera().position.z * 10) / 10.0f;
-        TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
+        renderer().text(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec4(1, 1, 1, 1));
 
         ss = {};
         ss  << "Mouse: x: " << int(m_width  * m_mousePos.x * 10) / 10.0f
             << ", y: "      << int(m_height * m_mousePos.y * 10) / 10.0f;
-        TextEngine::Write(ss.str(), 20.0f, m_height - 60.0f, 0.5f, glm::vec3(1, 1, 1));
+        renderer().text(ss.str(), 20.0f, m_height - 60.0f, 0.5f, glm::vec4(1, 1, 1, 1));
 
         ss = {};
         ss << "draw: " << int(dt_draw * 1000 * 1000) / 1000 << "ms";
-        TextEngine::Write(ss.str(), 20.0f, m_height - 90.0f, 0.5f, glm::vec3(1, 1, 1));
+        renderer().text(ss.str(), 20.0f, m_height - 90.0f, 0.5f, glm::vec4(1, 1, 1, 1));
     }
 
     // Prepare next
