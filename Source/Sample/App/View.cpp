@@ -32,18 +32,16 @@ View::View(int widthHint, int heightHint):
     m_objects = {
         { 
             m_entities["Cube"], glm::vec4(1, 1, 1, 1),
-            glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 3.0f, 0.1f)),
-            Cookable::CookType::Shadow
+            glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)),
         },
     };
 
-    const int n_side = 4;
+    const int n_side = 1;
     for (int x = -n_side; x <= n_side; x++) {
         for (int y = -n_side; y <= n_side; y++) {
             m_objects.push_back({
                 m_entities["Cube"], glm::vec4(1, 1, 1, 1),
-                glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(3.5f*x, 3.5f*y, 1.0f)),
-                Cookable::CookType::Basic
+                glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(10.0*x, 10.0f*y, 1.0f)),
             });
         }
     }
@@ -61,7 +59,7 @@ void View::draw() {
 
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
-    m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
+    m_shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
         for (const _Object& obj : m_objects) {
             obj.entity->model.setBatch({ obj.transform });
             obj.entity->model.drawElements(sh);
@@ -81,10 +79,9 @@ void View::draw() {
     }
 
     // Draw objects
-    m_shadowRender.bindTexture(GL_TEXTURE1);
     for (const _Object& obj : m_objects) {
         obj.entity->get(obj.shade)->use().set("diffuse_color", obj.color);
-        obj.entity->drawOne(obj.shade, m_camera, obj.transform, m_lights);
+        obj.entity->drawOne(obj.shade, m_camera, obj.transform, m_lights, &m_shadowRender);
 
         // Draw intersections
         auto intersect_result = RayCaster::Intersect(m_mousePos, m_camera, *obj.entity, obj.transform);

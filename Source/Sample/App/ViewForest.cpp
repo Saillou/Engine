@@ -77,7 +77,7 @@ void ViewForest::draw() {
 
     // Shadow scene
     BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
-    m_shadowRender.render(m_camera, m_lights[0], [=](Shader& sh) {
+    m_shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
         // Draw objects
         for (const _Object& obj : m_objects) {
             m_entities[obj.id]->model.drawElements(sh);
@@ -108,12 +108,10 @@ void ViewForest::draw() {
         // Draw objects
         for (const _Object& obj : m_objects) {
             // Normal colors
-            m_shadowRender.bindTexture(GL_TEXTURE1);
-            m_entities[obj.id]->get(Cookable::CookType::Shadow)
-                              ->use().set("diffuse_color", obj.material_color)
-                                     .set("depthMap", 1);
+            m_entities[obj.id]->get(Cookable::CookType::Basic)
+                              ->use().set("diffuse_color", obj.material_color);
 
-            m_entities[obj.id]->drawShadow(m_camera, m_lights[0]);
+            m_entities[obj.id]->drawBasic(m_camera, m_lights, &m_shadowRender);
 
             // Ray cast
             for(const auto& quat : obj.quats) {
@@ -160,12 +158,10 @@ void ViewForest::draw() {
 
             // Shadow
             {
-                m_shadowRender.bindTexture(GL_TEXTURE1);
-                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Shadow)
-                                           ->use().set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).
-                                                   set("depthMap", 1);
+                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Basic)
+                                           ->use().set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-                m_entities[_ObjectId::Grid]->drawShadow(m_camera, m_lights[0]);
+                m_entities[_ObjectId::Grid]->drawBasic(m_camera, m_lights, &m_shadowRender);
             }
         }
 

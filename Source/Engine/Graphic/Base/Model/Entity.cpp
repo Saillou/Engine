@@ -7,14 +7,12 @@ Entity::Entity(const std::string& path) :
     model(path)
 {
     addRecipe(CookType::Basic);
-    addRecipe(CookType::Shadow);
     addRecipe(CookType::Geometry);
 }
 
 Entity::Entity(SimpleShape shape)
 {
     addRecipe(CookType::Basic);
-    addRecipe(CookType::Shadow);
     addRecipe(CookType::Geometry);
 
     model._root = std::make_unique<Model::Node>();
@@ -30,21 +28,16 @@ Entity::Entity(SimpleShape shape)
     }
 }
 
-void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights) {
-    // Careful it will affects subsequent draw
+void Entity::drawOne(Cookable::CookType type, const Camera& camera, const glm::mat4& quat, const std::vector<Light>& lights, const ShadowRender* shadower) {
+    // Careful: it will affects subsequent draw
     model.setBatch({ quat });
-    _setShader(type, camera, lights);
+    _setShader(type, camera, lights, shadower);
     model.draw(*get(type));
 }
 
-void Entity::drawBasic(const Camera& camera, const std::vector<Light>& lights) {
-    _setShader(Cookable::CookType::Basic, camera, lights);
+void Entity::drawBasic(const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
+    _setShader(Cookable::CookType::Basic, camera, lights, shadower);
     model.draw(*get(Cookable::CookType::Basic));
-}
-
-void Entity::drawShadow(const Camera& camera, const Light& light) {
-    _setShader(Cookable::CookType::Shadow, camera, {light});
-    model.draw(*get(Cookable::CookType::Shadow));
 }
 
 void Entity::drawGeometry(const Camera& camera) {
@@ -52,32 +45,28 @@ void Entity::drawGeometry(const Camera& camera) {
     model.draw(*get(Cookable::CookType::Geometry));
 }
 
-void Entity::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights) {
+void Entity::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     Shader& sh = get(type)->use();
 
     // I don't like that but ok for now
     switch (type)
     {
     case Cookable::CookType::Basic:
+        if(shadower)
+            shadower->bindTextures(GL_TEXTURE0 + 1);
+
         sh.set("Projection",  camera.projection)
           .set("View",        camera.modelview)
           .set("CameraPos",   camera.position)
+          .set("far_plane",   camera.far_plane)
+          .set("use_shadow",  shadower != nullptr)
           .set("LightNumber", (int)lights.size());
 
         for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-            sh.set("LightPos_"   + std::to_string(iLight), lights[iLight].position)
-              .set("LightColor_" + std::to_string(iLight), lights[iLight].color);
+            sh.set("LightPos["   + std::to_string(iLight) + "]", lights[iLight].position)
+              .set("LightColor[" + std::to_string(iLight) + "]", lights[iLight].color)
+              .set("depthMap["   + std::to_string(iLight) + "]", iLight + 1);
         }
-        break;
-
-    case Cookable::CookType::Shadow:
-        sh.set("Projection", camera.projection)
-          .set("View",       camera.modelview)
-          .set("viewPos",    camera.position)
-          .set("far_plane",  camera.far_plane)
-          .set("lightPos",   lights[0].position)
-          .set("lightColor", lights[0].color * 0.3f)
-          .set("depthMap",   1); // TODO: change depending on texture bind position
         break;
 
     case Cookable::CookType::Geometry:

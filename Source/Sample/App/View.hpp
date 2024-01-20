@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 #include <Engine/Utils/Timer.hpp>
-#include <Engine/Utils/Objects/ShadowRender.hpp>
 
 #include <Engine/Graphic/Base/BaseScene.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
@@ -19,8 +18,8 @@ struct View : public BaseScene {
 private:
     struct _Object {
         std::shared_ptr<Entity> entity = nullptr;
-        glm::vec4 color;
-        glm::mat4 transform;
+        glm::vec4 color = {};
+        glm::mat4 transform = {};
         Cookable::CookType shade = Cookable::CookType::Basic;
     };
 

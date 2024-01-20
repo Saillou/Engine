@@ -11,7 +11,6 @@ struct Cookable {
     // Basic possibilities
     enum class CookType {       
         Basic,
-        Shadow,
         Geometry,
     };
 
@@ -31,7 +30,6 @@ protected:
     static ShaderSource _init_fragment();
 
     static void _set_shader_basic(Shader& shader);
-    static void _set_shader_shadow(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
 
     // Members

@@ -9,10 +9,6 @@ void Cookable::Set(CookType type, Shader& recipe) {
         _set_shader_basic(recipe);
         break;
 
-    case CookType::Shadow:
-        _set_shader_shadow(recipe);
-        break;
-
     case CookType::Geometry:
         _set_shader_geometry(recipe);
         break;
@@ -85,6 +81,9 @@ ShaderSource Cookable::_init_fragment() {
                 vec4 Color;
             } fs_in)_struct_")
 
+        .add_var("uniform", "vec4", "diffuse_color")
+        .add_var("uniform", "sampler2D", "texture_diffuse")
+
         .add_var("out", "vec4", "FragColor")
     ;
 }
@@ -93,7 +92,7 @@ ShaderSource Cookable::_init_fragment() {
 // - Shaders
 void Cookable::_set_shader_basic(Shader& shader) {
     shader
-        .attachSource(GL_VERTEX_SHADER,
+        .attachSource(GL_VERTEX_SHADER, 
             _init_vertex()
 
             .add_func("void", "main", "", R"_main_(
@@ -101,33 +100,53 @@ void Cookable::_set_shader_basic(Shader& shader) {
                 vs_out.Normal    = mat3(transpose(inverse(aModel * LocalModel))) * aNormal;  
                 vs_out.TexCoords = aTexCoords;
                 vs_out.Color     = aColor;
-    
+
                 gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_")
-            .str()
-        )
-        .attachSource(GL_FRAGMENT_SHADER,
+            )_main_").str()
+        ).
+        attachSource(GL_FRAGMENT_SHADER, 
             _init_fragment()
 
-            .add_var("uniform", "sampler2D", "texture_diffuse")
-            .add_var("uniform", "vec4", "diffuse_color")
+            .add_var("uniform", "bool",        "use_shadow")
+            .add_var("uniform", "highp int",   "LightNumber")
+            .add_var("uniform", "vec3",        "LightPos[5]")
+            .add_var("uniform", "vec4",        "LightColor[5]")
+            .add_var("uniform", "samplerCube", "depthMap[5]")
+
             .add_var("uniform", "vec3", "CameraPos")
+            .add_var("uniform", "float", "far_plane")
+            .add_var("", "vec3", "gridSamplingDisk[20]", R"_var_(vec3[] (
+                   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+                   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+                   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+                   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+                   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+            ))_var_")
 
-            .add_var("uniform", "highp int", "LightNumber")
+            .add_func("float", "ShadowCalculation", "vec3 fragPos, int i", R"_fun_(
+                vec3 lightPos      = LightPos[i];
+                vec3 fragToLight   = fragPos - lightPos;
+                float currentDepth = length(fragToLight);
 
-            .add_var("uniform", "vec3", "LightPos_0")
-            .add_var("uniform", "vec3", "LightPos_1")
-            .add_var("uniform", "vec3", "LightPos_2")
-            .add_var("uniform", "vec3", "LightPos_3")
-            .add_var("uniform", "vec3", "LightPos_4")
+                float shadow = 0.0;
+                float bias   = 0.15;
+                int samples  = 20;
+                float viewDistance = length(CameraPos - fragPos);
+                float diskRadius   = (1.0 + (viewDistance / far_plane)) / 25.0;
 
-            .add_var("uniform", "vec4", "LightColor_0")
-            .add_var("uniform", "vec4", "LightColor_1")
-            .add_var("uniform", "vec4", "LightColor_2")
-            .add_var("uniform", "vec4", "LightColor_3")
-            .add_var("uniform", "vec4", "LightColor_4")
+                for(int iSample = 0; iSample < samples; iSample++) {
+                    float closestDepth = texture(depthMap[i], fragToLight + gridSamplingDisk[iSample] * diskRadius).r;
+                    closestDepth *= far_plane;
+                    if(currentDepth - bias > closestDepth)
+                        shadow += 1.0;
+                }
+                return shadow / float(samples);
+            )_fun_")
 
-            .add_func("vec3", "compute_light", "vec3 obj_color, vec3 light_pos, vec3 light_color", R"_light_(
+            .add_func("vec3", "compute_light", "vec3 obj_color, int i", R"_light_(
+                vec3 light_pos   = LightPos[i];
+                vec3 light_color = LightColor[i].rgb;
+
                 // ambient
                 float ambientStrength = 0.1;
                 vec3 ambient = ambientStrength * light_color;
@@ -145,7 +164,9 @@ void Cookable::_set_shader_basic(Shader& shader) {
                 float spec = pow(max(dot(cameraDir, reflectDir), 0.0), 32);
                 vec3 specular = specularStrength * spec * light_color;
 
-                return (ambient + diffuse + specular) * obj_color.rgb;
+                // calculate shadow
+                float shadow = use_shadow ? ShadowCalculation(fs_in.FragPos, i) : 0.0;                      
+                return (ambient + (1.0 - shadow) * (diffuse + specular)) * obj_color.rgb;   
             )_light_")
 
             .add_func("void", "main", "", R"_main_(
@@ -158,96 +179,16 @@ void Cookable::_set_shader_basic(Shader& shader) {
                     return;
                 }
 
-                float ratio = 1.0 / float(LightNumber);
-
-                vec3 light_result = vec3(0,0,0);
-                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_0, LightColor_0.rgb);
-                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_1, LightColor_1.rgb);
-                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_2, LightColor_2.rgb);
-                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_3, LightColor_3.rgb);
-                light_result += ratio * compute_light(ambiant_color.rgb, LightPos_4, LightColor_4.rgb);
-
-                FragColor = vec4(light_result, ambiant_color.a);
-            )_main_")
-            .str()
-        );
-}
-
-void Cookable::_set_shader_shadow(Shader& shader) {
-    shader
-        .attachSource(GL_VERTEX_SHADER, 
-            _init_vertex()
-
-            .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos   = vec3(aModel * LocalModel * vec4(aPos, 1.0));
-                vs_out.Normal    = mat3(transpose(inverse(aModel * LocalModel))) * aNormal;  
-                vs_out.TexCoords = aTexCoords;
-
-                gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_").str()
-        ).
-        attachSource(GL_FRAGMENT_SHADER, 
-            _init_fragment()
-
-            .add_var("uniform", "vec4", "diffuse_color")
-            .add_var("uniform", "sampler2D", "texture_diffuse")
-            .add_var("uniform", "samplerCube", "depthMap")
-            .add_var("uniform", "vec3", "lightPos")
-            .add_var("uniform", "vec4", "lightColor")
-            .add_var("uniform", "vec3", "viewPos")
-            .add_var("uniform", "float", "far_plane")
-            .add_var("", "vec3", "gridSamplingDisk[20]", R"_var_(vec3[] (
-                   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
-                   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-                   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-                   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-                   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-            ))_var_")
-
-            .add_func("float", "ShadowCalculation", "vec3 fragPos", R"_fun_(
-                vec3 fragToLight   = fragPos - lightPos;
-                float currentDepth = length(fragToLight);
-
-                float shadow = 0.0;
-                float bias   = 0.15;
-                int samples  = 20;
-                float viewDistance = length(viewPos - fragPos);
-                float diskRadius   = (1.0 + (viewDistance / far_plane)) / 25.0;
-
-                for(int i = 0; i < samples; i++) {
-                    float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-                    closestDepth *= far_plane;   // undo mapping [0;1]
-                    if(currentDepth - bias > closestDepth)
-                        shadow += 1.0;
-                }
-                return shadow / float(samples);
-            )_fun_")
-            .add_func("void", "main", "", R"_main_(
-                vec2 tex_size = textureSize(texture_diffuse, 0);
-                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, fs_in.TexCoords) : max(fs_in.Color, diffuse_color);
                 vec3 normal = normalize(fs_in.Normal);
+                vec3 light_result = vec3(0,0,0);
 
-                // ambient
-                vec3 ambient = 0.3 * lightColor.rgb;
+                float ratio = 1.0 / float(max(1, LightNumber));
 
-                // diffuse
-                vec3 lightDir = normalize(lightPos - fs_in.FragPos);
-                float diff = max(dot(lightDir, normal), 0.0);
-                vec3 diffuse = diff * lightColor.rgb;
-
-                // specular
-                vec3 viewDir = normalize(viewPos - fs_in.FragPos);
-                vec3 reflectDir = reflect(-lightDir, normal);
-                float spec = 0.0;
-                vec3 halfwayDir = normalize(lightDir + viewDir);  
-                spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-                vec3 specular = spec * lightColor.rgb;  
-  
-                // calculate shadow
-                float shadow = ShadowCalculation(fs_in.FragPos);                      
-                vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * ambiant_color.rgb;    
+                for(int i = 0; i < LightNumber; i++) {
+                    light_result += ratio * compute_light(ambiant_color.rgb, i);
+                }
     
-                FragColor = vec4(lighting, 1.0);
+                FragColor = vec4(light_result, ambiant_color.a);
             )_main_")
             .str()
         );
@@ -279,8 +220,6 @@ void Cookable::_set_shader_geometry(Shader& shader) {
         )
         .attachSource(GL_FRAGMENT_SHADER, 
             _init_fragment()
-
-            .add_var("uniform", "vec4", "diffuse_color")
 
             .add_func("void", "main", "", R"_main_(
                 FragColor = diffuse_color;

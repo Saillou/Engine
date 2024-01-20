@@ -6,6 +6,8 @@
 #include "../../Light.hpp"
 #include "../../Camera.hpp"
 #include "../../Cookable.hpp"
+#include "../../../Utils/Objects/ShadowRender.hpp"
+
 #include "Model.hpp"
 
 struct Entity : public Cookable 
@@ -20,14 +22,13 @@ struct Entity : public Cookable
     virtual ~Entity() = default;
 
     // Methods
-    void drawOne     (Cookable::CookType, const Camera&, const glm::mat4& quat = glm::mat4(1.0f), const std::vector<Light>& = {});
-    void drawBasic   (const Camera&, const std::vector<Light>& = {});
-    void drawShadow  (const Camera&, const Light&);
+    void drawOne     (Cookable::CookType, const Camera&, const glm::mat4& quat = glm::mat4(1.0f), const std::vector<Light>& = {}, const ShadowRender* = nullptr);
+    void drawBasic   (const Camera&, const std::vector<Light>& = {}, const ShadowRender* = nullptr);
     void drawGeometry(const Camera&);
 
     // Getters
     Model model;
 
 private:
-    void _setShader(Cookable::CookType, const Camera&, const std::vector<Light> & = {});
+    void _setShader(Cookable::CookType, const Camera&, const std::vector<Light> & = {}, const ShadowRender* = nullptr);
 };
