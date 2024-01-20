@@ -25,11 +25,10 @@ void BaseScene::draw() {
     _prepare_draw();
 
     // Shadow scene
-    Viewport(_shadowRender.width(), _shadowRender.height());
-    _shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
+    Viewport(_renderer._shadower.width(), _renderer._shadower.height());
+    _renderer._shadower.render(_renderer._camera, _renderer._lights, [=](Shader& sh) {
         _draw_shadow(sh);
     });
-    //_draw_shadow(Shader{});
 
     // Main scene
     Viewport(width(), height());
@@ -104,8 +103,8 @@ void BaseScene::_update_camera() {
 
     float aspect = (float)m_width / m_height;
 
-    m_camera.lookAt(glm::vec3(0, 0, 1));
-    m_camera.usePerspective(aspect);
+    _renderer._camera.lookAt(glm::vec3(0, 0, 1));
+    _renderer._camera.usePerspective(aspect);
 }
 
 int BaseScene::width() const {
@@ -114,13 +113,16 @@ int BaseScene::width() const {
 int BaseScene::height() const {
     return m_height;
 }
+Renderer& BaseScene::renderer() {
+    return _renderer;
+}
 Camera& BaseScene::camera() {
-    return m_camera;
+    return _renderer._camera;
 }
 std::vector<Light>& BaseScene::lights() {
-    return m_lights;
+    return _renderer._lights;
 }
 const ShadowRender* BaseScene::shadower() {
-    return &_shadowRender;
+    return &(_renderer._shadower);
 }
 

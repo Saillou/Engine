@@ -25,11 +25,11 @@ ViewForest::ViewForest(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(1, -4, 3);
-    m_camera.direction = glm::vec3(0.0f, 0.0f, 0.0f);
+    camera().position = glm::vec3(1, -4, 3);
+    camera().direction = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Lightnings
-    m_lights = {
+    lights() = {
         Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
         Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
     };
@@ -76,17 +76,15 @@ void ViewForest::_prepare_draw() {
 }
 
 void ViewForest::_draw_shadow(Shader& sh) {
-    //m_shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
-        // Draw objects
-        for (const _Object& obj : m_objects) {
-            m_entities[obj.id]->model.drawElements(sh);
-        }
+    // Draw objects
+    for (const _Object& obj : m_objects) {
+        m_entities[obj.id]->model.drawElements(sh);
+    }
 
-        // Particles
-        {
-            m_fireGrid.particles.object->model.drawElements(sh);
-        }
-    //});
+    // Particles
+    {
+        m_fireGrid.particles.object->model.drawElements(sh);
+    }
 }
 
 void ViewForest::_draw() {
@@ -98,11 +96,11 @@ void ViewForest::_draw() {
     framebuffer_main.clear();
     {
         // Lights
-        for (auto& light : m_lights) {
-            m_entities[_ObjectId::Sphere]->get(Cookable::CookType::Basic)
-                                         ->use().set("diffuse_color", light.color);
+        for (auto& light : lights()) {
+            const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
-            m_entities[_ObjectId::Sphere]->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
+            m_entities[_ObjectId::Sphere]->material.diffuse_color = light.color;
+            renderer().drawOne(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere], Q);
         }
 
         // List of targets
@@ -111,22 +109,18 @@ void ViewForest::_draw() {
         // Draw objects
         for (const _Object& obj : m_objects) {
             // Normal colors
-            m_entities[obj.id]->get(Cookable::CookType::Basic)
-                              ->use().set("diffuse_color", obj.material_color);
-
-            m_entities[obj.id]->drawBasic(m_camera, m_lights, shadower());
+            m_entities[obj.id]->material.diffuse_color = obj.material_color;
+            renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
 
             // Ray cast
             for(const auto& quat : obj.quats) {
-                auto cast_res = RayCaster::Intersect(m_mousePos, m_camera, *m_entities[obj.id], quat);
+                auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat);
                 if (!cast_res)
                     continue;
 
                 // Highlight
-                m_entities[obj.id]->get(Cookable::CookType::Geometry)
-                                  ->use().set("diffuse_color", glm::vec4(0.2f, 0.7f, 0.7f, 1));
-
-                m_entities[obj.id]->drawOne(Cookable::CookType::Geometry, m_camera, quat, m_lights);
+                m_entities[obj.id]->material.diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
+                renderer().drawOne(Render::DrawType::Geometry, *m_entities[obj.id], quat);
 
                 // Intersection
                 targets.push_back(
@@ -138,38 +132,32 @@ void ViewForest::_draw() {
         // Draw targets
         if (!targets.empty()) {
             m_entities[_ObjectId::Target]->model.setBatch(targets);
-            m_entities[_ObjectId::Target]->get(Cookable::CookType::Basic)
-                                         ->use().set("diffuse_color", glm::vec4(0.2f, 1.0f, 0.7f, 0.5f));
-
-            m_entities[_ObjectId::Target]->drawBasic(m_camera);
+            m_entities[_ObjectId::Target]->material.diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
+            renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Target]);
         }
 
         // Particles
         {
-            m_fireGrid.particles.object->drawBasic(m_camera);
+            renderer().draw(Render::DrawType::Basic, *m_fireGrid.particles.object);
         }
 
         // Draw ground
         {
             // Grid
             {
-                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Geometry)
-                                           ->use().set("diffuse_color", glm::vec4(0.2f, 0.2f, 0.2f, 1));
-
-                m_entities[_ObjectId::Grid]->drawGeometry(m_camera);
+                m_entities[_ObjectId::Grid]->material.diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
+                renderer().draw(Render::DrawType::Geometry, *m_entities[_ObjectId::Grid]);
             }
 
             // Shadow
             {
-                m_entities[_ObjectId::Grid]->get(Cookable::CookType::Basic)
-                                           ->use().set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-
-                m_entities[_ObjectId::Grid]->drawBasic(m_camera, m_lights, shadower());
+                m_entities[_ObjectId::Grid]->material.diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+                renderer().draw(Render::DrawType::Shadows, *m_entities[_ObjectId::Grid]);
             }
         }
 
         // Skybox
-        m_skybox->draw(m_camera);
+        m_skybox->draw(camera());
     }
     framebuffer_main.unbind();
 
@@ -188,9 +176,9 @@ void ViewForest::_draw() {
     // Debug texts
     {
         std::ostringstream ss;
-        ss  << "Cam: x: " << int(m_camera.position.x * 10) / 10.0f
-            << ", y: "    << int(m_camera.position.y * 10) / 10.0f
-            << ", z: "    << int(m_camera.position.z * 10) / 10.0f;
+        ss  << "Cam: x: " << int(camera().position.x * 10) / 10.0f
+            << ", y: "    << int(camera().position.y * 10) / 10.0f
+            << ", z: "    << int(camera().position.z * 10) / 10.0f;
         TextEngine::Write(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec3(1, 1, 1));
 
         ss = {};

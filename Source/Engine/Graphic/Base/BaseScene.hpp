@@ -1,11 +1,6 @@
 #pragma once
 
-#include "../Camera.hpp"
-#include "../Cookable.hpp"
-#include "../Light.hpp"
-#include "../TextEngine.hpp"
-#include "../Utils/Framebuffer.hpp"
-#include "../../Utils/Objects/ShadowRender.hpp"
+#include "Render/Renderer.hpp"
 
 // Scene model
 struct BaseScene {
@@ -27,6 +22,8 @@ struct BaseScene {
     // getters
     int width() const;
     int height() const;
+
+    Renderer& renderer();
     Camera& camera();
     std::vector<Light>& lights();
     const ShadowRender* shadower();
@@ -41,15 +38,12 @@ protected:
     virtual void _draw();                  // called during `draw` method
 
     // Members
-    Camera m_camera = {};
-    std::vector<Light> m_lights;
-
     int m_width  = 0;
     int m_height = 0;
 
 
 private:
-    ShadowRender _shadowRender;    // Used to draw shadows
+    Renderer _renderer;
     Framebuffer _internalFrame;     // Used when drawing multisample frame
     Quad _quad;
 };

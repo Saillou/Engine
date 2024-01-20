@@ -3,10 +3,10 @@
 #include <vector>
 #include <functional>
 
-#include "../../Graphic/Utils/Shader.hpp"
-#include "../../Graphic/Utils/Framebuffer.hpp"
-#include "../../Graphic/Light.hpp"
-#include "../../Graphic/Camera.hpp"
+#include "../../Utils/Shader.hpp"
+#include "../../Utils/Framebuffer.hpp"
+#include "../../Light.hpp"
+#include "../../Camera.hpp"
 
 struct ShadowRender 
 {

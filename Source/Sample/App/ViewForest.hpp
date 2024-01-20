@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 #include <Engine/Utils/Timer.hpp>
-#include <Engine/Utils/Objects/ShadowRender.hpp>
 #include <Engine/Utils/Filter/BaseFilter.hpp>
 
 #include <Engine/Graphic/Base/BaseScene.hpp>
@@ -78,6 +77,5 @@ private:
     Framebuffer framebuffer_main;
 
     glm::vec2 m_mousePos;
-    ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

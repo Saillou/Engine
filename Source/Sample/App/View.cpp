@@ -12,11 +12,11 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    m_camera.position  = glm::vec3(0, -7, 3);
-    m_camera.direction = glm::vec3(0,  0, 0);
+    camera().position = glm::vec3(0, -7, 3);
+    camera().direction = glm::vec3(0,  0, 0);
 
     // Lightnings
-    m_lights = {
+    lights() = {
         Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
         Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
@@ -82,27 +82,27 @@ void View::_draw() {
     BaseScene::clear();
 
     // Draw lights
-    for (const Light& light : m_lights) {
+    for (const Light& light : lights()) {
         const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
-        m_entities["Sphere"]->get(Cookable::CookType::Basic)->use().set("diffuse_color", light.color);
-        m_entities["Sphere"]->drawOne(Cookable::CookType::Basic, m_camera, Q);
+        m_entities["Sphere"]->material.diffuse_color = light.color;
+        renderer().drawOne(Render::DrawType::Basic, *m_entities["Sphere"], Q);
     }
 
     // Draw objects
     for (const _Object& obj : m_objects) {
-        obj.entity->get(obj.shade)->use().set("diffuse_color", obj.color);
-        obj.entity->drawOne(obj.shade, m_camera, obj.transform, m_lights, shadower());
+        obj.entity->material.diffuse_color = obj.color;
+        renderer().drawOne(Render::DrawType::Shadows, *obj.entity, obj.transform);
 
         // Draw intersections
-        auto intersect_result = RayCaster::Intersect(m_mousePos, m_camera, *obj.entity, obj.transform);
+        auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj.entity, obj.transform);
         if (!intersect_result.has_value())
             continue;
 
         const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
 
-        m_target.entity->get(Cookable::CookType::Basic)->use().set("diffuse_color", m_target.color);
-        m_target.entity->drawOne(Cookable::CookType::Basic, m_camera, Q * m_target.transform);
+        m_target.entity->material.diffuse_color = m_target.color;
+        renderer().drawOne(Render::DrawType::Basic, *m_target.entity, Q * m_target.transform);
     }
 
     // Draw debug
@@ -112,7 +112,7 @@ void View::_draw() {
 void View::_drawText() {
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000.0f;
 
-    TextEngine::Write("Cam: " + glm::to_string(m_camera.position), 
+    TextEngine::Write("Cam: " + glm::to_string(camera().position),
         15.0f, m_height - 20.0f, 0.4f, glm::vec3(1, 1, 1));
 
     TextEngine::Write("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y),
