@@ -13,7 +13,6 @@ struct Renderer : private Cookable {
 	friend struct BaseScene;
 
 	// Methods
-	void drawOne(Render::DrawType, Entity& entity, const glm::mat4& pose);
 	void draw(Render::DrawType, const Entity& entity);
 
 private:

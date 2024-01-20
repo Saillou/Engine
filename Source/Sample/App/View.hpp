@@ -21,17 +21,10 @@ struct View : public BaseScene {
     void mouse_on(int x, int y);
 
 private:
-    struct _Object {
-        std::shared_ptr<Entity> entity = nullptr;
-        glm::mat4 transform = {};
-        Cookable::CookType shade = Cookable::CookType::Basic;
-    };
-
     void _drawText();
 
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
-    std::vector<_Object> m_objects;
-    _Object m_target;
+    std::vector<std::shared_ptr<Entity>> m_scene_objects;
 
     glm::vec2 m_mousePos;
     Timer::Chronometre m_timer;

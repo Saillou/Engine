@@ -36,7 +36,7 @@ void Model::draw(Shader& shader) const {
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
             shader.use()
-                  .set("LocalModel", (*currNode)->transform);
+                  .set("LocalModel", (*currNode)->transform * localPose());
 
             mesh->bindTextures(shader);
             mesh->drawElements();
@@ -65,7 +65,7 @@ void Model::drawElements(Shader& shader) const {
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
             shader.use()
-                  .set("LocalModel", (*currNode)->transform);
+                  .set("LocalModel", (*currNode)->transform * localPose());
 
             mesh->drawElements();
         }
@@ -77,7 +77,7 @@ void Model::drawElements(Shader& shader) const {
     }
 }
 
-void Model::setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
+void Model::_setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
     if (!_root)
         return;
 
@@ -103,6 +103,10 @@ void Model::setBatch(const std::vector<glm::mat4>& models, const std::vector<glm
 
 const std::unique_ptr<Model::Node>& Model::root() const {
     return _root;
+}
+
+const glm::mat4& Model::localPose() const {
+    return _localPose;
 }
 
 void Model::_loadModel(const std::string& path) {

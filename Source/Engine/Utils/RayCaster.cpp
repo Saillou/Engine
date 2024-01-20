@@ -54,7 +54,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform);
+			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform * objModel.model.localPose());
 
 			if (optIntersect.has_value())
 				return optIntersect;

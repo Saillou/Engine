@@ -34,13 +34,13 @@ private:
     struct _Object {
         _ObjectId id;
         glm::vec4 material_color;
-        std::vector<glm::mat4> quats;
+        std::vector<Pose> quats;
     };
 
     struct _Grid {
         float cell_size;
         int n_side;
-        std::vector<glm::mat4> grid_cells;
+        std::vector<Pose> grid_cells;
     };
 
     void _initObjects();
@@ -66,9 +66,9 @@ private:
         struct Particles {
             const size_t amount;
             std::unique_ptr<Entity> object;
-            std::vector<glm::mat4> models;
-            std::vector<glm::vec4> colors;
-            std::vector<glm::vec4> speeds;
+            std::vector<Pose>       models;
+            std::vector<Material>   materials;
+            std::vector<glm::vec4>  speeds;
         } particles;
     } m_fireGrid;
 

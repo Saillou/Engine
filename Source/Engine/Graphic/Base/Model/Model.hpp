@@ -31,9 +31,6 @@ struct Model
     void draw        (Shader& shader) const;
     void drawElements(Shader& shader) const;
 
-    // Setters
-    void setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
-
     // Data tree for storing organized meshes
     struct Node {
         glm::mat4 transform = glm::mat4(1.0f);
@@ -42,12 +39,16 @@ struct Model
     };
 
     const std::unique_ptr<Node>& root() const;
+    const glm::mat4& localPose() const;
 
 private:
     void _loadModel     (const std::string& path);
     void _processNode   (const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
     void _processMesh   (const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
 
+    void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
+
     std::vector<TextureData> _textures_loaded;
     std::unique_ptr<Node>    _root;
+    glm::mat4 _localPose = glm::mat4(1.0f);
 };

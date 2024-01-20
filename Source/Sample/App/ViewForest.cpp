@@ -100,11 +100,12 @@ void ViewForest::_draw() {
             const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
             m_entities[_ObjectId::Sphere]->material.diffuse_color = light.color;
-            renderer().drawOne(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere], Q);
+            m_entities[_ObjectId::Sphere]->setPoses({ Q });
+            renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere]);
         }
 
         // List of targets
-        std::vector<glm::mat4> targets;
+        std::vector<Pose> targets;
 
         // Draw objects
         for (const _Object& obj : m_objects) {
@@ -114,13 +115,14 @@ void ViewForest::_draw() {
 
             // Ray cast
             for(const auto& quat : obj.quats) {
-                auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat);
+                auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat.mat4());
                 if (!cast_res)
                     continue;
 
                 // Highlight
                 m_entities[obj.id]->material.diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
-                renderer().drawOne(Render::DrawType::Geometry, *m_entities[obj.id], quat);
+                m_entities[obj.id]->setPoses({ quat });
+                renderer().draw(Render::DrawType::Geometry, *m_entities[obj.id]);
 
                 // Intersection
                 targets.push_back(
@@ -131,7 +133,7 @@ void ViewForest::_draw() {
 
         // Draw targets
         if (!targets.empty()) {
-            m_entities[_ObjectId::Target]->model.setBatch(targets);
+            m_entities[_ObjectId::Target]->setPoses(targets);
             m_entities[_ObjectId::Target]->material.diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
             renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Target]);
         }
@@ -249,7 +251,7 @@ void ViewForest::_initObjects() {
     });
 
     // Trees
-    std::vector<glm::mat4> forest;
+    std::vector<Pose> forest;
     forest.resize(100);
     std::generate(forest.begin(), forest.end(), [id = 0, hpi]() mutable
         {
@@ -330,15 +332,17 @@ void ViewForest::_initParticles() {
     // Define particles
     m_fireGrid.particles.models.resize(m_fireGrid.particles.amount);
     m_fireGrid.particles.speeds.resize(m_fireGrid.particles.amount);
-    m_fireGrid.particles.colors.resize(m_fireGrid.particles.amount);
+    m_fireGrid.particles.materials.resize(m_fireGrid.particles.amount);
 
     // Create batch
-    std::generate(m_fireGrid.particles.colors.begin(), m_fireGrid.particles.colors.end(), [&, particules_id = 0]() mutable -> glm::vec4
+    std::generate(m_fireGrid.particles.materials.begin(), m_fireGrid.particles.materials.end(), [&, particules_id = 0]() mutable -> Material
         {
             particules_id++;
             float ratio = particules_id / float(m_fireGrid.particles.amount);
 
-            return glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            return Material{
+                glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
+            };
         }
     );
 }
@@ -349,7 +353,7 @@ void ViewForest::_setParticles(float dt) {
     // Move
     for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
         glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
-        glm::mat4& model = m_fireGrid.particles.models[particules_id];
+        glm::mat4& model = m_fireGrid.particles.models[particules_id].mat4();
 
         const bool hasEnded = model[0][0] < 1e-4f || model[1][1] < 1e-4f || model[2][2] < 1e-4f; // also true for first draw
 
@@ -368,16 +372,16 @@ void ViewForest::_setParticles(float dt) {
     }
 
     // Update
-    m_fireGrid.particles.object->model.setBatch(m_fireGrid.particles.models, m_fireGrid.particles.colors);
+    m_fireGrid.particles.object->setPosesWithMaterials(m_fireGrid.particles.models, m_fireGrid.particles.materials);
 }
 
 void ViewForest::_setObjects() {
     // Grid
-    m_entities[_ObjectId::Grid]->model.setBatch(m_grid->grid_cells);
+    m_entities[_ObjectId::Grid]->setPoses(m_grid->grid_cells);
 
     // Objects
     for (const _Object& obj : m_objects) {
-        m_entities[obj.id]->model.setBatch(obj.quats);
+        m_entities[obj.id]->setPoses(obj.quats);
     }
 }
 

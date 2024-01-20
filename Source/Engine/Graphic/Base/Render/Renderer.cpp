@@ -1,17 +1,17 @@
 #include "Renderer.hpp"
-
+#include <iostream>
 Renderer::Renderer()
 {
 	addRecipe(CookType::Basic);
 	addRecipe(CookType::Geometry);
 }
 
-void Renderer::drawOne(Render::DrawType type, Entity& entity, const glm::mat4& pose) {
-    entity.model.setBatch({ pose });
-    draw(type, entity);
-}
-
 void Renderer::draw(Render::DrawType type, const Entity& entity) {
+    if (entity.poses().empty()) {
+        std::cerr << "Warning: no poses specified, no draws" << std::endl;
+        return;
+    }
+
     switch (type)
     {
     case Render::Basic:
@@ -68,8 +68,8 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
         break;
 
     case Cookable::CookType::Geometry:
-        sh.set("Projection",    camera.projection)
-            .set("View",        camera.modelview);
+        sh.set("Projection", camera.projection)
+          .set("View",       camera.modelview);
         break;
     }
 

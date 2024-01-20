@@ -12,7 +12,7 @@ View::View(int widthHint, int heightHint):
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    camera().position = glm::vec3(0, -7, 3);
+    camera().position  = glm::vec3(0, -7, 3);
     camera().direction = glm::vec3(0,  0, 0);
 
     // Lightnings
@@ -27,7 +27,7 @@ View::View(int widthHint, int heightHint):
     // Entities
     m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Sphere"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_entities["Target"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
     m_entities["Lantern"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
 
     // Scene objects
@@ -36,35 +36,29 @@ View::View(int widthHint, int heightHint):
     Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f) };
 
     m_entities["Ground"]->material = stone;
-    m_objects = {{ 
-        m_entities["Ground"], glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)),
-    }};
-    m_entities["Ground"]->model.setBatch({ glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)) });
+    m_entities["Ground"]->setLocalPose(glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)));
+    m_entities["Ground"]->setPoses({ glm::mat4(1.0f) });
 
     m_entities["Cube"]->material = stone;
     {
-        std::vector<glm::mat4> _cubeBatch;
         const int n_side = 1;
         for (int x = -n_side; x <= n_side; x++) {
             for (int y = -n_side; y <= n_side; y++) {
-                _cubeBatch.push_back(
+                m_entities["Cube"]->addPose(
                     glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(10.0 * x, 10.0f * y, 1.0f))
                 );
-
-                m_objects.push_back({
-                    m_entities["Cube"], _cubeBatch.back(),
-                });
             }
         }
-
-        m_entities["Cube"]->model.setBatch(_cubeBatch);
     }
 
-    // Decors
-    m_entities["Sphere"]->material = glass;
-    m_target = { 
-        m_entities["Sphere"], glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f))
+    m_scene_objects = { 
+        m_entities["Ground"] , 
+        m_entities["Cube"] 
     };
+
+    // Decors
+    m_entities["Target"]->material  = glass;
+    m_entities["Target"]->setLocalPose(glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f)));
 }
 
 // Callbacks
@@ -83,8 +77,9 @@ void View::_prepare_draw() {
 }
 
 void View::_draw_shadow(Shader& sh) {
-    m_entities["Ground"]->model.drawElements(sh);
-    m_entities["Cube"]->model.drawElements(sh);
+    for (auto& obj : m_scene_objects) {
+        obj->model.drawElements(sh);
+    }
 }
 
 void View::_draw() {
@@ -98,22 +93,25 @@ void View::_draw() {
         const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
         m_entities["Lantern"]->material.diffuse_color = light.color;
-        renderer().drawOne(Render::DrawType::Basic, *m_entities["Lantern"], Q);
+        m_entities["Lantern"]->setPoses({ Q });
+        renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
     }
 
     // Draw objects
     renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
     renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
 
-    // Draw objects
-    for (const _Object& obj : m_objects) {
-        // Draw intersections
-        auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj.entity, obj.transform);
-        if (!intersect_result.has_value())
-            continue;
+    // Draw intersections
+    for (auto& obj : m_scene_objects) {
+        for (auto& pose : obj->poses()) {
+            auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj, pose.mat4());
+            if (!intersect_result.has_value())
+                continue;
 
-        const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
-        renderer().drawOne(Render::DrawType::Basic, *m_target.entity, Q * m_target.transform);
+            const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
+            m_entities["Target"]->setPoses({ Q });
+            renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
+        }
     }
 
     // Draw debug
