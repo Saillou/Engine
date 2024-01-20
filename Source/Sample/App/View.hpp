@@ -23,7 +23,6 @@ struct View : public BaseScene {
 private:
     struct _Object {
         std::shared_ptr<Entity> entity = nullptr;
-        glm::vec4 color = {};
         glm::mat4 transform = {};
         Cookable::CookType shade = Cookable::CookType::Basic;
     };

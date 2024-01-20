@@ -21,7 +21,6 @@ struct Cookable {
     virtual ~Cookable() = default;
 
     virtual Cookable* addRecipe(CookType type);
-    virtual Cookable* addRecipe(CookType type, const glm::vec4& color);
 
     UShader& get(CookType type);
 

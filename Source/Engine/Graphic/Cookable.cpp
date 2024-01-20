@@ -36,15 +36,6 @@ Cookable* Cookable::addRecipe(CookType type) {
     return this;
 }
 
-Cookable* Cookable::addRecipe(CookType type, const glm::vec4& color) {
-    addRecipe(type);
-
-    // Set uniforms
-    m_shaders[type]->use().set("diffuse_color", color);
-
-    return this;
-}
-
 UShader& Cookable::get(CookType type) {
     return m_shaders[type];
 }

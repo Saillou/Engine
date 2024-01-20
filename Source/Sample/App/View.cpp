@@ -25,31 +25,45 @@ View::View(int widthHint, int heightHint):
     };
 
     // Entities
-    m_entities["Cube"]   = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Sphere"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Sphere"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_entities["Lantern"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
 
     // Scene objects
-    m_objects = {
-        { 
-            m_entities["Cube"], glm::vec4(1, 1, 1, 1),
-            glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)),
-        },
-    };
+    Material stone = { glm::vec4(0.7f, 0.7f, 0.7f, 1.0f) };
+    Material metal = { glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) };
+    Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f) };
 
-    const int n_side = 1;
-    for (int x = -n_side; x <= n_side; x++) {
-        for (int y = -n_side; y <= n_side; y++) {
-            m_objects.push_back({
-                m_entities["Cube"], glm::vec4(1, 1, 1, 1),
-                glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(10.0*x, 10.0f*y, 1.0f)),
-            });
+    m_entities["Ground"]->material = stone;
+    m_objects = {{ 
+        m_entities["Ground"], glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)),
+    }};
+    m_entities["Ground"]->model.setBatch({ glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)) });
+
+    m_entities["Cube"]->material = stone;
+    {
+        std::vector<glm::mat4> _cubeBatch;
+        const int n_side = 1;
+        for (int x = -n_side; x <= n_side; x++) {
+            for (int y = -n_side; y <= n_side; y++) {
+                _cubeBatch.push_back(
+                    glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(10.0 * x, 10.0f * y, 1.0f))
+                );
+
+                m_objects.push_back({
+                    m_entities["Cube"], _cubeBatch.back(),
+                });
+            }
         }
+
+        m_entities["Cube"]->model.setBatch(_cubeBatch);
     }
 
     // Decors
+    m_entities["Sphere"]->material = glass;
     m_target = { 
-        m_entities["Sphere"], glm::vec4(0.3f, 1, 1, 0.5f),
-        glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f))
+        m_entities["Sphere"], glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f))
     };
 }
 
@@ -69,10 +83,8 @@ void View::_prepare_draw() {
 }
 
 void View::_draw_shadow(Shader& sh) {
-    for (const _Object& obj : m_objects) {
-        obj.entity->model.setBatch({ obj.transform });
-        obj.entity->model.drawElements(sh);
-    }
+    m_entities["Ground"]->model.drawElements(sh);
+    m_entities["Cube"]->model.drawElements(sh);
 }
 
 void View::_draw() {
@@ -85,23 +97,22 @@ void View::_draw() {
     for (const Light& light : lights()) {
         const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
-        m_entities["Sphere"]->material.diffuse_color = light.color;
-        renderer().drawOne(Render::DrawType::Basic, *m_entities["Sphere"], Q);
+        m_entities["Lantern"]->material.diffuse_color = light.color;
+        renderer().drawOne(Render::DrawType::Basic, *m_entities["Lantern"], Q);
     }
 
     // Draw objects
-    for (const _Object& obj : m_objects) {
-        obj.entity->material.diffuse_color = obj.color;
-        renderer().drawOne(Render::DrawType::Shadows, *obj.entity, obj.transform);
+    renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
+    renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
 
+    // Draw objects
+    for (const _Object& obj : m_objects) {
         // Draw intersections
         auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj.entity, obj.transform);
         if (!intersect_result.has_value())
             continue;
 
         const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
-
-        m_target.entity->material.diffuse_color = m_target.color;
         renderer().drawOne(Render::DrawType::Basic, *m_target.entity, Q * m_target.transform);
     }
 
