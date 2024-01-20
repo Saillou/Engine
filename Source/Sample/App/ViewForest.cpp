@@ -115,7 +115,7 @@ void ViewForest::_draw() {
 
             // Ray cast
             for(const auto& quat : obj.quats) {
-                auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat.mat4());
+                auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat);
                 if (!cast_res)
                     continue;
 
@@ -353,7 +353,7 @@ void ViewForest::_setParticles(float dt) {
     // Move
     for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
         glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
-        glm::mat4& model = m_fireGrid.particles.models[particules_id].mat4();
+        glm::mat4& model = m_fireGrid.particles.models[particules_id];
 
         const bool hasEnded = model[0][0] < 1e-4f || model[1][1] < 1e-4f || model[2][2] < 1e-4f; // also true for first draw
 

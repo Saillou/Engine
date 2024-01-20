@@ -3,36 +3,30 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-//glm::mat4 Pose::getMat4() const {
-    //glm::mat4 model(1.0f);
-
-    //model = glm::rotate(model, rotation.x, glm::vec3(1, 0, 0));
-    //model = glm::rotate(model, rotation.y, glm::vec3(0, 1, 0));
-    //model = glm::rotate(model, rotation.z, glm::vec3(0, 0, 1));
-
-    //model = glm::translate(model, position);
-
-    //model = glm::scale(model, scale);
-    //return model;
-//}
-
-//void Pose::setMat4(const glm::mat4& quat) {
-    //glm::qua orientation;
-    //glm::decompose(quat, scale, orientation, position, glm::vec3{}, glm::vec4{});
-//}
+Pose::Pose() : _quat(glm::mat4(1.0f))
+{ }
 
 Pose::Pose(const glm::mat4& q):
     _quat(q)
-{
-    // ..
-}
+{ }
 
-glm::mat4& Pose::mat4()
-{
+Pose::Pose(const glm::vec3& position):
+    _quat(glm::translate(glm::mat4(1.0f), position))
+{ }
+
+Pose::Pose(const glm::vec3& position, float scale) :
+    _quat(glm::scale(glm::translate(glm::mat4(1.0f), position), glm::vec3(scale)))
+{ }
+
+Pose::operator glm::mat4() const {
     return _quat;
 }
 
-const glm::mat4& Pose::mat4() const
-{
+Pose::operator glm::mat4&() {
     return _quat;
+}
+
+const Pose& Pose::operator=(const glm::mat4& q) {
+    _quat = q;
+    return *this;
 }

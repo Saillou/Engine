@@ -104,7 +104,7 @@ void View::_draw() {
     // Draw intersections
     for (auto& obj : m_scene_objects) {
         for (auto& pose : obj->poses()) {
-            auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj, pose.mat4());
+            auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj, pose);
             if (!intersect_result.has_value())
                 continue;
 

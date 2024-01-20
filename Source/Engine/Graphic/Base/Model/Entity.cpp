@@ -4,16 +4,6 @@
 #include "Primitive/Sphere.hpp"
 
 // Helpers
-static inline std::vector<glm::mat4> _extractMat4(const std::vector<Pose>& poses) {
-    std::vector<glm::mat4> mat;
-    mat.reserve(poses.size());
-
-    for (const Pose& pose : poses) {
-        mat.push_back(pose.mat4());
-    }
-    return mat;
-}
-
 static inline std::vector<glm::vec4> _extractColors(const std::vector<Material>& materials) {
     std::vector<glm::vec4> colors;
     colors.reserve(materials.size());
@@ -48,25 +38,25 @@ Entity::Entity(SimpleShape shape)
 
 void Entity::addPose(const Pose& newPose) {
     _poses.push_back(newPose);
-    model._setBatch(_extractMat4(_poses));
+    model._setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()));
 }
 
 void Entity::setLocalPose(const Pose& pose) {
-    model._localPose = pose.mat4();
+    model._localPose = pose;
 }
 
 void Entity::setPoses(const std::vector<Pose>& poses) {
     _poses = poses;
-    model._setBatch(_extractMat4(_poses));
+    model._setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()));
 }
 
 void Entity::setPosesWithMaterials(const std::vector<Pose>& poses, const std::vector<Material>& materials) {
     _poses = poses;
-    model._setBatch(_extractMat4(_poses), _extractColors(materials));
+    model._setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()), _extractColors(materials));
 }
 
 Pose Entity::localPose() const {
-    return Pose(model._localPose);
+    return model._localPose;
 }
 
 const std::vector<Pose>& Entity::poses() const {

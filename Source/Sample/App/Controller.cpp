@@ -4,7 +4,7 @@
 #include <iostream>
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
-    m_view(std::dynamic_pointer_cast<View>(scene))
+    m_view(std::dynamic_pointer_cast<ViewForest>(scene))
 {
     assert(m_view != nullptr);
 
