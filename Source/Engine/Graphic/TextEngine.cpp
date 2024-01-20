@@ -32,7 +32,7 @@ TextEngine::TextEngine():
             .add_func("void", "main", "", R"_main_(
                 TexCoords   = vertex.zw;
                 gl_Position = projection * vec4(vertex.xy, 0.5f, 1.0);
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("out", "vec4", "FragColor")
@@ -42,7 +42,7 @@ TextEngine::TextEngine():
             .add_func("void", "main", "", R"_main_(
                 vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
                 FragColor    = vec4(textColor, 1.0) * sampled;
-            )_main_").str()
+            )_main_")
         )
         .link()
         .use();

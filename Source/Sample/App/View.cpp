@@ -15,15 +15,6 @@ View::View(int widthHint, int heightHint):
     camera().position  = glm::vec3(0, -7, 3);
     camera().direction = glm::vec3(0,  0, 0);
 
-    // Lightnings
-    lights() = {
-        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-    };
-
     // Entities
     m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
@@ -39,7 +30,7 @@ View::View(int widthHint, int heightHint):
     m_entities["Ground"]->setLocalPose(glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)));
     m_entities["Ground"]->setPoses({ glm::mat4(1.0f) });
 
-    m_entities["Cube"]->material = stone;
+    m_entities["Cube"]->material = metal;
     {
         const int n_side = 1;
         for (int x = -n_side; x <= n_side; x++) {

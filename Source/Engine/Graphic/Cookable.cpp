@@ -24,7 +24,7 @@ void Cookable::Set(CookType type, Shader& recipe) {
 // - Recipes
 Cookable* Cookable::addRecipe(CookType type) {
     // Cached
-    if (m_shaders.find(type) != m_shaders.cend())
+    if (has(type))
         return this;
 
     // Create
@@ -36,10 +36,31 @@ Cookable* Cookable::addRecipe(CookType type) {
     return this;
 }
 
+void Cookable::editRecipe(CookType shaderType, ShaderSource::Type sourceType, const ShaderSource& new_source) {
+    Shader::Release();
+
+    const auto& old_shader = get(shaderType);
+    UShader new_shader = std::make_unique<Shader>();
+
+    for (const auto& old_source: old_shader->m_sources) {
+        new_shader->attachSource(old_source.first,
+            old_source.first == sourceType ?
+            ShaderSource::Edit(old_source.second, new_source) :
+            old_source.second
+        );
+    }
+
+    new_shader->link();
+    m_shaders[shaderType].swap(new_shader);
+}
+
+bool Cookable::has(CookType type) const {
+    return m_shaders.find(type) != m_shaders.cend();
+}
+
 UShader& Cookable::get(CookType type) {
     return m_shaders[type];
 }
-
 
 // - Source helpers
 ShaderSource Cookable::_init_vertex() {
@@ -93,20 +114,20 @@ void Cookable::_set_shader_basic(Shader& shader) {
                 vs_out.Color     = aColor;
 
                 gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_").str()
+            )_main_")
         ).
         attachSource(GL_FRAGMENT_SHADER, 
             _init_fragment()
 
             .add_var("uniform", "bool",        "use_shadow")
             .add_var("uniform", "highp int",   "LightNumber")
-            .add_var("uniform", "vec3",        "LightPos[5]")
-            .add_var("uniform", "vec4",        "LightColor[5]")
-            .add_var("uniform", "samplerCube", "depthMap[5]")
+            .add_var("uniform", "vec3",        "LightPos",   1)
+            .add_var("uniform", "vec4",        "LightColor", 1)
+            .add_var("uniform", "samplerCube", "depthMap",   1)
 
             .add_var("uniform", "vec3", "CameraPos")
             .add_var("uniform", "float", "far_plane")
-            .add_var("", "vec3", "gridSamplingDisk[20]", R"_var_(vec3[] (
+            .add_var("", "vec3", "gridSamplingDisk", 20, R"_var_(vec3[] (
                    vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
                    vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
                    vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
@@ -181,7 +202,6 @@ void Cookable::_set_shader_basic(Shader& shader) {
     
                 FragColor = vec4(light_result, ambiant_color.a);
             )_main_")
-            .str()
         );
 }
 
@@ -195,7 +215,7 @@ void Cookable::_set_shader_geometry(Shader& shader) {
                 vs_out.Color    = aColor;
 
                 gl_Position     = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
             .add_var("in", "layout", "(triangles)")
@@ -209,13 +229,13 @@ void Cookable::_set_shader_geometry(Shader& shader) {
                 gl_Position     = gl_in[0].gl_Position; EmitVertex();
                 gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
                 EndPrimitive();
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, 
             _init_fragment()
 
             .add_func("void", "main", "", R"_main_(
                 FragColor = diffuse_color;
-            )_main_").str()
+            )_main_")
         );
 }

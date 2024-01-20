@@ -20,8 +20,10 @@ struct Cookable {
     // Instance
     virtual ~Cookable() = default;
 
-    virtual Cookable* addRecipe(CookType type);
+    Cookable* addRecipe(CookType type);
+    void editRecipe(CookType shaderType, ShaderSource::Type sourceType, const ShaderSource& ss);
 
+    bool has(CookType type) const;
     UShader& get(CookType type);
 
 protected:

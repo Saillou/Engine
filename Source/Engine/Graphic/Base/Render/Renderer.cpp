@@ -1,9 +1,9 @@
 #include "Renderer.hpp"
 #include <iostream>
+
 Renderer::Renderer()
 {
-	addRecipe(CookType::Basic);
-	addRecipe(CookType::Geometry);
+
 }
 
 void Renderer::draw(Render::DrawType type, const Entity& entity) {
@@ -45,6 +45,21 @@ void Renderer::draw(Render::DrawType type, const Entity& entity) {
 }
 
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
+    addRecipe(type);
+
+    // Check light capabilities
+    const ShaderSource& ssource = get(type)->source(ShaderSource::Type::Fragment);
+
+    // Need to edit shader
+    if (ssource.getVar("LightPos").count < lights.size()) {
+        editRecipe(type, ShaderSource::Type::Fragment, ShaderSource{}            
+            .add_var("uniform", "vec3",        "LightPos",   (int)lights.size())
+            .add_var("uniform", "vec4",        "LightColor", (int)lights.size())
+            .add_var("uniform", "samplerCube", "depthMap",   (int)lights.size())
+        );
+    }
+
+    // Use
     Shader& sh = get(type)->use();
 
     switch (type)
@@ -53,17 +68,17 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
         if (shadower)
             shadower->bindTextures(GL_TEXTURE0 + 1);
 
-        sh.set("Projection",    camera.projection)
-            .set("View",        camera.modelview)
-            .set("CameraPos",   camera.position)
-            .set("far_plane",   camera.far_plane)
-            .set("use_shadow",  shadower != nullptr)
-            .set("LightNumber", (int)lights.size());
+        sh.set("Projection",  camera.projection)
+          .set("View",        camera.modelview)
+          .set("CameraPos",   camera.position)
+          .set("far_plane",   camera.far_plane)
+          .set("use_shadow",  shadower != nullptr)
+          .set("LightNumber", (int)lights.size());
 
         for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-            sh.set("LightPos["      + std::to_string(iLight) + "]", lights[iLight].position)
-                .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
-                .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
+            sh.set("LightPos["    + std::to_string(iLight) + "]", lights[iLight].position)
+              .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
+              .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
         }
         break;
 

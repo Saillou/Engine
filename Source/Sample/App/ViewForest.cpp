@@ -301,7 +301,7 @@ void ViewForest::_initFilters() {
                 float tx = aPos.x > 0 ? 1.0 : 0.0;
                 float ty = aPos.y > 0 ? 1.0 : 0.0;
                 TexCoords = vec2(tx, ty);
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
@@ -320,7 +320,7 @@ void ViewForest::_initFilters() {
                 vec4 texture_color = texture(quadTexture, TexCoords);
                 vec3 night_color = vec3(0.0, 0.5f*texture_color.r + 0.5f*texture_color.g, texture_color.b);
                 FragColor = vec4(night_color.rgb, texture_color.a);
-            )_main_").str()
+            )_main_")
         )
         .link();
 }

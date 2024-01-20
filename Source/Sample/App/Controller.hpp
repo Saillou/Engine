@@ -18,6 +18,6 @@ protected:
     void _on_mouse_clicked(const CommonEvents::MouseClicked& evt);
 
 private:
-    std::shared_ptr<ViewForest> m_view;
+    std::shared_ptr<View> m_view;
     Timer::Chronometre m_timer;
 };

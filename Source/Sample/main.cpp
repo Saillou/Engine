@@ -6,7 +6,7 @@
 int main() {
     // Setup
     Window window(1600, 900, "Sample scene");
-    Controller controller(window.scene(std::make_shared<ViewForest>(window.width(), window.height())));
+    Controller controller(window.scene(std::make_shared<View>(window.width(), window.height())));
 
     // Loop
     do {

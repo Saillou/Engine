@@ -16,7 +16,6 @@ ShadowRender::ShadowRender()
             .add_func("void", "main", "", R"_main_(
                 gl_Position = aModel * LocalModel * vec4(aPos, 1.0);
             )_main_")
-            .str()
         ).
         attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
             .add_var("in", "layout", "(triangles)")
@@ -34,7 +33,6 @@ ShadowRender::ShadowRender()
                     EndPrimitive();
                 }
             )_main_")
-            .str()
         ).
         attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec4", "FragPos")
@@ -44,7 +42,6 @@ ShadowRender::ShadowRender()
                 // map to [0;1] range by dividing by far_plane as modified depth
                 gl_FragDepth = length(FragPos.xyz - lightPos) / far_plane; 
             )_main_")
-            .str()
         ).
         link();
 }

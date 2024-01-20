@@ -4,7 +4,7 @@
 #include <iostream>
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
-    m_view(std::dynamic_pointer_cast<ViewForest>(scene))
+    m_view(std::dynamic_pointer_cast<View>(scene))
 {
     assert(m_view != nullptr);
 
@@ -44,6 +44,30 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     if (dir != glm::vec3(0, 0, 0)) 
     {
         m_view->camera().position += 0.05f * dir;
+    }
+
+    // Lights
+    const std::vector<Light> pontential_lights = {
+        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
+        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+    };
+    size_t nLightsEnabled = -1;
+
+    switch (evt.key)
+    {
+        case Numpad_0 + 0: nLightsEnabled = 0; break;
+        case Numpad_0 + 1: nLightsEnabled = 1; break;
+        case Numpad_0 + 2: nLightsEnabled = 2; break;
+        case Numpad_0 + 3: nLightsEnabled = 3; break;
+        case Numpad_0 + 4: nLightsEnabled = 4; break;
+        case Numpad_0 + 5: nLightsEnabled = 5; break;
+    }
+
+    if (nLightsEnabled != -1) {
+        m_view->lights() = std::vector<Light>(pontential_lights.cbegin(), pontential_lights.cbegin() + nLightsEnabled);
     }
 
     //// Other

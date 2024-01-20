@@ -33,7 +33,7 @@ Skybox::Skybox(const std::array<std::string, 6>& textures_path):
                 TexCoords = aPos;
                 vec4 pos = projection * view * vec4(aPos, 1.0);
                 gl_Position = pos.xyww;
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec3", "TexCoords")
@@ -42,7 +42,7 @@ Skybox::Skybox(const std::array<std::string, 6>& textures_path):
 
             .add_func("void", "main", "", R"_main_(
                 FragColor = texture(skybox, TexCoords);
-            )_main_").str()
+            )_main_")
         )
         .link();
 
