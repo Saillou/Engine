@@ -12,9 +12,13 @@ ModelEditor::~ModelEditor()
 void ModelEditor::onEnter()
 {
     m_center = std::make_unique<Entity>(Entity::Sphere);
+    m_center->material.diffuse_color = glm::vec4(1, 1, 1, 1);
+
     m_model = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
 
-    m_lights.push_back({ glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } });
+    m_window->scene()->lights() = {
+        { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
+    };
 
     m_menu.resetState();
 }
@@ -23,7 +27,7 @@ void ModelEditor::onExit()
 {
     m_center.reset();
     m_model.reset();
-    m_lights.clear();
+    m_window->scene()->lights().clear();
 
     glPolygonMode(GL_FRONT, GL_FILL);
     glPolygonMode(GL_BACK, GL_FILL);
@@ -65,6 +69,8 @@ void ModelEditor::onUpdate()
         m_model = std::make_unique<Entity>(m_menu.state.path);
     }
 
+    auto& renderer = m_window->scene()->renderer();
+
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
     model = glm::rotate(model, m_menu.state.roll, glm::vec3(1, 0, 0));
     model = glm::rotate(model, m_menu.state.pitch, glm::vec3(0, 1, 0));
@@ -74,11 +80,10 @@ void ModelEditor::onUpdate()
     model = glm::scale(model, m_menu.state.scale);
 
     glm::mat4 worldPos = glm::translate(glm::mat4(1.f), m_menu.state.worldPosition);
-    
-    m_model->drawOne(Cookable::CookType::Basic, m_window->scene()->camera(), worldPos * model , m_lights);
+    m_model->setPoses({ worldPos * model });
+    renderer.draw(Render::DrawType::Lights, *m_model);
 
-    m_center->get(Cookable::CookType::Basic)->use().set("diffuse_color", glm::vec4(1, 1, 1, 1));
-    m_center->drawOne(Cookable::CookType::Basic, m_window->scene()->camera(), glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)));
-
+    m_center->setPoses({ glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)) });
+    renderer.draw(Render::DrawType::Basic, *m_center);
     m_menu.ShowMovableOptions();
 }

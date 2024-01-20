@@ -23,6 +23,5 @@ private:
 
     std::unique_ptr<Entity>  m_center;
     std::unique_ptr<Entity>  m_model;
-    std::vector<Light>       m_lights;
     ModelEditorMenu          m_menu;
 };

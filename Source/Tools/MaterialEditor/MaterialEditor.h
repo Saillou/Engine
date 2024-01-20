@@ -21,6 +21,5 @@ private:
     Window* m_window;
 
     std::unique_ptr<Entity> m_entity;
-    std::vector<Light>      m_lights;
     MaterialEditorMenu      m_menu;
 };
