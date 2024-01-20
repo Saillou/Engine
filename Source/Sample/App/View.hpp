@@ -12,7 +12,12 @@
 struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
 
-    void draw() override;
+    void _prepare_draw()          override;
+    void _draw_shadow(Shader& sh) override;
+    void _draw()                  override;
+
+    void _on_resize()             override;
+
     void mouse_on(int x, int y);
 
 private:
@@ -30,6 +35,5 @@ private:
     _Object m_target;
 
     glm::vec2 m_mousePos;
-    ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

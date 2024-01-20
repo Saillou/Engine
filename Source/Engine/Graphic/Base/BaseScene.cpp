@@ -20,12 +20,39 @@ void BaseScene::clear() {
 }
 
 void BaseScene::draw() {
+    // Setup
+    _update_camera();
+    _prepare_draw();
+
+    // Shadow scene
+    Viewport(_shadowRender.width(), _shadowRender.height());
+    _shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
+        _draw_shadow(sh);
+    });
+    //_draw_shadow(Shader{});
+
+    // Main scene
+    Viewport(width(), height());
+    _draw();
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void BaseScene::_on_resize() {
     // to be overrided
 }
 
-void BaseScene::_onResize() {
+void BaseScene::_prepare_draw() {
     // to be overrided
 }
+
+void BaseScene::_draw_shadow(Shader& sh) {
+    // to be overrided
+}
+
+void BaseScene::_draw() {
+    // to be overrided
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void BaseScene::drawFrame(const Framebuffer& framebuffer) {
     glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
@@ -60,7 +87,7 @@ void BaseScene::resize(int width, int height) {
     m_height = height;
 
     _update_camera();
-    _onResize();
+    _on_resize();
 }
 
 void BaseScene::_init_gl_config() {
@@ -92,5 +119,8 @@ Camera& BaseScene::camera() {
 }
 std::vector<Light>& BaseScene::lights() {
     return m_lights;
+}
+const ShadowRender* BaseScene::shadower() {
+    return &_shadowRender;
 }
 

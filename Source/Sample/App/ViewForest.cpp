@@ -30,7 +30,8 @@ ViewForest::ViewForest(int widthHint, int heightHint):
 
     // Lightnings
     m_lights = {
-        Light(glm::vec3{  0,  +1.50f, 1.0f }, glm::vec4{ 1, 0.7, 0.3, 1 })
+        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
     };
 
     // Load models
@@ -63,21 +64,19 @@ ViewForest::ViewForest(int widthHint, int heightHint):
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 }
 
-
 // Methods
-void ViewForest::draw() {
+void ViewForest::_prepare_draw() {
     static float dt_since_last_draw = 0.0f;
-    static float dt_draw = 0.0f;
 
     dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
 
     _setParticles(dt_since_last_draw);
     _setObjects();
+}
 
-    // Shadow scene
-    BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
-    m_shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
+void ViewForest::_draw_shadow(Shader& sh) {
+    //m_shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
         // Draw objects
         for (const _Object& obj : m_objects) {
             m_entities[obj.id]->model.drawElements(sh);
@@ -87,10 +86,14 @@ void ViewForest::draw() {
         {
             m_fireGrid.particles.object->model.drawElements(sh);
         }
-    });
+    //});
+}
+
+void ViewForest::_draw() {
+    static float dt_draw = 0.0f;
+    m_timer.tic();
 
     // Main scene
-    BaseScene::Viewport(width(), height());
     framebuffer_main.bind();
     framebuffer_main.clear();
     {
@@ -111,7 +114,7 @@ void ViewForest::draw() {
             m_entities[obj.id]->get(Cookable::CookType::Basic)
                               ->use().set("diffuse_color", obj.material_color);
 
-            m_entities[obj.id]->drawBasic(m_camera, m_lights, &m_shadowRender);
+            m_entities[obj.id]->drawBasic(m_camera, m_lights, shadower());
 
             // Ray cast
             for(const auto& quat : obj.quats) {
@@ -161,7 +164,7 @@ void ViewForest::draw() {
                 m_entities[_ObjectId::Grid]->get(Cookable::CookType::Basic)
                                            ->use().set("diffuse_color", glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-                m_entities[_ObjectId::Grid]->drawBasic(m_camera, m_lights, &m_shadowRender);
+                m_entities[_ObjectId::Grid]->drawBasic(m_camera, m_lights, shadower());
             }
         }
 
@@ -396,7 +399,7 @@ void ViewForest::mouse_on(int x, int y) {
     m_mousePos.y = (float)y / m_height;
 }
 
-void ViewForest::_onResize() {
+void ViewForest::_on_resize() {
     framebuffer_main.resize(m_width, m_height);
     m_filter.resize(m_width, m_height);
 }

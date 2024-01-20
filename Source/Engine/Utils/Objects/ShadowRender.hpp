@@ -11,6 +11,11 @@
 struct ShadowRender 
 {
 	ShadowRender();
+	virtual ~ShadowRender() = default;
+
+	ShadowRender& operator=(const ShadowRender&) = delete;
+	ShadowRender(const ShadowRender&) = delete;
+	ShadowRender(ShadowRender&&) = delete;
 
 	void bindTextures(GLuint target = GL_TEXTURE0) const;
 	void render(const Camera& camera, const std::vector<Light>& light, std::function<void(Shader&)> renderFunc);

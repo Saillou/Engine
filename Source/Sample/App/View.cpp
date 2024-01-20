@@ -53,21 +53,32 @@ View::View(int widthHint, int heightHint):
     };
 }
 
+// Callbacks
+void View::_on_resize() {
+    // ..
+}
+
+void View::mouse_on(int x, int y) {
+    m_mousePos.x = (float)x / m_width;
+    m_mousePos.y = (float)y / m_height;
+}
+
 // Methods
-void View::draw() {
+void View::_prepare_draw() {
+    // ..
+}
+
+void View::_draw_shadow(Shader& sh) {
+    for (const _Object& obj : m_objects) {
+        obj.entity->model.setBatch({ obj.transform });
+        obj.entity->model.drawElements(sh);
+    }
+}
+
+void View::_draw() {
     m_timer.tic();
 
-    // Shadow scene
-    BaseScene::Viewport(m_shadowRender.width(), m_shadowRender.height());
-    m_shadowRender.render(m_camera, m_lights, [=](Shader& sh) {
-        for (const _Object& obj : m_objects) {
-            obj.entity->model.setBatch({ obj.transform });
-            obj.entity->model.drawElements(sh);
-        }
-    });
-
     // Main scene
-    BaseScene::Viewport(width(), height());
     BaseScene::clear();
 
     // Draw lights
@@ -81,7 +92,7 @@ void View::draw() {
     // Draw objects
     for (const _Object& obj : m_objects) {
         obj.entity->get(obj.shade)->use().set("diffuse_color", obj.color);
-        obj.entity->drawOne(obj.shade, m_camera, obj.transform, m_lights, &m_shadowRender);
+        obj.entity->drawOne(obj.shade, m_camera, obj.transform, m_lights, shadower());
 
         // Draw intersections
         auto intersect_result = RayCaster::Intersect(m_mousePos, m_camera, *obj.entity, obj.transform);
@@ -96,14 +107,6 @@ void View::draw() {
 
     // Draw debug
     _drawText();
-
-    m_timer.tic();
-}
-
-// Callbacks
-void View::mouse_on(int x, int y) {
-    m_mousePos.x = (float)x / m_width;
-    m_mousePos.y = (float)y / m_height;
 }
 
 void View::_drawText() {

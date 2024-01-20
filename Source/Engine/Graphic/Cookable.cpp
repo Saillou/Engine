@@ -201,6 +201,8 @@ void Cookable::_set_shader_geometry(Shader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 vs_out.FragPos  = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Color    = aColor;
+
                 gl_Position     = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_").str()
         )

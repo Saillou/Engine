@@ -16,10 +16,14 @@
 struct ViewForest : public BaseScene {
     ViewForest(int widthHint = 0, int heightHint = 0);
 
-    void draw() override;
     void mouse_on(int x, int y);
 
     bool enable_filter = false;
+
+protected:
+    void _prepare_draw()          override;
+    void _draw_shadow(Shader& sh) override;
+    void _draw()                  override;
 
 private:
     enum class _ObjectId {
@@ -46,7 +50,7 @@ private:
 
     void _setParticles(float dt = 0.0f);
     void _setObjects();
-    void _onResize() override;
+    void _on_resize() override;
 
     // Object models (vertices, textures..)
     std::unordered_map<_ObjectId, std::unique_ptr<Entity>> m_entities;

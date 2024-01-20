@@ -31,7 +31,6 @@ bool Window::update() {
 
     // Render
     if (m_scene) {
-        m_scene->_update_camera();
         m_scene->draw();
     }
 
