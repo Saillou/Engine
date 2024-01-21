@@ -1,16 +1,16 @@
 #include "Renderer.hpp"
 
+#include "../../../Utils/RayCaster.hpp"
 #include <iostream>
+#include <algorithm>
 
 void Renderer::draw(Render::DrawType type, Entity& entity) {
-    if (_deferred) {
+    if (deferred) {
         _DrawEntity di;
-        di.type = type;
-        di._model = entity._model;
-        di._localPose = entity._localPose;
-        di._localMaterial = entity._localMaterial;
-        di._poses = entity._poses;
-        di._materials = entity._materials;
+        di.drawId         = _heapEntities.size() + 1;
+        di.drawPriority   = -1.0f;
+        di.type           = type;
+        di.copied_entity  = entity;
 
         _heapEntities.emplace_back(std::move(di));
     }
@@ -29,7 +29,7 @@ void Renderer::draw(Render::DrawType type, Entity& entity) {
 }
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
-    if (_deferred) {
+    if (deferred) {
         _DrawText dt;
         dt.text = text;
         dt.x = x;
@@ -92,37 +92,80 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
 void Renderer::_clear() {
     _heapEntities.clear();
     _heapText.clear();
+    _entitiesDuplicates.clear();
 }
 
 void Renderer::_compute() 
 {
+    // Apply batch transformations
+    std::unordered_map<std::shared_ptr<Model>, size_t> first_model_id;
+    for (_DrawEntity& di : _heapEntities) {
+        // Decide draw order:
+        //  - opaque first: no order
+        //  - transparent: furthest first
+        di.drawPriority = std::numeric_limits<float>::max();
+
+        if (di.copied_entity.localMaterial().diffuse_color.a < 1.0f) {
+            for (auto& pose : di.copied_entity.poses()) {
+                di.drawPriority = std::min(RayCaster::OrientedDistance(_camera.position, di.copied_entity, pose), di.drawPriority);
+            }
+        }
+
+        // Check if models already used for another draw
+        if (first_model_id.find(di.copied_entity._model) != first_model_id.cend()) {
+            _entitiesDuplicates.insert(di.drawId);
+            _entitiesDuplicates.insert(first_model_id[di.copied_entity._model]);
+            continue; // gpu buffer needs to be setup after
+        }
+
+        // Update model buffers
+        first_model_id.emplace(di.copied_entity._model, di.drawId);
+        di.copied_entity._update_model_buffer();
+    }
+
+    // Re-order vector from last to first
+    std::sort(_heapEntities.begin(), _heapEntities.end(), [=](const _DrawEntity& di1, const _DrawEntity& di2) {
+        return di1.drawPriority > di2.drawPriority;
+    });
+    
+    // Shadows
     _shadower.render(_camera, _lights, [=](Shader& sh) {
         for (_DrawEntity& di : _heapEntities) {
-            di._model->_localPose = glm::mat4(di._localPose);
-            di._model->_setBatch(std::vector<glm::mat4>(di._poses.cbegin(), di._poses.cend()), Material::ExtractColors(di._materials));
-
-            if (!di._localMaterial.cast_shadow)
+            if (!di.copied_entity._localMaterial.cast_shadow)
                 continue;
 
-            di._model->drawElements(sh);
+            if (di.drawPriority < 0.0f)
+                break;
+
+            // Need to re-set batch models
+            if (_entitiesDuplicates.find(di.drawId) != _entitiesDuplicates.cend()) {
+                di.copied_entity._update_model_buffer();
+            }
+
+            di.copied_entity._model->drawElements(sh);
         }
     });
 }
 
 void Renderer::_draw() {
     for (_DrawEntity& di : _heapEntities) {
-        di._model->_localPose = glm::mat4(di._localPose);
-        di._model->_setBatch(std::vector<glm::mat4>(di._poses.cbegin(), di._poses.cend()), Material::ExtractColors(di._materials));
+        if (di.drawPriority < 0.0f)
+            break;
+
+        // Need to re-set batch models
+        if (_entitiesDuplicates.find(di.drawId) != _entitiesDuplicates.cend()) {
+            di.copied_entity._update_model_buffer();
+        }
 
         Shader placeHolder;
-        di._model->draw([&]() -> Shader& {
+        di.copied_entity._model->draw([&]() -> Shader& {
             switch (di.type) {
                 case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
                 case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
                 case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
                 case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
             } return placeHolder;
-        }().set("diffuse_color", di._localMaterial.diffuse_color));
+        }().set("diffuse_color", di.copied_entity._localMaterial.diffuse_color));
     }
 
     for (_DrawText& dt : _heapText) {

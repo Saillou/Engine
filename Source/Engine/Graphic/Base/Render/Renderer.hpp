@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 struct Renderer : private Cookable {
 	friend struct BaseScene;
@@ -18,6 +19,7 @@ struct Renderer : private Cookable {
 	// Methods
 	void draw(Render::DrawType, Entity& entity);
 	void text(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
+	bool deferred = true;
 
 private:
 	Renderer() = default;
@@ -27,21 +29,17 @@ private:
 	Camera _camera				= {};
 	std::vector<Light> _lights	= {};
 	ShadowRender _shadower;
-	bool _deferred = false;
 
 	void _clear();
 	void _compute();
 	void _draw();
 
+	// Deferred rendering
 	struct _DrawEntity {
+		size_t drawId;
+		float drawPriority;
 		Render::DrawType type;
-
-		std::shared_ptr<Model> _model;
-
-		Pose _localPose;
-		Material _localMaterial;
-		std::vector<Pose> _poses;
-		std::vector<Material> _materials;
+		Entity copied_entity;
 	};
 
 	struct _DrawText {
@@ -54,4 +52,5 @@ private:
 
 	std::vector<_DrawEntity> _heapEntities;
 	std::vector<_DrawText> _heapText;
+	std::unordered_set<size_t> _entitiesDuplicates;
 };

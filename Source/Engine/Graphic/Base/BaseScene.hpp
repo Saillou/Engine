@@ -36,6 +36,7 @@ protected:
     virtual void _post_draw();      // called after `draw` method
 
     // Members
+    int m_enable_deffered_draw = true; // Disable it to manually manage draw pipeline
     int m_width  = 0;
     int m_height = 0;
 

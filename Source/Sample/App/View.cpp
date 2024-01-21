@@ -52,6 +52,9 @@ View::View(int widthHint, int heightHint):
     // Decors
     m_entities["Target"]->localMaterial() = glass;
     m_entities["Target"]->setLocalPose(glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f)));
+
+    // Lights
+    m_entities["Lantern"]->localMaterial().cast_shadow = true;
 }
 
 // Callbacks
@@ -65,17 +68,21 @@ void View::_draw() {
     m_timer.tic();
 
     // Draw lights
-    for (const Light& light : lights()) {
-        const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
-
-        m_entities["Lantern"]->localMaterial().diffuse_color = light.color;
-        m_entities["Lantern"]->setPoses({ Q });
-        renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
+    {
+        std::vector<Pose> Qs;
+        std::vector<Material> Ms;
+        for (const Light& light : lights()) {
+            Qs.push_back(glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
+            Ms.push_back(Material{ light.color });
+        }
+        m_entities["Lantern"]->setPosesWithMaterials(Qs, Ms);
     }
+    renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
 
     // Draw objects
     renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
     renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+
 
     // Draw intersections
     for (auto& obj : m_scene_objects) {
@@ -95,5 +102,4 @@ void View::_draw() {
 
     renderer().text("Cam: "   + glm::to_string(camera().position), 15.0f, m_height - 20.0f, 0.4f);
     renderer().text("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 40.0f, 0.4f);
-    renderer().text("draw: "  + std::to_string(dt_draw) + "ms",  15.0f, m_height - 60.0f, 0.4f);
 }

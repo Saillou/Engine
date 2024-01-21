@@ -26,11 +26,15 @@ void BaseScene::run() {
 
     // Prepare
     Viewport(width(), height());
+    clear();
 
     // Application draw
     _renderer._clear();
-    _renderer._deferred = true;
+    _renderer.deferred = m_enable_deffered_draw;
     _draw();
+
+    if (!m_enable_deffered_draw)
+        return;
 
     // Resolve draw order and render shadow scene
     Viewport(_renderer._shadower.width(), _renderer._shadower.height());
@@ -42,8 +46,8 @@ void BaseScene::run() {
     {
         m_framebuffer_main.clear();
 
+        _renderer.deferred = false;
         _renderer._draw();
-        _renderer._deferred = false;
     }
     m_framebuffer_main.unbind();
 
