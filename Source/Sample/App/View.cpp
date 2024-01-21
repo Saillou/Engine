@@ -108,6 +108,7 @@ void View::_draw() {
     // Draw debug texts
     float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000.0f;
 
-    renderer().text("Cam: "   + glm::to_string(camera().position), 15.0f, m_height - 20.0f, 0.4f);
-    renderer().text("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 40.0f, 0.4f);
+    renderer().text("Cam pos: " + glm::to_string(camera().position),  15.0f, m_height - 20.0f, 0.4f);
+    renderer().text("Cam dir: " + glm::to_string(camera().direction), 15.0f, m_height - 40.0f, 0.4f);
+    renderer().text("Mouse: "   + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 60.0f, 0.4f);
 }

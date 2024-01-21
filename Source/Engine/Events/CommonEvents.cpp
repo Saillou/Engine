@@ -2,9 +2,10 @@
 
 // Public
 // -- Keyboard events --
-CommonEvents::KeyPressed::KeyPressed(int key) :
+CommonEvents::KeyPressed::KeyPressed(int key, int action) :
 	_Base(_Type::EventKeyPressed),
-	key(key)
+	key(key),
+	action(action)
 {
 	// ..
 }
@@ -16,9 +17,10 @@ CommonEvents::MouseMoved::MouseMoved(int x, int y) :
 {
 	// ..
 }
-CommonEvents::MouseClicked::MouseClicked(int button) :
-	_Base(_Type::EventMouseClicked),
-	button(button)
+CommonEvents::MouseButton::MouseButton(int button, int action) :
+	_Base(_Type::EventMouseButton),
+	button(button),
+	action(action)
 {
 	// ..
 }

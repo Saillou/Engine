@@ -5,7 +5,6 @@
 #include <Engine/Utils/Timer.hpp>
 
 #include "View.hpp"
-#include "ViewForest.hpp"
 
 struct Controller: private Event::Subscriber {
     Controller(std::shared_ptr<BaseScene> scene);
@@ -15,7 +14,7 @@ protected:
     void _on_state_update(const CommonEvents::StateUpdated& evt);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
-    void _on_mouse_clicked(const CommonEvents::MouseClicked& evt);
+    void _on_mouse_button(const CommonEvents::MouseButton& evt);
 
 private:
     std::shared_ptr<View> m_view;

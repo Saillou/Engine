@@ -6,46 +6,48 @@
 struct CommonEvents : public Event {
 	// -- Inputs --
 	struct KeyPressed : public _Base {
-		explicit KeyPressed(int key = -1);
+		KeyPressed(int key = -1, int action = -1);
 		int key;
+		int action;
 	};
 	struct MouseMoved : public _Base {
-		explicit MouseMoved(int x = 0, int y = 0);
+		MouseMoved(int x = 0, int y = 0);
 		int x;
 		int y;
 	};
-	struct MouseClicked : public _Base {
-		explicit MouseClicked(int button = 0);
+	struct MouseButton : public _Base {
+		MouseButton(int button = -1, int action = -1);
 		int button;
+		int action;
 	};
 
 	// -- State --
 	struct StateUpdated : public _Base {
-				explicit StateUpdated();
+		StateUpdated();
 	};
 
 	// -- Scene --
 	struct SceneRefresh : public _Base {
-				explicit SceneRefresh();
+		SceneRefresh();
 	};
 	struct SceneEnded : public _Base {
-				explicit SceneEnded();
+		SceneEnded();
 	};
 	struct SceneFinishedRender : public _Base {
-				explicit SceneFinishedRender();
+		SceneFinishedRender();
 	};
 
 	// -- Ray casting --
 	struct MouseHit : public _Base {
-					explicit MouseHit(float x = 0, float y = 0, float z = 0);
-					float x, y, z;
+		MouseHit(float x = 0, float y = 0, float z = 0);
+		float x, y, z;
 	};
 
 private:
 	enum _Type : int {
 		EventKeyPressed,
 		EventMouseMoved,
-		EventMouseClicked,
+		EventMouseButton,
 		
 		EventStateUpdated,
 		

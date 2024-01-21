@@ -17,3 +17,9 @@ enum Button {
 	Right  = 1,
 	Middle = 2,
 };
+
+enum Action {
+	Released = 0,
+	Pressed,
+	Repeated
+};
