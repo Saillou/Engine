@@ -39,6 +39,8 @@ protected:
     int m_width  = 0;
     int m_height = 0;
 
+    Framebuffer m_framebuffer_main;
+
 
 private:
     Renderer _renderer;

@@ -5,6 +5,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include <glm/gtx/string_cast.hpp>
+
 #include <Engine/Utils/RayCaster.hpp>
 
 // Random engine
@@ -21,7 +23,6 @@ ViewForest::ViewForest(int widthHint, int heightHint):
             std::make_unique<Entity>(Entity::SimpleShape::Cube)
         }
     }),
-    framebuffer_main(Framebuffer::Multisample, m_width, m_height),
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
@@ -77,106 +78,74 @@ void ViewForest::_draw() {
     static float dt_draw = 0.0f;
     m_timer.tic();
 
-    //// Main scene
-    //framebuffer_main.bind();
-    //framebuffer_main.clear();
-    {
-        // Lights
-        for (auto& light : lights()) {
-            const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
+    // Lights
+    for (auto& light : lights()) {
+        const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
-            m_entities[_ObjectId::Sphere]->localMaterial().diffuse_color = light.color;
-            m_entities[_ObjectId::Sphere]->setPoses({ Q });
-            renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere]);
-        }
-
-        // List of targets
-        std::vector<Pose> targets;
-
-        // Draw objects
-        for (const _Object& obj : m_objects) {
-            // Normal colors
-            m_entities[obj.id]->localMaterial().diffuse_color = obj.material_color;
-            renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
-
-            // Ray cast
-            for(const auto& quat : obj.quats) {
-                auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat);
-                if (!cast_res)
-                    continue;
-
-                // Highlight
-                m_entities[obj.id]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
-                m_entities[obj.id]->setPoses({ quat });
-                renderer().draw(Render::DrawType::Geometry, *m_entities[obj.id]);
-
-                // Intersection
-                targets.push_back(
-                    glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f))
-                );
-            }
-        }
-
-        // Draw targets
-        if (!targets.empty()) {
-            m_entities[_ObjectId::Target]->setPoses(targets);
-            m_entities[_ObjectId::Target]->localMaterial().diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
-            renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Target]);
-        }
-
-        // Particles
-        {
-            renderer().draw(Render::DrawType::Basic, *m_fireGrid.particles.object);
-        }
-
-        // Draw ground
-        {
-            // Grid
-            {
-                m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
-                renderer().draw(Render::DrawType::Geometry, *m_entities[_ObjectId::Grid]);
-            }
-
-            // Shadow
-            {
-                m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-                renderer().draw(Render::DrawType::Shadows, *m_entities[_ObjectId::Grid]);
-            }
-        }
-
-        // Skybox
-        m_skybox->draw(camera());
+        m_entities[_ObjectId::Sphere]->localMaterial().diffuse_color = light.color;
+        m_entities[_ObjectId::Sphere]->setPoses({ Q });
+        renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere]);
     }
-    //framebuffer_main.unbind();
 
-    // Draw on final frame
-    //BaseScene::clear();
+    // List of targets
+    std::vector<Pose> targets;
 
-    //// Apply filter
-    //if(enable_filter) {
-    //    m_filter.apply(framebuffer_main);
-    //    BaseScene::drawFrame(m_filter.frame());
-    //}
-    //else {
-    //    BaseScene::drawFrame(framebuffer_main);
-    //}
+    // Draw objects
+    for (const _Object& obj : m_objects) {
+        // Normal colors
+        m_entities[obj.id]->localMaterial().diffuse_color = obj.material_color;
+        renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
+
+        // Ray cast
+        for(const auto& quat : obj.quats) {
+            auto cast_res = RayCaster::Intersect(m_mousePos, camera(), *m_entities[obj.id], quat);
+            if (!cast_res)
+                continue;
+
+            // Highlight
+            m_entities[obj.id]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
+            m_entities[obj.id]->setPoses({ quat });
+            renderer().draw(Render::DrawType::Geometry, *m_entities[obj.id]);
+
+            // Intersection
+            targets.push_back(
+                glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f))
+            );
+        }
+    }
+
+    // Draw targets
+    if (!targets.empty()) {
+        m_entities[_ObjectId::Target]->setPoses(targets);
+        m_entities[_ObjectId::Target]->localMaterial().diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
+        renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Target]);
+    }
+
+    // Particles
+    {
+        renderer().draw(Render::DrawType::Basic, *m_fireGrid.particles.object);
+    }
+
+    // Draw ground
+    {
+        // Grid
+        {
+            m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
+            renderer().draw(Render::DrawType::Geometry, *m_entities[_ObjectId::Grid]);
+        }
+
+        // Shadow
+        {
+            m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+            renderer().draw(Render::DrawType::Shadows, *m_entities[_ObjectId::Grid]);
+        }
+    }
 
     // Debug texts
     {
-        std::ostringstream ss;
-        ss  << "Cam: x: " << int(camera().position.x * 10) / 10.0f
-            << ", y: "    << int(camera().position.y * 10) / 10.0f
-            << ", z: "    << int(camera().position.z * 10) / 10.0f;
-        renderer().text(ss.str(), 20.0f, m_height - 30.0f, 0.5f, glm::vec4(1, 1, 1, 1));
-
-        ss = {};
-        ss  << "Mouse: x: " << int(m_width  * m_mousePos.x * 10) / 10.0f
-            << ", y: "      << int(m_height * m_mousePos.y * 10) / 10.0f;
-        renderer().text(ss.str(), 20.0f, m_height - 60.0f, 0.5f, glm::vec4(1, 1, 1, 1));
-
-        ss = {};
-        ss << "draw: " << int(dt_draw * 1000 * 1000) / 1000 << "ms";
-        renderer().text(ss.str(), 20.0f, m_height - 90.0f, 0.5f, glm::vec4(1, 1, 1, 1));
+        renderer().text("Cam: " + glm::to_string(camera().position), 15.0f, m_height - 20.0f, 0.4f);
+        renderer().text("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 40.0f, 0.4f);
+        renderer().text("draw: " + std::to_string(dt_draw) + "ms", 15.0f, m_height - 60.0f, 0.4f);
     }
 
     // Prepare next
@@ -185,7 +154,21 @@ void ViewForest::_draw() {
 }
 
 void ViewForest::_post_draw() {
-    // ..
+    // Skybox
+    m_framebuffer_main.bind();
+    {
+        m_skybox->draw(camera());
+    }
+    m_framebuffer_main.unbind();
+
+    // Apply filter
+    if (enable_filter) {
+        m_filter.apply(m_framebuffer_main);
+        BaseScene::drawFrame(m_filter.frame());
+    }
+    else {
+        BaseScene::drawFrame(m_framebuffer_main);
+    }
 }
 
 // Allocate static memory
@@ -382,6 +365,5 @@ void ViewForest::mouse_on(int x, int y) {
 }
 
 void ViewForest::_on_resize() {
-    framebuffer_main.resize(m_width, m_height);
     m_filter.resize(m_width, m_height);
 }

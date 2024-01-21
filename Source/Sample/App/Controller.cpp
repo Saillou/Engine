@@ -4,7 +4,7 @@
 #include <iostream>
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
-    m_view(std::dynamic_pointer_cast<ViewForest>(scene))
+    m_view(std::dynamic_pointer_cast<View>(scene))
 {
     assert(m_view != nullptr);
 
@@ -55,6 +55,13 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         m_view->camera().position += 0.05f * dir;
     }
+
+    //// Filter
+    //switch (evt.key)
+    //{
+    //    case 'R': m_view->enable_filter = true;  break;
+    //    case 'T': m_view->enable_filter = false; break;
+    //}
 
     // Lights
     size_t nLightsEnabled = -1;

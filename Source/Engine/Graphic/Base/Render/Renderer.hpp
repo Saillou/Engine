@@ -27,6 +27,7 @@ private:
 	Camera _camera				= {};
 	std::vector<Light> _lights	= {};
 	ShadowRender _shadower;
+	bool _deferred = false;
 
 	void _clear();
 	void _compute();

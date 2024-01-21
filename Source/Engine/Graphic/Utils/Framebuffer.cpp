@@ -105,6 +105,7 @@ void Framebuffer::bind() const {
 }
 
 void Framebuffer::unbind() const {
+	m_texture_attached.unbind();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

@@ -73,7 +73,6 @@ private:
 
     // Other members
     BaseFilter m_filter;
-    Framebuffer framebuffer_main;
 
     glm::vec2 m_mousePos;
     Timer::Chronometre m_timer;

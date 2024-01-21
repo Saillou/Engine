@@ -3,31 +3,45 @@
 #include <iostream>
 
 void Renderer::draw(Render::DrawType type, Entity& entity) {
-    if (entity.poses().empty()) {
-        std::cerr << "Warning: no poses specified, no draws" << std::endl;
-        return;
+    if (_deferred) {
+        _DrawEntity di;
+        di.type = type;
+        di._model = entity._model;
+        di._localPose = entity._localPose;
+        di._localMaterial = entity._localMaterial;
+        di._poses = entity._poses;
+        di._materials = entity._materials;
+
+        _heapEntities.emplace_back(std::move(di));
     }
-
-    _DrawEntity di;
-    di.type             = type;
-    di._model           = entity._model;
-    di._localPose       = entity._localPose;
-    di._localMaterial   = entity._localMaterial;
-    di._poses           = entity._poses;
-    di._materials       = entity._materials;
-
-    _heapEntities.emplace_back(std::move(di));
+    else {
+        Shader placeHolder;
+        entity._update_model_buffer();
+        entity._model->draw([&]() -> Shader& {
+            switch (type) {
+                case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
+                case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
+                case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
+                case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
+            } return placeHolder;
+        }().set("diffuse_color", entity._localMaterial.diffuse_color));
+    }
 }
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
-    _DrawText dt;
-    dt.text  = text;
-    dt.x     = x;
-    dt.y     = y;
-    dt.scale = scale;
-    dt.color = color;
+    if (_deferred) {
+        _DrawText dt;
+        dt.text = text;
+        dt.x = x;
+        dt.y = y;
+        dt.scale = scale;
+        dt.color = color;
 
-    _heapText.emplace_back(std::move(dt));
+        _heapText.emplace_back(std::move(dt));
+    }
+    else {
+        TextEngine::Write(text, x, y, scale, color);
+    }
 }
 
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
@@ -80,8 +94,8 @@ void Renderer::_clear() {
     _heapText.clear();
 }
 
-void Renderer::_compute() {
-
+void Renderer::_compute() 
+{
     _shadower.render(_camera, _lights, [=](Shader& sh) {
         for (_DrawEntity& di : _heapEntities) {
             di._model->_localPose = glm::mat4(di._localPose);
