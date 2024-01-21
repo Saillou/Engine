@@ -68,8 +68,7 @@ namespace Thomas
         if (!m_grid)
             return;
 
-        m_grid->setState(GridComponent::GridComponentState::Visible);
-
+        m_grid->setState(GridComponent::GridComponentState::Visible);   
     }
 
     void ConstructComponent::cancel()

@@ -30,7 +30,7 @@ namespace Thomas
         _subscribe(&View::_on_mouse_moved);
 
         // Camera
-        m_camera.position = glm::vec3(0.0f, -6.0f, 3.0f);
+        m_camera.position = glm::vec3(0.f, -3.5f, 8.0f);
         m_camera.direction = glm::vec3(0.0f, 0.0, 0.0f);
 
         // Lightnings

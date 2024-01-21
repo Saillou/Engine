@@ -3,8 +3,13 @@
 #include "TrainGame/App/Components/TrainController.h"
 #include "TrainGame/App/Components/GridComponent.h"
 #include "TrainGame/App/Components/ConstructComponent.h"
+#include "TrainGame/App/Components/InventoryComponent.h"
+#include "TrainGame/App/Components/ProduceComponent.h"
+#include "TrainGame/App/Components/DropComponent.h"
 
 #include "TrainGame/TrainGame/Grid.hpp"
+
+#include "TrainGame/App/Objects/Item.h"
 
 namespace Thomas
 {
@@ -42,32 +47,32 @@ namespace Thomas
             TrainController* trainController = new TrainController(&obj->transform);
             obj->components.push_back(trainController);
 
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 6,6 }, { 0,0 });
-            gridComponent->setState(GridComponent::GridComponentState::Construct);
-            obj->components.push_back(gridComponent);
+            InventoryComponent* inventory = new InventoryComponent(&obj->transform);
+            inventory->setLimit(3);
+            obj->components.push_back(inventory);
 
             m_objects[obj->id] = obj;
 
             trainController->addPoint({ Grid::getPosition(x, y).x, Grid::getPosition(x, y).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x + 4, y - 1).x, Grid::getPosition(x + 4, y - 1).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 4, y - 1).x, Grid::getPosition(x + 4, y - 2).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x + 7, y - 2).x, Grid::getPosition(x + 7, y - 2).y, z });
             trainController->addPoint({ Grid::getPosition(x + 31, y - 2).x, Grid::getPosition(x + 31, y - 2).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 35, y - 1).x, Grid::getPosition(x + 35, y - 1).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 35, y - 1).x, Grid::getPosition(x + 35, y - 2).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x + 38, y).x, Grid::getPosition(x + 38, y).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x + 39, y + 4).x, Grid::getPosition(x + 39, y + 4).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 39, y + 4).x, Grid::getPosition(x + 40, y + 4).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x + 40, y + 7).x, Grid::getPosition(x + 40, y + 7).y, z });
             trainController->addPoint({ Grid::getPosition(x + 40, y + 23).x, Grid::getPosition(x + 40, y + 23).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 39, y + 27).x, Grid::getPosition(x + 39, y + 27).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 39, y + 27).x, Grid::getPosition(x + 40, y + 27).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x + 38, y + 30).x, Grid::getPosition(x + 38, y + 30).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x + 35, y + 31).x, Grid::getPosition(x + 35, y + 31).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 35, y + 31).x, Grid::getPosition(x + 35, y + 32).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x + 31, y + 32).x, Grid::getPosition(x + 31, y + 32).y, z });
             trainController->addPoint({ Grid::getPosition(x + 7, y + 32).x, Grid::getPosition(x + 7, y + 32).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 4, y + 31).x, Grid::getPosition(x + 4, y + 31).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x + 4, y + 31).x, Grid::getPosition(x + 4, y + 32).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x, y + 30).x, Grid::getPosition(x, y + 30).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x - 1, y + 27).x, Grid::getPosition(x - 1, y + 27).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x - 1, y + 27).x, Grid::getPosition(x - 2, y + 27).y, z }); // turn helper
             trainController->addPoint({ Grid::getPosition(x - 2, y + 23).x, Grid::getPosition(x - 2, y + 23).y, z });
             trainController->addPoint({ Grid::getPosition(x - 2, y + 7).x, Grid::getPosition(x - 2, y + 7).y, z });
-            trainController->addPoint({ Grid::getPosition(x - 1, y + 4).x, Grid::getPosition(x - 1, y + 4).y, z }); // turn helper
+            trainController->addPoint({ Grid::getPosition(x - 2, y + 4).x, Grid::getPosition(x - 2, y + 4).y, z }); // turn helper
         }
 
         // tracks
@@ -374,6 +379,30 @@ namespace Thomas
             constructComponent->addGridComponent(gridComponent);
             constructComponent->addObjectDeletionPtr(&obj->selectedForDeletion);
             m_objects[obj->id] = obj;
+
+            Item item{ Item::ItemType::Item1 };
+            ProduceComponent* produce = new ProduceComponent(item, 5.f, 1);
+            obj->components.push_back(produce);
+
+            const auto size = Grid::getCellSize();
+            const glm::vec3 p1 = { size.x * -4, size.y * -4, 0 };
+            const glm::vec3 p2 = { size.x * 4, size.y * 4, 0 };
+            DropComponent* dropComponent = new DropComponent(&obj->transform, p1,p2);
+
+            for (const auto& obj : m_objects)
+            {
+                auto it = std::find_if(obj.second->components.begin(), obj.second->components.end(), [](Component* cmpt) {return cmpt->m_id == ComponentId::InventoryComponent; });
+
+                if (it != obj.second->components.end())
+                {
+                    std::cout << "Found object with inventory component!\n";
+                    dropComponent->setInventoryComponent((InventoryComponent*)*it);
+                    break;
+                }
+            }
+
+            dropComponent->setProduceComponent(produce);
+            obj->components.push_back(dropComponent);
         }
 
         m_timer.tic();
