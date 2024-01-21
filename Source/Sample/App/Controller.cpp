@@ -4,7 +4,7 @@
 #include <iostream>
 
 Controller::Controller(std::shared_ptr<BaseScene> scene):
-    m_view(std::dynamic_pointer_cast<View>(scene))
+    m_view(std::dynamic_pointer_cast<ViewForest>(scene))
 {
     assert(m_view != nullptr);
 
@@ -13,6 +13,16 @@ Controller::Controller(std::shared_ptr<BaseScene> scene):
     _subscribe(&Controller::_on_key_pressed);
     _subscribe(&Controller::_on_mouse_moved);
     _subscribe(&Controller::_on_mouse_clicked);
+
+    // Lights
+    m_pontential_lights = {
+        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
+        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+    };
+    m_view->lights() = m_pontential_lights;
 
     // Start
     m_timer.tic();
@@ -47,15 +57,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     }
 
     // Lights
-    const std::vector<Light> pontential_lights = {
-        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-    };
     size_t nLightsEnabled = -1;
-
     switch (evt.key)
     {
         case Numpad_0 + 0: nLightsEnabled = 0; break;
@@ -67,15 +69,8 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     }
 
     if (nLightsEnabled != -1) {
-        m_view->lights() = std::vector<Light>(pontential_lights.cbegin(), pontential_lights.cbegin() + nLightsEnabled);
+        m_view->lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + nLightsEnabled);
     }
-
-    //// Other
-    //switch (evt.key)
-    //{
-    //    case 'R': m_view->enable_filter = true;  break;
-    //    case 'T': m_view->enable_filter = false; break;
-    //}
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {

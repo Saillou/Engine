@@ -10,7 +10,7 @@ struct BaseScene {
     virtual ~BaseScene();
 
     void clear();
-    void draw();                       
+    void run();                       
     void resize(int width, int height);
 
     static void Viewport(int width, int height);
@@ -26,16 +26,14 @@ struct BaseScene {
     Renderer& renderer();
     Camera& camera();
     std::vector<Light>& lights();
-    const ShadowRender* shadower();
 
 protected:
     virtual void _init_gl_config(); // Override this to enable or disable some opengl functionalities. (eg PENCIL_TEST)
     virtual void _update_camera();  // Override this if camera perspective isn't the default one.
     virtual void _on_resize();      // Override this to resize framebuffer or texture depending on the window size.
 
-    virtual void _draw_shadow(Shader& sh); // called by an instance of a `ShadowRender`
-    virtual void _prepare_draw();          // called before `draw` method
-    virtual void _draw();                  // called during `draw` method
+    virtual void _draw();           // called at the rendering start
+    virtual void _post_draw();      // called after `draw` method
 
     // Members
     int m_width  = 0;

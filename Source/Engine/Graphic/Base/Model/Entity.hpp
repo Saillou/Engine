@@ -10,6 +10,8 @@
 
 struct Entity
 {
+    friend struct Renderer;
+
     enum SimpleShape {
         Custom, Cube, Sphere
     };
@@ -19,21 +21,33 @@ struct Entity
 
     virtual ~Entity() = default;
 
-    // Helpers
-    void addPose(const Pose&);
-
     // Setters
     void setLocalPose(const Pose&);
+    void setLocalMaterial(const Material&);
+
     void setPoses(const std::vector<Pose>&);
     void setPosesWithMaterials(const std::vector<Pose>&, const std::vector<Material>&);
 
     // Getters
-    Model model;
-    Material material;
+    Pose& localPose();
+    Material& localMaterial();
 
-    Pose localPose() const;
+    const Pose& localPose() const;
+    const Material& localMaterial() const;
+
+    const Model& model() const;
     const std::vector<Pose>& poses() const;
+    const std::vector<Material>& materials() const;
 
-private:
-    std::vector<Pose> _poses;
+protected:
+    void _update_model_buffer();
+
+    std::shared_ptr<Model> _model;
+
+    Pose     _localPose;
+    Material _localMaterial;
+
+    std::vector<Pose>     _poses;
+    std::vector<Material> _materials;
+
 };

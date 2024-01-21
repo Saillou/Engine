@@ -1,51 +1,33 @@
 #include "Renderer.hpp"
+
 #include <iostream>
 
-Renderer::Renderer()
-{
-
-}
-
-void Renderer::draw(Render::DrawType type, const Entity& entity) {
+void Renderer::draw(Render::DrawType type, Entity& entity) {
     if (entity.poses().empty()) {
         std::cerr << "Warning: no poses specified, no draws" << std::endl;
         return;
     }
 
-    switch (type)
-    {
-    case Render::Basic:
-        entity.model.draw(
-            _setShader(Cookable::CookType::Basic, _camera, {}, nullptr)
-            .set("diffuse_color", entity.material.diffuse_color)
-        );
-        break;
+    _DrawEntity di;
+    di.type             = type;
+    di._model           = entity._model;
+    di._localPose       = entity._localPose;
+    di._localMaterial   = entity._localMaterial;
+    di._poses           = entity._poses;
+    di._materials       = entity._materials;
 
-    case Render::Lights:
-        entity.model.draw(
-            _setShader(Cookable::CookType::Basic, _camera, _lights, nullptr)
-            .set("diffuse_color", entity.material.diffuse_color)
-        );
-        break;
-
-    case Render::Shadows:
-        entity.model.draw(
-            _setShader(Cookable::CookType::Basic, _camera, _lights, &_shadower)
-            .set("diffuse_color", entity.material.diffuse_color)
-        );
-        break;
-
-    case Render::Geometry:
-        entity.model.draw(
-            _setShader(Cookable::CookType::Geometry, _camera, {}, nullptr)
-            .set("diffuse_color", entity.material.diffuse_color)
-        );
-        break;
-    }
+    _heapEntities.emplace_back(std::move(di));
 }
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
-    TextEngine::Write(text, x, y, scale, color);
+    _DrawText dt;
+    dt.text  = text;
+    dt.x     = x;
+    dt.y     = y;
+    dt.scale = scale;
+    dt.color = color;
+
+    _heapText.emplace_back(std::move(dt));
 }
 
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
@@ -66,8 +48,7 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
     // Use
     Shader& sh = get(type)->use();
 
-    switch (type)
-    {
+    switch (type) {
     case Cookable::CookType::Basic:
         if (shadower)
             shadower->bindTextures(GL_TEXTURE0 + 1);
@@ -91,6 +72,46 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
           .set("View",       camera.modelview);
         break;
     }
-
     return sh;
+}
+
+void Renderer::_clear() {
+    _heapEntities.clear();
+    _heapText.clear();
+}
+
+void Renderer::_compute() {
+
+    _shadower.render(_camera, _lights, [=](Shader& sh) {
+        for (_DrawEntity& di : _heapEntities) {
+            di._model->_localPose = glm::mat4(di._localPose);
+            di._model->_setBatch(std::vector<glm::mat4>(di._poses.cbegin(), di._poses.cend()), Material::ExtractColors(di._materials));
+
+            if (!di._localMaterial.cast_shadow)
+                continue;
+
+            di._model->drawElements(sh);
+        }
+    });
+}
+
+void Renderer::_draw() {
+    for (_DrawEntity& di : _heapEntities) {
+        di._model->_localPose = glm::mat4(di._localPose);
+        di._model->_setBatch(std::vector<glm::mat4>(di._poses.cbegin(), di._poses.cend()), Material::ExtractColors(di._materials));
+
+        Shader placeHolder;
+        di._model->draw([&]() -> Shader& {
+            switch (di.type) {
+                case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
+                case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
+                case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
+                case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
+            } return placeHolder;
+        }().set("diffuse_color", di._localMaterial.diffuse_color));
+    }
+
+    for (_DrawText& dt : _heapText) {
+        TextEngine::Write(dt.text, dt.x, dt.y, dt.scale, dt.color);
+    }
 }

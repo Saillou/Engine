@@ -41,11 +41,11 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 		return {};
 
 	// Traverse model's nodes
-	if (!objModel.model.root())
+	if (!objModel.model().root())
 		return {};
 
 	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&objModel.model.root());
+	st.push(&objModel.model().root());
 
 	while (!st.empty()) {
 		// Get next in line
@@ -54,7 +54,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform * objModel.model.localPose());
+			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform * glm::mat4(objModel.localPose()));
 
 			if (optIntersect.has_value())
 				return optIntersect;

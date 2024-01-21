@@ -22,6 +22,7 @@
 
 struct Model
 {
+    friend struct Renderer;
     friend struct Entity;
 
     Model() = default;

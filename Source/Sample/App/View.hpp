@@ -12,17 +12,10 @@
 struct View : public BaseScene {
     View(int widthHint = 0, int heightHint = 0);
 
-    void _prepare_draw()          override;
-    void _draw_shadow(Shader& sh) override;
-    void _draw()                  override;
-
-    void _on_resize()             override;
-
+    void _draw() override;
     void mouse_on(int x, int y);
 
 private:
-    void _drawText();
-
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
     std::vector<std::shared_ptr<Entity>> m_scene_objects;
 

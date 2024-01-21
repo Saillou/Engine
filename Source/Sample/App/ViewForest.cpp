@@ -65,7 +65,7 @@ ViewForest::ViewForest(int widthHint, int heightHint):
 }
 
 // Methods
-void ViewForest::_prepare_draw() {
+void ViewForest::_draw() {
     static float dt_since_last_draw = 0.0f;
 
     dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
@@ -73,33 +73,19 @@ void ViewForest::_prepare_draw() {
 
     _setParticles(dt_since_last_draw);
     _setObjects();
-}
 
-void ViewForest::_draw_shadow(Shader& sh) {
-    // Draw objects
-    for (const _Object& obj : m_objects) {
-        m_entities[obj.id]->model.drawElements(sh);
-    }
-
-    // Particles
-    {
-        m_fireGrid.particles.object->model.drawElements(sh);
-    }
-}
-
-void ViewForest::_draw() {
     static float dt_draw = 0.0f;
     m_timer.tic();
 
-    // Main scene
-    framebuffer_main.bind();
-    framebuffer_main.clear();
+    //// Main scene
+    //framebuffer_main.bind();
+    //framebuffer_main.clear();
     {
         // Lights
         for (auto& light : lights()) {
             const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
 
-            m_entities[_ObjectId::Sphere]->material.diffuse_color = light.color;
+            m_entities[_ObjectId::Sphere]->localMaterial().diffuse_color = light.color;
             m_entities[_ObjectId::Sphere]->setPoses({ Q });
             renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere]);
         }
@@ -110,7 +96,7 @@ void ViewForest::_draw() {
         // Draw objects
         for (const _Object& obj : m_objects) {
             // Normal colors
-            m_entities[obj.id]->material.diffuse_color = obj.material_color;
+            m_entities[obj.id]->localMaterial().diffuse_color = obj.material_color;
             renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
 
             // Ray cast
@@ -120,7 +106,7 @@ void ViewForest::_draw() {
                     continue;
 
                 // Highlight
-                m_entities[obj.id]->material.diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
+                m_entities[obj.id]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
                 m_entities[obj.id]->setPoses({ quat });
                 renderer().draw(Render::DrawType::Geometry, *m_entities[obj.id]);
 
@@ -134,7 +120,7 @@ void ViewForest::_draw() {
         // Draw targets
         if (!targets.empty()) {
             m_entities[_ObjectId::Target]->setPoses(targets);
-            m_entities[_ObjectId::Target]->material.diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
+            m_entities[_ObjectId::Target]->localMaterial().diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
             renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Target]);
         }
 
@@ -147,13 +133,13 @@ void ViewForest::_draw() {
         {
             // Grid
             {
-                m_entities[_ObjectId::Grid]->material.diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
+                m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
                 renderer().draw(Render::DrawType::Geometry, *m_entities[_ObjectId::Grid]);
             }
 
             // Shadow
             {
-                m_entities[_ObjectId::Grid]->material.diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+                m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
                 renderer().draw(Render::DrawType::Shadows, *m_entities[_ObjectId::Grid]);
             }
         }
@@ -161,19 +147,19 @@ void ViewForest::_draw() {
         // Skybox
         m_skybox->draw(camera());
     }
-    framebuffer_main.unbind();
+    //framebuffer_main.unbind();
 
     // Draw on final frame
-    BaseScene::clear();
+    //BaseScene::clear();
 
-    // Apply filter
-    if(enable_filter) {
-        m_filter.apply(framebuffer_main);
-        BaseScene::drawFrame(m_filter.frame());
-    }
-    else {
-        BaseScene::drawFrame(framebuffer_main);
-    }
+    //// Apply filter
+    //if(enable_filter) {
+    //    m_filter.apply(framebuffer_main);
+    //    BaseScene::drawFrame(m_filter.frame());
+    //}
+    //else {
+    //    BaseScene::drawFrame(framebuffer_main);
+    //}
 
     // Debug texts
     {
@@ -196,6 +182,10 @@ void ViewForest::_draw() {
     // Prepare next
     dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
     m_timer.tic();
+}
+
+void ViewForest::_post_draw() {
+    // ..
 }
 
 // Allocate static memory

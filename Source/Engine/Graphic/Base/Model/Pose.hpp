@@ -12,6 +12,7 @@ struct Pose {
 	operator glm::mat4() const;
 	operator glm::mat4&();
 	const Pose& operator=(const glm::mat4&);
+	Pose& operator=(glm::mat4&);
 
 private:
 	glm::mat4 _quat;

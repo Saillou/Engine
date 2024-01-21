@@ -31,7 +31,7 @@ bool Window::update() {
 
     // Render
     if (m_scene) {
-        m_scene->draw();
+        m_scene->run();
     }
 
     glfwSwapBuffers(m_window);

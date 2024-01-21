@@ -19,20 +19,28 @@ void BaseScene::clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void BaseScene::draw() {
+void BaseScene::run() {
     // Setup
     _update_camera();
-    _prepare_draw();
 
-    // Shadow scene
-    Viewport(_renderer._shadower.width(), _renderer._shadower.height());
-    _renderer._shadower.render(_renderer._camera, _renderer._lights, [=](Shader& sh) {
-        _draw_shadow(sh);
-    });
-
-    // Main scene
+    // Prepare
     Viewport(width(), height());
+    clear();
+    _renderer._clear();
+
+    // Application draw
     _draw();
+
+    // Resolve draw order and render shadow scene
+    Viewport(_renderer._shadower.width(), _renderer._shadower.height());
+    _renderer._compute();
+
+    // Render main scene
+    Viewport(width(), height());
+    _renderer._draw();
+
+    // Apply filters
+    _post_draw();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,15 +48,11 @@ void BaseScene::_on_resize() {
     // to be overrided
 }
 
-void BaseScene::_prepare_draw() {
-    // to be overrided
-}
-
-void BaseScene::_draw_shadow(Shader& sh) {
-    // to be overrided
-}
-
 void BaseScene::_draw() {
+    // to be overrided
+}
+
+void BaseScene::_post_draw() {
     // to be overrided
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,7 +126,3 @@ Camera& BaseScene::camera() {
 std::vector<Light>& BaseScene::lights() {
     return _renderer._lights;
 }
-const ShadowRender* BaseScene::shadower() {
-    return &(_renderer._shadower);
-}
-

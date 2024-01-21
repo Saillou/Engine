@@ -30,3 +30,7 @@ const Pose& Pose::operator=(const glm::mat4& q) {
     _quat = q;
     return *this;
 }
+Pose& Pose::operator=(glm::mat4& q) {
+    _quat = q;
+    return *this;
+}

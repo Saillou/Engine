@@ -20,9 +20,8 @@ struct ViewForest : public BaseScene {
     bool enable_filter = false;
 
 protected:
-    void _prepare_draw()          override;
-    void _draw_shadow(Shader& sh) override;
-    void _draw()                  override;
+    void _draw()      override;
+    void _post_draw() override;
 
 private:
     enum class _ObjectId {

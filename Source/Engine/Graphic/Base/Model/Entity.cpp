@@ -3,62 +3,75 @@
 #include "Primitive/Cube.hpp"
 #include "Primitive/Sphere.hpp"
 
-// Helpers
-static inline std::vector<glm::vec4> _extractColors(const std::vector<Material>& materials) {
-    std::vector<glm::vec4> colors;
-    colors.reserve(materials.size());
-
-    for (const Material& material : materials) {
-        colors.push_back(material.diffuse_color);
-    }
-    return colors;
-}
-
 // Instances
 Entity::Entity(const std::string& path) :
-    model(path)
+    _model(std::make_shared<Model>(path))
 {
     // ..
 }
 
-Entity::Entity(SimpleShape shape)
+Entity::Entity(SimpleShape shape):
+    _model(std::make_shared<Model>())
 {
-    model._root = std::make_unique<Model::Node>();
+    _model->_root = std::make_unique<Model::Node>();
 
     switch (shape) {
     case Entity::Cube: 
-        model._root->meshes.push_back(Cube::CreateMesh());
+        _model->_root->meshes.push_back(Cube::CreateMesh());
         break;
 
     case Entity::Sphere: 
-        model._root->meshes.push_back(Sphere::CreateMesh());
+        _model->_root->meshes.push_back(Sphere::CreateMesh());
         break;
     }
 }
 
-void Entity::addPose(const Pose& newPose) {
-    _poses.push_back(newPose);
-    model._setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()));
+// Setters
+void Entity::setLocalPose(const Pose& pose) {
+    _localPose = pose;
 }
 
-void Entity::setLocalPose(const Pose& pose) {
-    model._localPose = pose;
+void Entity::setLocalMaterial(const Material& material) {
+    _localMaterial = material;
 }
 
 void Entity::setPoses(const std::vector<Pose>& poses) {
     _poses = poses;
-    model._setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()));
 }
 
 void Entity::setPosesWithMaterials(const std::vector<Pose>& poses, const std::vector<Material>& materials) {
     _poses = poses;
-    model._setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()), _extractColors(materials));
+    _materials = materials;
 }
 
-Pose Entity::localPose() const {
-    return model._localPose;
+// Getters
+Pose& Entity::localPose() {
+    return _localPose;
+}
+Material& Entity::localMaterial() {
+    return _localMaterial;
+}
+
+const Pose& Entity::localPose() const {
+    return _localPose;
+}
+const Material& Entity::localMaterial() const {
+    return _localMaterial;
 }
 
 const std::vector<Pose>& Entity::poses() const {
     return _poses;
+}
+const std::vector<Material>& Entity::materials() const {
+    return _materials;
+}
+
+const Model& Entity::model() const {
+    return *_model;
+}
+
+// Methods
+void Entity::_update_model_buffer() {
+    _model->_localPose = glm::mat4(_localPose);
+    _model->_setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()), Material::ExtractColors(_materials));
 }
