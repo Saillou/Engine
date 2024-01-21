@@ -18,17 +18,21 @@ View::View(int widthHint, int heightHint):
     // Entities
     m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Box"]     = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Target"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
     m_entities["Lantern"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
 
     // Scene objects
     Material stone = { glm::vec4(0.7f, 0.7f, 0.7f, 1.0f) };
-    Material paper = { glm::vec4(1.0f, 1.0f, 1.0f, 0.2f) };
+    Material paper = { glm::vec4(0.3f, 1.0f, 1.0f, 0.2f) };
     Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f), false };
 
     m_entities["Ground"]->localMaterial() = stone;
     m_entities["Ground"]->setLocalPose(glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f)));
     m_entities["Ground"]->setPoses({ glm::mat4(1.0f) });
+
+    m_entities["Box"]->localMaterial() = stone;
+    m_entities["Box"]->setPoses({ glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(0, 0, 1.0f)) });
 
     m_entities["Cube"]->localMaterial() = paper;
     {
@@ -36,6 +40,9 @@ View::View(int widthHint, int heightHint):
         const int n_side = 1;
         for (int x = -n_side; x <= n_side; x++) {
             for (int y = -n_side; y <= n_side; y++) {
+                if (x == 0 && y == 0)
+                    continue;
+
                 poses.push_back(
                     glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(10.0 * x, 10.0f * y, 1.0f))
                 );
@@ -82,6 +89,7 @@ void View::_draw() {
     // Draw objects
     renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
     renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+    renderer().draw(Render::DrawType::Shadows, *m_entities["Box"]);
 
 
     // Draw intersections
