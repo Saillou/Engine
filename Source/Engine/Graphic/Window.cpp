@@ -104,28 +104,12 @@ glm::ivec2 Window::mousePos() const {
     return m_mouse_pos;
 }
 
-std::shared_ptr<BaseScene> Window::scene() const {
-    return m_scene;
+Scene& Window::scene() {
+    return *m_scene;
 }
 
 GLFWwindow* Window::backend() {
     return m_window;
-}
-
-// Setters
-std::shared_ptr<BaseScene> Window::scene(std::shared_ptr<BaseScene> scene) {
-    m_scene.swap(scene);
-    if (!m_scene)
-        return nullptr;
-
-    // Adjust viewport
-    if (height() <= 0)
-        return nullptr;
-
-    _resize(width(), height());
-
-    // Get if needed
-    return m_scene;
 }
 
 void Window::toggleFullScreen() {
@@ -168,13 +152,13 @@ void Window::_init(const char* title) {
     });
 
     // Basic scene
-    m_scene = std::make_shared<BaseScene>();
-    m_scene->resize(m_width, m_height);
+    m_scene = std::make_shared<Scene>();
+    _resize(m_width, m_height);
 }
 
 // Private
 void Window::_resize(int width, int height) {
-    BaseScene::Viewport(width, height);
+    Scene::Viewport(width, height);
     TextEngine::SetViewport(0, 0, width, height);
 
     if (m_scene)

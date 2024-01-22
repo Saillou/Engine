@@ -7,13 +7,18 @@
 #include <glm/gtx/string_cast.hpp>
 #include <Engine/Utils/RayCaster.hpp>
 
-View::View(int widthHint, int heightHint) :
-    BaseScene(widthHint, heightHint),
+View::View(Scene& scene) :
+    m_scene(scene),
     m_mousePos(0.0f, 0.0f)
 {
+    // Root events
+    _subscribe(&View::_draw);
+    _subscribe(&View::_on_resize);
+    _subscribe(&View::_post_process);
+
     // Camera
-    camera().position = glm::vec3(0, -4, 0.75f);
-    camera().direction = glm::vec3(0, 0, 0);
+    m_scene.camera().position = glm::vec3(0, -4, 0.75f);
+    m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Entities
     m_entities["Ground"] = std::make_shared<Entity>(Entity::SimpleShape::Cube);
@@ -53,7 +58,8 @@ View::View(int widthHint, int heightHint) :
 
     m_scene_objects = {
         m_entities["Ground"],
-        m_entities["Cube"]
+        m_entities["Cube"],
+        m_entities["Box"]
     };
 
     // Decors
@@ -69,63 +75,72 @@ View::View(int widthHint, int heightHint) :
 
 // Callbacks
 void View::mouse_on(int x, int y) {
-    m_mousePos.x = (float)x / m_width;
-    m_mousePos.y = (float)y / m_height;
+    m_mousePos.x = (float)x / m_scene.width();
+    m_mousePos.y = (float)y / m_scene.height();
 }
 
-void View::_on_resize() {
-    m_filter.resize(width(), height());
+Scene& View::scene() {
+    return m_scene;
+}
+
+void View::_on_resize(const SceneEvents::Resized& evt) {
+    m_filter.resize(m_scene.width(), m_scene.height());
 }
 
 // Methods
-void View::_draw() {
+void View::_draw(const SceneEvents::Draw& evt) {
     m_timer.tic();
+    auto& renderer = m_scene.renderer();
 
     // Draw lights
     {
         std::vector<Pose> Qs;
         std::vector<Material> Ms;
-        for (const Light& light : lights()) {
+        for (const Light& light : m_scene.lights()) {
             Qs.push_back(glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
             Ms.push_back(Material{ light.color });
         }
         m_entities["Lantern"]->setPosesWithMaterials(Qs, Ms);
     }
-    renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
+    renderer.draw(Render::DrawType::Basic, *m_entities["Lantern"]);
 
     // Draw objects
-    renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
-    renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
-    renderer().draw(Render::DrawType::Shadows, *m_entities["Box"]);
+    renderer.draw(Render::DrawType::Shadows, *m_entities["Ground"]);
+    renderer.draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+    renderer.draw(Render::DrawType::Shadows, *m_entities["Box"]);
 
     // Draw intersections
     for (auto& obj : m_scene_objects) {
         for (auto& pose : obj->poses()) {
-            auto intersect_result = RayCaster::Intersect(m_mousePos, camera(), *obj, pose);
+            auto intersect_result = RayCaster::Intersect(m_mousePos, m_scene.camera(), *obj, pose);
             if (!intersect_result.has_value())
                 continue;
 
             const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
             m_entities["Target"]->setPoses({ Q });
-            renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
+            renderer.draw(Render::DrawType::Basic, *m_entities["Target"]);
         }
     }
 }
 
-void View::_post_draw() {
+void View::_post_process(const SceneEvents::PostDraw&) {
     // Apply filter
     if (enable_filter) {
-        m_filter.apply(framebuffer_main());
-        BaseScene::drawFrame(m_filter.frame());
+        m_filter.apply(m_scene.framebuffer_main());
+        m_scene.drawFrame(m_filter.frame());
     }
     else {
-        BaseScene::drawFrame(framebuffer_main());
+        m_scene.drawFrame(m_scene.framebuffer_main());
     }
 
     // Draw debug texts
-    renderer().text("Cam pos: " + glm::to_string(camera().position), 15.0f, m_height - 20.0f, 0.4f);
-    renderer().text("Cam dir: " + glm::to_string(camera().direction), 15.0f, m_height - 40.0f, 0.4f);
-    renderer().text("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 60.0f, 0.4f);
+    auto& renderer = m_scene.renderer();
+    const float w = (float)m_scene.width();
+    const float h = (float)m_scene.height();
+
+    renderer.text("Cam pos: " + glm::to_string(m_scene.camera().position), 15.0f, h - 20.0f, 0.4f);
+    renderer.text("Cam dir: " + glm::to_string(m_scene.camera().direction), 15.0f, h - 40.0f, 0.4f);
+    renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
 }
 
 void View::_initFilters() {
@@ -154,4 +169,6 @@ void View::_initFilters() {
             )_main_")
         )
         .link();
+
+    m_filter.resize(m_scene.width(), m_scene.height());
 }

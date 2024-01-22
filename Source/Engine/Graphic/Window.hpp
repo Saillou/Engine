@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Base/BaseScene.hpp"
+#include "Base/Scene.hpp"
 
 struct Window {
     Window(int width, int height, const char* title, bool start_fs = false);
@@ -24,11 +24,10 @@ struct Window {
     std::vector<unsigned int> buttonPressed() const;
     glm::ivec2                mousePos()      const;
 
-    std::shared_ptr<BaseScene> scene() const;
+    Scene&      scene();
     GLFWwindow* backend();
 
     // Setters
-    std::shared_ptr<BaseScene> scene(std::shared_ptr<BaseScene> scene);
     void toggleFullScreen();
 
 private:
@@ -46,6 +45,6 @@ private:
     std::unordered_map<unsigned int, bool> m_keys_pressed    = {};
     std::unordered_map<unsigned int, bool> m_buttons_pressed = {};
 
-    GLFWwindow*                m_window = nullptr;
-    std::shared_ptr<BaseScene> m_scene  = nullptr;
+    GLFWwindow*            m_window = nullptr;
+    std::shared_ptr<Scene> m_scene  = nullptr;
 };

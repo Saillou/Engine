@@ -25,7 +25,7 @@ namespace Thomas
     static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
     View::View(int widthHint, int heightHint) :
-        BaseScene(widthHint, heightHint)
+        Scene(widthHint, heightHint)
     {
         _subscribe(&View::_on_mouse_moved);
 
@@ -53,8 +53,8 @@ namespace Thomas
         m_timer.tic();
 
         // Main scene
-        BaseScene::Viewport(width(), height());
-        BaseScene::clear();
+        Scene::Viewport(width(), height());
+        Scene::clear();
         {
             // Lights
             for (auto& light : m_lights) {

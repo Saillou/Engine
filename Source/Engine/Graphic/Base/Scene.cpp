@@ -1,8 +1,9 @@
-#include "BaseScene.hpp"
+#include "Scene.hpp"
 
 #include <glad/glad.h>
 
-BaseScene::BaseScene(int widthHint, int heightHint):
+// Instance
+Scene::Scene(int widthHint, int heightHint):
     m_width(widthHint),
     m_height(heightHint),
     _framebuffer_main(Framebuffer::Multisample, widthHint, heightHint),
@@ -11,16 +12,13 @@ BaseScene::BaseScene(int widthHint, int heightHint):
     _init_gl_config();
 }
 
-BaseScene::~BaseScene() {
-}
-
-void BaseScene::clear() {
+void Scene::clear() {
     // Cleanup previous draws
     glClearColor(0.05f, 0.05f, 0.06f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void BaseScene::run() {
+void Scene::run() {
     // Setup
     _update_camera();
 
@@ -31,7 +29,8 @@ void BaseScene::run() {
     // Application draw
     _renderer._clear();
     _renderer.deferred = m_enable_deffered_draw;
-    _draw();
+    
+    Event::Emit(SceneEvents::Draw());
 
     if (m_enable_deffered_draw) {
         // Resolve draw order and render shadow scene
@@ -52,25 +51,12 @@ void BaseScene::run() {
         // Apply filters
         _framebuffer_main.texture().activate(GL_TEXTURE0);
         clear();
-        _post_draw();
+        drawFrame(_framebuffer_main);
+        Event::Emit(SceneEvents::PostDraw());
     }
 }
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void BaseScene::_on_resize() {
-    // to be overrided
-}
-
-void BaseScene::_draw() {
-    // to be overrided
-}
-
-void BaseScene::_post_draw() {
-    BaseScene::drawFrame(_framebuffer_main);
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-void BaseScene::drawFrame(const Framebuffer& framebuffer) {
+void Scene::drawFrame(const Framebuffer& framebuffer) {
     glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 
     // Need to blit multisample to mono
@@ -93,23 +79,23 @@ void BaseScene::drawFrame(const Framebuffer& framebuffer) {
     glEnable(GL_DEPTH_TEST); // set back to original state.
 }
 
-void BaseScene::Viewport(int width, int height) {
+void Scene::Viewport(int width, int height) {
     glViewport(0, 0, width, height);
 }
-void BaseScene::Viewport(int x, int y, int width, int height) {
+void Scene::Viewport(int x, int y, int width, int height) {
     glViewport(x, y, width, height);
 }
 
-void BaseScene::resize(int width, int height) {
+void Scene::resize(int width, int height) {
     m_width  = width;
     m_height = height;
     _framebuffer_main.resize(width, height);
 
     _update_camera();
-    _on_resize();
+    Event::Emit(SceneEvents::Resized(width, height));
 }
 
-void BaseScene::_init_gl_config() {
+void Scene::_init_gl_config() {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -117,7 +103,7 @@ void BaseScene::_init_gl_config() {
     glEnable(GL_MULTISAMPLE);
 }
 
-void BaseScene::_update_camera() {
+void Scene::_update_camera() {
     if (m_height == 0)
         return;
 
@@ -127,22 +113,22 @@ void BaseScene::_update_camera() {
     _renderer._camera.usePerspective(aspect);
 }
 
-int BaseScene::width() const {
+int Scene::width() const {
     return m_width;
 }
-int BaseScene::height() const {
+int Scene::height() const {
     return m_height;
 }
-Renderer& BaseScene::renderer() {
+Renderer& Scene::renderer() {
     return _renderer;
 }
-Camera& BaseScene::camera() {
+Camera& Scene::camera() {
     return _renderer._camera;
 }
-std::vector<Light>& BaseScene::lights() {
+std::vector<Light>& Scene::lights() {
     return _renderer._lights;
 }
 
-Framebuffer& BaseScene::framebuffer_main() {
+Framebuffer& Scene::framebuffer_main() {
     return _framebuffer_main;
 }

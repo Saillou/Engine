@@ -14,7 +14,7 @@
 #include <unordered_set>
 
 struct Renderer : private Cookable {
-	friend struct BaseScene;
+	friend struct Scene;
 
 	// Methods
 	void draw(Render::DrawType, Entity& entity);

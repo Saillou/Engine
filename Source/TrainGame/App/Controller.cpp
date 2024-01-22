@@ -7,7 +7,7 @@
 namespace Thomas
 {
 
-    Controller::Controller(std::shared_ptr<BaseScene> scene) :
+    Controller::Controller(std::shared_ptr<Scene> scene) :
         m_scene(scene)
     {
         // Root events

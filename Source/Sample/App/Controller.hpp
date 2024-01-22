@@ -1,13 +1,13 @@
 #pragma once
 
 #include <Engine/Events/CommonEvents.hpp>
-#include <Engine/Graphic/Base/BaseScene.hpp>
+#include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Utils/Timer.hpp>
 
 #include "View.hpp"
 
 struct Controller: private Event::Subscriber {
-    Controller(std::shared_ptr<BaseScene> scene);
+    Controller(View& view);
 
 protected:
     // Events
@@ -17,7 +17,7 @@ protected:
     void _on_mouse_button(const CommonEvents::MouseButton& evt);
 
 private:
-    std::shared_ptr<View> m_view;
+    View& m_view;
     std::vector<Light> m_pontential_lights;
     Timer::Chronometre m_timer;
 };

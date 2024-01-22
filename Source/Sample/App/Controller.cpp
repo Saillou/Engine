@@ -3,11 +3,9 @@
 #include <memory>
 #include <iostream>
 
-Controller::Controller(std::shared_ptr<BaseScene> scene):
-    m_view(std::dynamic_pointer_cast<View>(scene))
+Controller::Controller(View& view):
+    m_view(view)
 {
-    assert(m_view != nullptr);
-
     // Root events
     _subscribe(&Controller::_on_state_update);
     _subscribe(&Controller::_on_key_pressed);
@@ -22,7 +20,7 @@ Controller::Controller(std::shared_ptr<BaseScene> scene):
         Light(glm::vec3{  -1.50f,  0, 1.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{  +1.50f,  0, 1.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view->lights() = m_pontential_lights;
+    m_view.scene().lights() = m_pontential_lights;
 
     // Start
     m_timer.tic();
@@ -55,7 +53,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
         if (dir != glm::vec3(0, 0, 0)) 
         {
-            m_view->camera().position += 0.05f * dir;
+            m_view.scene().camera().position += 0.05f * dir;
         }
     }
 
@@ -64,7 +62,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         switch (evt.key)
         {
-            case 'R': m_view->enable_filter = !m_view->enable_filter; break;
+            case 'R': m_view.enable_filter = !m_view.enable_filter; break;
         }
     }
     
@@ -84,13 +82,13 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
         }
 
         if (nLightsEnabled != -1) {
-            m_view->lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + nLightsEnabled);
+            m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + nLightsEnabled);
         }
     }
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
-    m_view->mouse_on(evt.x, evt.y);
+    m_view.mouse_on(evt.x, evt.y);
 }
 
 void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {

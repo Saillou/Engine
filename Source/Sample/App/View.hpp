@@ -7,19 +7,22 @@
 #include <Engine/Utils/Timer.hpp>
 #include <Engine/Utils/Filter/BaseFilter.hpp>
 
-#include <Engine/Graphic/Base/BaseScene.hpp>
+#include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
 
-struct View : public BaseScene {
-    View(int widthHint = 0, int heightHint = 0);
-
-    void _draw() override;
-    void _post_draw() override;
-    void _on_resize() override;
+struct View : private Event::Subscriber {
+    View(Scene& scene);
 
     void mouse_on(int x, int y);
 
+    Scene& scene();
     bool enable_filter = false;
+
+protected:
+    // Events
+    void _draw          (const SceneEvents::Draw&);
+    void _post_process  (const SceneEvents::PostDraw&);
+    void _on_resize     (const SceneEvents::Resized&);
 
 private:
     void _initFilters();
@@ -27,6 +30,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
     std::vector<std::shared_ptr<Entity>> m_scene_objects;
 
+    Scene& m_scene;
     BaseFilter m_filter;
     glm::vec2 m_mousePos;
     Timer::Chronometre m_timer;

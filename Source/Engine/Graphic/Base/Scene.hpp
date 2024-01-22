@@ -1,13 +1,42 @@
 #pragma once
 
 #include "Render/Renderer.hpp"
+#include "../../Events/Events.hpp"
+
+// Define events available
+struct SceneEvents : public Event {
+    enum _Type {
+        Draw_ = 1024,
+        PostDraw_,
+        Resized_,
+    };
+
+    // -- Inputs --
+    struct Draw : public _Base {
+        Draw():
+            _Base(_Type::Draw_)
+        {};
+    };
+    struct PostDraw : public _Base {
+        PostDraw():
+            _Base(_Type::PostDraw_)
+        {};
+    };
+    struct Resized : public _Base {
+        Resized(int width = 0, int height = 0):
+            _Base(_Type::Resized_), width(width), height(height)
+        {};
+
+        int width;
+        int height;
+    };
+};
 
 // Scene model
-struct BaseScene {
+struct Scene {
     friend struct Window;
 
-    BaseScene(int widthHint = 0, int heightHint = 0);
-    virtual ~BaseScene();
+    Scene(int widthHint = 0, int heightHint = 0);
 
     void clear();
     void run();                       
@@ -28,22 +57,15 @@ struct BaseScene {
     std::vector<Light>& lights();
     Framebuffer& framebuffer_main();
 
-protected:
-    virtual void _init_gl_config(); // Override this to enable or disable some opengl functionalities. (eg PENCIL_TEST)
-    virtual void _update_camera();  // Override this if camera perspective isn't the default one.
-    virtual void _on_resize();      // Override this to resize framebuffer or texture depending on the window size.
-
-    virtual void _draw();           // called at the rendering start
-    virtual void _post_draw();      // called after `draw` method
+private:
+    void _init_gl_config();
+    void _update_camera();
 
     // Members
     int m_enable_deffered_draw = true; // Disable it to manually manage draw pipeline
     int m_width  = 0;
     int m_height = 0;
 
-
-
-private:
     Renderer _renderer;
     Framebuffer _internalFrame;     // Used when drawing multisample frame
     Framebuffer _framebuffer_main;
