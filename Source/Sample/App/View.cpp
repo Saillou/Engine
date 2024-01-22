@@ -123,22 +123,22 @@ void View::_draw(const SceneEvents::Draw&) {
 }
 
 void View::_post_process(const SceneEvents::PostDraw&) {
+    // Filters
     if (enable_filter) {
         m_filter.apply(m_scene.framebuffer_main());
-        m_scene.drawFrame(m_filter.frame());
-    }
-    else {
-        m_scene.drawFrame(m_scene.framebuffer_main());
     }
 
     // Draw debug texts
-    auto& renderer = m_scene.renderer();
-    const float w = (float)m_scene.width();
-    const float h = (float)m_scene.height();
+    m_scene.framebuffer_main().bind();
+    {
+        auto& renderer = m_scene.renderer();
+        const float w = (float)m_scene.width();
+        const float h = (float)m_scene.height();
 
-    renderer.text("Cam pos: " + glm::to_string(m_scene.camera().position), 15.0f, h - 20.0f, 0.4f);
-    renderer.text("Cam dir: " + glm::to_string(m_scene.camera().direction), 15.0f, h - 40.0f, 0.4f);
-    renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
+        renderer.text("Cam pos: " + glm::to_string(m_scene.camera().position), 15.0f, h - 20.0f, 0.4f);
+        renderer.text("Cam dir: " + glm::to_string(m_scene.camera().direction), 15.0f, h - 40.0f, 0.4f);
+        renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
+    }
 }
 
 // Helpers

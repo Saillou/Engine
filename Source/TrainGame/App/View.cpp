@@ -55,13 +55,10 @@ namespace Thomas
     void View::_post_process(const SceneEvents::PostDraw& evt)
     {
         scene.framebuffer_main().bind();
-
-        // Skybox
-        m_skybox->draw(scene.camera());
-
-        scene.framebuffer_main().unbind();
-        //scene.drawFrame(scene.framebuffer_main());
-        
+        {
+            m_skybox->draw(scene.camera());
+        }
+        scene.framebuffer_main().unbind();        
     }
 
     void View::_on_resize(const SceneEvents::Resized& evt)
