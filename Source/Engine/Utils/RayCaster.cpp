@@ -1,6 +1,7 @@
 #include "../Graphic/Base/Model/Primitive/Cube.hpp"
 #include "RayCaster.hpp"
 #include <stack>
+#include <glm/gtx/string_cast.hpp>
 
 using namespace glm;
 
@@ -105,7 +106,8 @@ float RayCaster::OrientedDistance(const glm::vec3& origin, const Entity& objMode
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			const float distance_mesh = RayCaster::OrientedDistance(origin, *mesh, quat * (*currNode)->transform * glm::mat4(objModel.localPose()));
+			const glm::mat4 Q = quat * (*currNode)->transform * glm::mat4(objModel.localPose());
+			const float distance_mesh = RayCaster::OrientedDistance(origin, *mesh, Q);
 			distance_entity = std::min(distance_entity, distance_mesh);
 		}
 
@@ -123,7 +125,7 @@ float RayCaster::OrientedDistance(const glm::vec3& origin, const Mesh& mesh, con
 	float distance_mesh = std::numeric_limits<float>::max();
 
 	for (const Vertex& vertex: mesh.vertices()) {
-		distance_mesh = std::min(distance_mesh, glm::distance(vertex.Position, origin));
+		distance_mesh = std::min(distance_mesh, glm::distance(vec3(quat * vec4(vertex.Position, +1.0f)), origin));
 	}
 
 	return distance_mesh;

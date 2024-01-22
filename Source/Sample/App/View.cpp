@@ -18,7 +18,7 @@ View::View(Scene& scene) :
     _subscribe(&View::_on_mouse_moved);
 
     // Camera
-    m_scene.camera().position = glm::vec3(0, -4, 0.75f);
+    m_scene.camera().position  = glm::vec3(0, -8.0f, 1.25f);
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Entities
@@ -42,14 +42,15 @@ View::View(Scene& scene) :
 
     m_entities["Cube"]->localMaterial()   = paper;
     {
-        const int n_side = 1;
+        const float n_size = 5.0f;
+        const int n_side = 2;
         for (int x = -n_side; x <= n_side; x++) {
             for (int y = -n_side; y <= n_side; y++) {
                 if (x == 0 && y == 0)
                     continue;
 
                 m_entities["Cube"]->poses().push_back(
-                    glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(10.0 * x, 10.0f * y, 1.0f))
+                    glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(n_size * x, n_size * y, 1.0f))
                 );
             }
         }

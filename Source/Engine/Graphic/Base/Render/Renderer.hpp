@@ -34,6 +34,8 @@ private:
 	void _compute();
 	void _draw();
 
+	void _drawEntitySync(Render::DrawType, Entity& entity, bool update_buffer = true);
+
 	// Deferred rendering
 	struct _DrawEntity {
 		size_t drawId;

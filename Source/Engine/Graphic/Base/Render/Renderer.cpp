@@ -3,45 +3,33 @@
 #include "../../../Utils/RayCaster.hpp"
 #include <iostream>
 #include <algorithm>
+#include <glm/gtx/string_cast.hpp>
 
 void Renderer::draw(Render::DrawType type, Entity& entity) {
-    if (deferred) {
-        _DrawEntity di;
-        di.drawId         = _heapEntities.size() + 1;
-        di.drawPriority   = -1.0f;
-        di.type           = type;
-        di.copied_entity  = entity;
+    if (!deferred)
+        return _drawEntitySync(type, entity);
 
-        _heapEntities.emplace_back(std::move(di));
-    }
-    else {
-        Shader placeHolder;
-        entity._update_model_buffer();
-        entity._model->draw([&]() -> Shader& {
-            switch (type) {
-                case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
-                case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
-                case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
-                case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
-            } return placeHolder;
-        }().set("diffuse_color", entity._localMaterial.diffuse_color));
-    }
+    _DrawEntity di;
+    di.drawId         = _heapEntities.size() + 1;
+    di.drawPriority   = -1.0f;
+    di.type           = type;
+    di.copied_entity  = entity;
+
+    _heapEntities.emplace_back(std::move(di));
 }
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
-    if (deferred) {
-        _DrawText dt;
-        dt.text = text;
-        dt.x = x;
-        dt.y = y;
-        dt.scale = scale;
-        dt.color = color;
+    if(!deferred)
+        return TextEngine::Write(text, x, y, scale, color);
 
-        _heapText.emplace_back(std::move(dt));
-    }
-    else {
-        TextEngine::Write(text, x, y, scale, color);
-    }
+    _DrawText dt;
+    dt.text = text;
+    dt.x = x;
+    dt.y = y;
+    dt.scale = scale;
+    dt.color = color;
+
+    _heapText.emplace_back(std::move(dt));
 }
 
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
@@ -106,9 +94,27 @@ void Renderer::_compute()
         di.drawPriority = std::numeric_limits<float>::max();
 
         if (di.copied_entity.localMaterial().diffuse_color.a < 1.0f) {
-            for (auto& pose : di.copied_entity.poses()) {
-                di.drawPriority = std::min(RayCaster::OrientedDistance(_camera.position, di.copied_entity, pose), di.drawPriority);
+            // Sort also poses
+            using dist_entity = std::pair<float, Pose>;
+            std::vector<dist_entity> all_dist_entity;
+
+            for (const Pose& pose : di.copied_entity.poses()) {
+                float entity_distance = RayCaster::OrientedDistance(_camera.position, di.copied_entity, pose);
+
+                all_dist_entity.push_back({ entity_distance, pose });
+                di.drawPriority = std::min(entity_distance, di.drawPriority);
             }
+
+            std::sort(all_dist_entity.begin(), all_dist_entity.end(), [=](const dist_entity& di1, const dist_entity& di2) {
+                return di1.first > di2.first;
+            });
+
+            std::vector<Pose> sorted_poses;
+            for (const dist_entity& de: all_dist_entity) {
+                sorted_poses.push_back(de.second);
+            }
+
+            di.copied_entity.poses() = sorted_poses;
         }
 
         // Check if models already used for another draw
@@ -160,18 +166,26 @@ void Renderer::_draw() {
             di.copied_entity._update_model_buffer();
         }
 
-        Shader placeHolder;
-        di.copied_entity._model->draw([&]() -> Shader& {
-            switch (di.type) {
-                case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
-                case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
-                case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
-                case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
-            } return placeHolder;
-        }().set("diffuse_color", di.copied_entity._localMaterial.diffuse_color));
+        _drawEntitySync(di.type, di.copied_entity, false);
     }
 
     for (_DrawText& dt : _heapText) {
         TextEngine::Write(dt.text, dt.x, dt.y, dt.scale, dt.color);
     }
+}
+
+void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool update_buffer) {
+    Shader placeHolder;
+
+    if(update_buffer)
+        entity._update_model_buffer();
+
+    entity._model->draw([&]() -> Shader& {
+        switch (type) {
+            case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
+            case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
+            case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
+            case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
+        } return placeHolder;
+    }().set("diffuse_color", entity._localMaterial.diffuse_color));
 }
