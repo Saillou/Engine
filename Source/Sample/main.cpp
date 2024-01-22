@@ -1,5 +1,6 @@
 #include <Engine/Graphic/Window.hpp>
 
+#include "App/View.hpp"
 #include "App/Controller.hpp"
 
 // -- Entry point --

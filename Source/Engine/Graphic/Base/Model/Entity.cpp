@@ -26,25 +26,12 @@ Entity::Entity(SimpleShape shape):
     }
 }
 
-// Setters
-void Entity::setLocalPose(const Pose& pose) {
-    _localPose = pose;
-}
-
-void Entity::setLocalMaterial(const Material& material) {
-    _localMaterial = material;
-}
-
-void Entity::setPoses(const std::vector<Pose>& poses) {
-    _poses = poses;
-}
-
+// Accessors
 void Entity::setPosesWithMaterials(const std::vector<Pose>& poses, const std::vector<Material>& materials) {
     _poses = poses;
     _materials = materials;
 }
 
-// Getters
 Pose& Entity::localPose() {
     return _localPose;
 }
@@ -57,6 +44,14 @@ const Pose& Entity::localPose() const {
 }
 const Material& Entity::localMaterial() const {
     return _localMaterial;
+}
+
+std::vector<Pose>& Entity::poses() {
+    return _poses;
+}
+
+std::vector<Material>& Entity::materials() {
+    return _materials;
 }
 
 const std::vector<Pose>& Entity::poses() const {

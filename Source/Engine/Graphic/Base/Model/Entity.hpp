@@ -21,23 +21,22 @@ struct Entity
 
     virtual ~Entity() = default;
 
-    // Setters
-    void setLocalPose(const Pose&);
-    void setLocalMaterial(const Material&);
-
-    void setPoses(const std::vector<Pose>&);
+    // Accessors
     void setPosesWithMaterials(const std::vector<Pose>&, const std::vector<Material>&);
 
-    // Getters
     Pose& localPose();
     Material& localMaterial();
 
     const Pose& localPose() const;
     const Material& localMaterial() const;
 
-    const Model& model() const;
+    std::vector<Pose>& poses();
+    std::vector<Material>& materials();
+
     const std::vector<Pose>& poses() const;
     const std::vector<Material>& materials() const;
+
+    const Model& model() const;
 
 protected:
     void _update_model_buffer();
