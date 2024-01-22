@@ -385,8 +385,8 @@ namespace Thomas
             obj->components.push_back(produce);
 
             const auto size = Grid::getCellSize();
-            const glm::vec3 p1 = { size.x * -4, size.y * -4, 0 };
-            const glm::vec3 p2 = { size.x * 4, size.y * 4, 0 };
+            const glm::vec3 p1 = { size.x * -5, size.y * -5, 0 };
+            const glm::vec3 p2 = { size.x * 5, size.y * 5, 0 };
             DropComponent* dropComponent = new DropComponent(&obj->transform, p1,p2);
 
             for (const auto& obj : m_objects)
@@ -403,6 +403,13 @@ namespace Thomas
 
             dropComponent->setProduceComponent(produce);
             obj->components.push_back(dropComponent);
+
+            // progress bar
+            GameObject* progressBar1 = new GameObject({ gs_id++, ModelId::CubeBasic, {{-0.1,0,1}, {0.2f, 0.1f, 0.1f}, {0.785f,0,0} } });
+            m_objects[progressBar1->id] = progressBar1;
+
+            GameObject* progressBar2 = new GameObject({ gs_id++, ModelId::CubeGeometry, {{0,0,1}, {0.3f, 0.1f, 0.1f}, {0.785f,0,0.f} } });
+            m_objects[progressBar2->id] = progressBar2;
         }
 
         m_timer.tic();

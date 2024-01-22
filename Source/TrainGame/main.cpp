@@ -64,4 +64,6 @@ void initGameModels()
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackLeft, { { +0.057f, -0.02f, -0.534f }, { 1.f, 1.f, 1.f }, { 1.57f, 0.785f,0.f } });
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::TrackRight, { { -0.09f, -0.06f, -0.495f }, { 1.f, 1.f, 1.f }, { 1.57f, 0.785f,0 } });
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Building1, { { 0.f, +0.1f, -0.22f }, { 0.75f, 0.75f, 0.75f }, { 1.57f, -1.57f,0 } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::CubeBasic, { { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f }, { 0.f, 0.f,0.f } });
+    Thomas::GameModelTable::addGameModel(Thomas::ModelId::CubeGeometry, { { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f }, { 0.f, 0.f,0.f } });
 }

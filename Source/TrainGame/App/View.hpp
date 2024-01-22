@@ -66,9 +66,7 @@ namespace Thomas
         std::map<std::pair<int, int>, GridCell> m_gridCells;
 
         std::unique_ptr<Entity> m_model_sphere;
-        std::unique_ptr<Entity> m_model_box;
         
-        std::unique_ptr<Entity> m_model_box_shadow;
         std::unique_ptr<Entity> m_model;
         std::unique_ptr<Entity> m_target;
 

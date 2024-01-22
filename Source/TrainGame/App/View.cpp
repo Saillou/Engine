@@ -82,7 +82,23 @@ namespace Thomas
                     worldTransform = glm::rotate(worldTransform, t.rotation.z, glm::vec3(0, 0, 1));
                     worldTransform = glm::scale(worldTransform, t.scale);
 
-                    m_gameModels[model.first]->drawOne(Cookable::CookType::Basic, m_camera, worldTransform * localTransform, m_lights);
+                    if (model.first != ModelId::CubeGeometry && model.first != ModelId::CubeBasic)
+                    {
+                        m_gameModels[model.first]->drawOne(Cookable::CookType::Basic, m_camera, worldTransform * localTransform, m_lights);
+                    }
+                    else
+                    {
+                        if (model.first == ModelId::CubeGeometry)
+                        {
+                            m_gameModels[model.first]->get(Cookable::CookType::Geometry)->use().set("diffuse_color", { 1,1,1,1 });
+                            m_gameModels[model.first]->drawOne(Cookable::CookType::Geometry, m_camera, worldTransform * localTransform);
+                        }
+                        else
+                        {
+                            m_gameModels[model.first]->get(Cookable::CookType::Basic)->use().set("diffuse_color", { 0.3,0.6,0.3,1 });
+                            m_gameModels[model.first]->drawOne(Cookable::CookType::Basic, m_camera, worldTransform * localTransform);
+                        }
+                    }
 
                     // draw debug center
                     m_model_sphere->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
@@ -139,6 +155,8 @@ namespace Thomas
             m_gameModels[ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
             m_gameModels[ModelId::TrackRight] = std::make_unique<Entity>("Resources/objects/train/track_right.glb");
             m_gameModels[ModelId::Building1] = std::make_unique<Entity>("Resources/objects/train/building_1.glb");
+            m_gameModels[ModelId::CubeBasic] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+            m_gameModels[ModelId::CubeGeometry] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         }
         std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
@@ -208,9 +226,6 @@ namespace Thomas
                 "Resources/textures/skybox/front.jpg",
                 "Resources/textures/skybox/back.jpg"
         });
-
-        // Box - Test shadow
-        m_model_box_shadow = std::make_unique<Entity>(Entity::SimpleShape::Cube);
 
         // Grid cells
         m_entityGridCells.entity = std::make_unique<Entity>(Entity::SimpleShape::Cube);
