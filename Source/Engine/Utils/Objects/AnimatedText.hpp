@@ -22,7 +22,7 @@ struct AnimatedText : public Drawable
         std::string text;
         glm::vec2 pos;    // [0, 1] x [0, 1]
         float size;
-        glm::vec3 color;
+        glm::vec4 color;
     };
 
     // Methods

@@ -14,7 +14,7 @@ Quad::Quad(float x, float y, float w, float h)
                 float tx = aPos.x > 0 ? 1.0 : 0.0;
                 float ty = aPos.y > 0 ? 1.0 : 0.0;
                 TexCoords = vec2(tx, ty);
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
@@ -22,7 +22,7 @@ Quad::Quad(float x, float y, float w, float h)
             .add_var("out", "vec4", "FragColor")
             .add_func("void", "main", "", R"_main_(
                 FragColor = texture(quadTexture, TexCoords);
-            )_main_").str()
+            )_main_")
         )
         .link();
 

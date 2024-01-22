@@ -8,7 +8,7 @@
 #include <Engine/Utils/Timer.hpp>
 #include <Engine/Utils/Objects/ShadowRender.hpp>
 
-#include <Engine/Graphic/Base/BaseScene.hpp>
+#include <Engine/Graphic/Base/Scene.hpp>
 
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
@@ -25,7 +25,7 @@
 
 namespace Thomas
 {
-    struct View : public BaseScene, private Event::Subscriber {
+    struct View : public Scene, private Event::Subscriber {
         View(int widthHint = 0, int heightHint = 0);
 
         void draw() override;

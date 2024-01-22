@@ -8,10 +8,18 @@ enum Key {
 	ArrowLeft  = 263,
     ArrowDown  = 264,
     ArrowUp    = 265,
+
+	Numpad_0   = 320
 };
 
 enum Button {
 	Left   = 0,
 	Right  = 1,
 	Middle = 2,
+};
+
+enum Action {
+	Released = 0,
+	Pressed,
+	Repeated
 };

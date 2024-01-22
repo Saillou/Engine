@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Base/BaseScene.hpp"
+#include "Base/Scene.hpp"
 
 struct Window {
     Window(int width, int height, const char* title, bool start_fs = false);
@@ -17,35 +17,34 @@ struct Window {
     void close();
 
     // Getters
-    int width() const;
+    int width()  const;
     int height() const;
 
-    std::vector<unsigned int> keyPressed() const;
+    std::vector<unsigned int> keyPressed()    const;
     std::vector<unsigned int> buttonPressed() const;
+    glm::ivec2                mousePos()      const;
 
-    bool mouseMoved() const;
-    glm::vec2 mousePos() const;
-    std::shared_ptr<BaseScene> scene() const;
+    Scene&      scene();
     GLFWwindow* backend();
 
     // Setters
-    std::shared_ptr<BaseScene> scene(std::shared_ptr<BaseScene> scene);
     void toggleFullScreen();
 
 private:
     void _init(const char* title);
     void _resize(int width, int height);
+    void _manage_inputs();
 
     // Members
-    GLFWwindow* m_window = nullptr;
     std::string m_title;
+    int         m_width;
+    int         m_height;
+    bool        m_is_fullscreen;
 
-    int m_width;
-    int m_height;
-    bool m_is_fullscreen;
+    glm::ivec2                             m_mouse_pos       = {};
+    std::unordered_map<unsigned int, bool> m_keys_pressed    = {};
+    std::unordered_map<unsigned int, bool> m_buttons_pressed = {};
 
-    bool m_mouse_moved    = false;
-    glm::vec2 m_mouse_pos = {};
-
-    std::shared_ptr<BaseScene> m_scene = nullptr;
+    GLFWwindow*            m_window = nullptr;
+    std::shared_ptr<Scene> m_scene  = nullptr;
 };

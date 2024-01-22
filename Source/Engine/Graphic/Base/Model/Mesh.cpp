@@ -17,6 +17,7 @@ void Mesh::updateBatch(const std::vector<glm::mat4>& models, const std::vector<g
     else {
         std::vector<glm::vec4> res_colors = colors;
         res_colors.resize(models.size());
+        m_colors.bindData(res_colors);
     }
 }
 

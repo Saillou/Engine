@@ -5,32 +5,34 @@
 #include <unordered_map>
 
 #include <Engine/Utils/Timer.hpp>
-#include <Engine/Utils/Objects/ShadowRender.hpp>
+#include <Engine/Utils/Filter/BaseFilter.hpp>
 
-#include <Engine/Graphic/Base/BaseScene.hpp>
+#include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
 
-struct View : public BaseScene {
-    View(int widthHint = 0, int heightHint = 0);
+#include <Engine/Events/CommonEvents.hpp>
 
-    void draw() override;
-    void mouse_on(int x, int y);
+struct View : private Event::Subscriber {
+    View(Scene& scene);
+
+    Scene& scene();
+    bool enable_filter = false;
+
+protected:
+    // Events
+    void _draw          (const SceneEvents::Draw&);
+    void _post_process  (const SceneEvents::PostDraw&);
+    void _on_resize     (const SceneEvents::Resized&);
+    void _on_mouse_moved(const CommonEvents::MouseMoved&);
 
 private:
-    struct _Object {
-        std::shared_ptr<Entity> entity = nullptr;
-        glm::vec4 color;
-        glm::mat4 transform;
-        Cookable::CookType shade = Cookable::CookType::Basic;
-    };
-
-    void _drawText();
+    void _initFilters();
 
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
-    std::vector<_Object> m_objects;
-    _Object m_target;
+    std::vector<std::shared_ptr<Entity>> m_scene_objects;
 
+    Scene& m_scene;
+    BaseFilter m_filter;
     glm::vec2 m_mousePos;
-    ShadowRender m_shadowRender;
     Timer::Chronometre m_timer;
 };

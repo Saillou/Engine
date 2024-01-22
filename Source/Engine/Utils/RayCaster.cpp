@@ -18,7 +18,7 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 	std::optional<glm::vec4> result;
 
 	for (size_t i = 0; i < idx.size(); i += 3) {
-		auto optIntersect = RayCaster::IntersectTriangle(camPos, camDir, RayCaster::Triangle{
+		auto optIntersect = RayCaster::Intersect(camPos, camDir, RayCaster::Triangle{
 			vec3(quat * vec4(v[idx[i + 0]].Position, +1.0f)),
 			vec3(quat * vec4(v[idx[i + 1]].Position, +1.0f)),
 			vec3(quat * vec4(v[idx[i + 2]].Position, +1.0f))
@@ -41,11 +41,11 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 		return {};
 
 	// Traverse model's nodes
-	if (!objModel.model.root())
+	if (!objModel.model().root())
 		return {};
 
 	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&objModel.model.root());
+	st.push(&objModel.model().root());
 
 	while (!st.empty()) {
 		// Get next in line
@@ -54,7 +54,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform);
+			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * (*currNode)->transform * glm::mat4(objModel.localPose()));
 
 			if (optIntersect.has_value())
 				return optIntersect;
@@ -85,16 +85,60 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 	return _intersect_mesh(mousePos, camera.position, camera_ray, mesh, quat);
 }
 
+
+
+float RayCaster::OrientedDistance(const glm::vec3& origin, const Entity& objModel, const glm::mat4& quat)
+{
+	float distance_entity = std::numeric_limits<float>::max();
+
+	// Traverse model's nodes
+	if (!objModel.model().root())
+		return -1.0f;
+
+	std::stack<std::unique_ptr<Model::Node> const*> st;
+	st.push(&objModel.model().root());
+
+	while (!st.empty()) {
+		// Get next in line
+		const auto currNode = st.top();
+		st.pop();
+
+		// Check all meshes of this node
+		for (const auto& mesh : (*currNode)->meshes) {
+			const float distance_mesh = RayCaster::OrientedDistance(origin, *mesh, quat * (*currNode)->transform * glm::mat4(objModel.localPose()));
+			distance_entity = std::min(distance_entity, distance_mesh);
+		}
+
+		// Add children
+		for (size_t i = 0; i < (*currNode)->children.size(); i++) {
+			st.push(&(*currNode)->children[i]);
+		}
+	}
+
+	return distance_entity;
+}
+
+float RayCaster::OrientedDistance(const glm::vec3& origin, const Mesh& mesh, const glm::mat4& quat)
+{
+	float distance_mesh = std::numeric_limits<float>::max();
+
+	for (const Vertex& vertex: mesh.vertices()) {
+		distance_mesh = std::min(distance_mesh, glm::distance(vertex.Position, origin));
+	}
+
+	return distance_mesh;
+}
+
+// - Helpers -
+
+
 bool RayCaster::IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos, const glm::vec3& camDir, const glm::mat4& quat)
 {
-	// Create cube mesh if needed
-	static auto s_cubeMesh = Cube::CreateMesh(false);
-
-	return _intersect_mesh(mousePos, camPos, camDir, *s_cubeMesh, quat).has_value();
+	return _intersect_mesh(mousePos, camPos, camDir, *GetCube(), quat).has_value();
 }
 
 // Note: It's Muller-Trumbore intersection algorithm
-std::optional<glm::vec4> RayCaster::IntersectTriangle(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
 {
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
@@ -138,4 +182,11 @@ bool RayCaster::PointInRect(const glm::vec2& point, const glm::vec2& rectTopLeft
 		return false;
 
 	return true;
+}
+
+std::shared_ptr<Mesh> RayCaster::GetCube() {
+	// Create cube mesh if needed
+	static std::shared_ptr<Mesh> s_cubeMesh = Cube::CreateMesh(false);
+
+	return s_cubeMesh;
 }

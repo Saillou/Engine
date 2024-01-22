@@ -5,7 +5,7 @@
 #include <freetype/freetype.h>
 
 // - Public (Static)
-void TextEngine::Write(std::string text, float x, float y, float scale, glm::vec3 color) {
+void TextEngine::Write(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
     _getInstance()._render(text, x, y, scale, color);
 }
 
@@ -32,17 +32,17 @@ TextEngine::TextEngine():
             .add_func("void", "main", "", R"_main_(
                 TexCoords   = vertex.zw;
                 gl_Position = projection * vec4(vertex.xy, 0.5f, 1.0);
-            )_main_").str()
+            )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("out", "vec4", "FragColor")
             .add_var("in",  "vec2", "TexCoords")
             .add_var("uniform", "sampler2D", "text")
-            .add_var("uniform", "vec3", "textColor")
+            .add_var("uniform", "vec4", "textColor")
             .add_func("void", "main", "", R"_main_(
                 vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
-                FragColor    = vec4(textColor, 1.0) * sampled;
-            )_main_").str()
+                FragColor    = vec4(textColor) * sampled;
+            )_main_")
         )
         .link()
         .use();
@@ -96,7 +96,7 @@ TextEngine::TextEngine():
 }
 
 // Methods
-void TextEngine:: _render(std::string text, float x, float y, float scale, glm::vec3 color) {
+void TextEngine:: _render(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
     // activate corresponding render state	
     m_text_shader.use();
     m_text_shader.set("textColor", color);

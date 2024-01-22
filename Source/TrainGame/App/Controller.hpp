@@ -1,13 +1,13 @@
 #pragma once
 
 #include <Engine/Events/CommonEvents.hpp>
-#include <Engine/Graphic/Base/BaseScene.hpp>
+#include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Utils/Timer.hpp>
 
 namespace Thomas
 {
     struct Controller : private Event::Subscriber {
-        Controller(std::shared_ptr<BaseScene> scene);
+        Controller(std::shared_ptr<Scene> scene);
 
     protected:
         // Events
@@ -16,7 +16,7 @@ namespace Thomas
         void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
 
     private:
-        std::shared_ptr<BaseScene> m_scene;
+        std::shared_ptr<Scene> m_scene;
         Timer::Chronometre m_timer;
     };
 } // namespace Thomas

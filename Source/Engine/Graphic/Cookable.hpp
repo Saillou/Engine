@@ -11,7 +11,6 @@ struct Cookable {
     // Basic possibilities
     enum class CookType {       
         Basic,
-        Shadow,
         Geometry,
     };
 
@@ -21,9 +20,10 @@ struct Cookable {
     // Instance
     virtual ~Cookable() = default;
 
-    virtual Cookable* addRecipe(CookType type);
-    virtual Cookable* addRecipe(CookType type, const glm::vec4& color);
+    Cookable* addRecipe(CookType type);
+    void editRecipe(CookType shaderType, ShaderSource::Type sourceType, const ShaderSource& ss);
 
+    bool has(CookType type) const;
     UShader& get(CookType type);
 
 protected:
@@ -31,7 +31,6 @@ protected:
     static ShaderSource _init_fragment();
 
     static void _set_shader_basic(Shader& shader);
-    static void _set_shader_shadow(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
 
     // Members

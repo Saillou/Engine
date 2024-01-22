@@ -1,5 +1,7 @@
 #include "Window.hpp"
 
+#include "../Events/CommonEvents.hpp"
+
 #include <vector>
 #include <memory>
 #include <iostream>
@@ -10,7 +12,18 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
     m_is_fullscreen(start_fs),
     m_title(title)
 {
+    // Create window
     _init(title);
+
+    // Mouse buttons
+    for (unsigned int btn = 0; btn <= GLFW_MOUSE_BUTTON_LAST; btn++) {
+        m_buttons_pressed[btn] = false;
+    }
+
+    // Keyboard keys
+    for (unsigned int key = 0; key <= GLFW_KEY_LAST; key++) {
+        m_keys_pressed[key] = false;
+    }
 }
 
 Window::~Window() {
@@ -29,24 +42,17 @@ bool Window::update() {
     if (glfwWindowShouldClose(m_window))
         return false;
 
+    // Inputs
+    glfwPollEvents();
+    _manage_inputs();
+
     // Render
     if (m_scene) {
-        m_scene->_update_camera();
-        m_scene->draw();
+        m_scene->run();
     }
 
     glfwSwapBuffers(m_window);
 
-    // Inputs
-    glfwPollEvents();
-    {
-        double x, y;
-        glfwGetCursorPos(m_window, &x, &y);
-
-        m_mouse_moved = true; // int(m_mouse_pos.x - x) && int(m_mouse_pos.y - y);
-        m_mouse_pos.x = (float)x;
-        m_mouse_pos.y = (float)y;
-    }
     return true;
 }
 
@@ -71,11 +77,9 @@ std::vector<unsigned int> Window::keyPressed() const {
         return {};
 
     std::vector<unsigned int> keys;
-    keys.reserve(GLFW_KEY_LAST + 1);
-
-    for (unsigned int key = 0; key <= GLFW_KEY_LAST; key++) {
-        if (glfwGetKey(m_window, key) == GLFW_PRESS) {
-            keys.push_back(key);
+    for (const auto& key : m_keys_pressed) {
+        if (key.second) {
+            keys.push_back(key.first);
         }
     }
 
@@ -87,47 +91,25 @@ std::vector<unsigned int> Window::buttonPressed() const {
         return {};
 
     std::vector<unsigned int> buttons;
-    buttons.reserve(GLFW_MOUSE_BUTTON_LAST + 1);
-
-    for (unsigned int btn = 0; btn <= GLFW_MOUSE_BUTTON_LAST; btn++) {
-        if (glfwGetMouseButton(m_window, btn) == GLFW_PRESS) {
-            buttons.push_back(btn);
+    for (const auto& button : m_buttons_pressed) {
+        if (button.second) {
+            buttons.push_back(button.first);
         }
     }
 
     return buttons;
 }
 
-bool Window::mouseMoved() const {
-    return m_mouse_moved;
-}
-
-glm::vec2 Window::mousePos() const {
+glm::ivec2 Window::mousePos() const {
     return m_mouse_pos;
 }
 
-std::shared_ptr<BaseScene> Window::scene() const {
-    return m_scene;
+Scene& Window::scene() {
+    return *m_scene;
 }
 
 GLFWwindow* Window::backend() {
     return m_window;
-}
-
-// Setters
-std::shared_ptr<BaseScene> Window::scene(std::shared_ptr<BaseScene> scene) {
-    m_scene.swap(scene);
-    if (!m_scene)
-        return nullptr;
-
-    // Adjust viewport
-    if (height() <= 0)
-        return nullptr;
-
-    _resize(width(), height());
-
-    // Get if needed
-    return m_scene;
 }
 
 void Window::toggleFullScreen() {
@@ -170,13 +152,13 @@ void Window::_init(const char* title) {
     });
 
     // Basic scene
-    m_scene = std::make_shared<BaseScene>();
-    m_scene->resize(m_width, m_height);
+    m_scene = std::make_shared<Scene>();
+    _resize(m_width, m_height);
 }
 
 // Private
 void Window::_resize(int width, int height) {
-    BaseScene::Viewport(width, height);
+    Scene::Viewport(width, height);
     TextEngine::SetViewport(0, 0, width, height);
 
     if (m_scene)
@@ -186,4 +168,64 @@ void Window::_resize(int width, int height) {
     m_height = height;
 
     update();
+}
+
+void Window::_manage_inputs() {
+    // Mouse position
+    {
+        double x, y;
+        glfwGetCursorPos(m_window, &x, &y);
+
+        if (int(x) != m_mouse_pos.x && int(y) != m_mouse_pos.y) {
+            m_mouse_pos.x = int(x);
+            m_mouse_pos.y = int(y);
+
+            Event::Emit(CommonEvents::MouseMoved(mousePos().x, mousePos().y));
+        }
+    }
+
+    // Mouse buttons
+    for (const auto& button : m_buttons_pressed) {
+        unsigned int button_id = button.first;
+        bool button_state      = button.second;
+
+        bool stateOn = glfwGetMouseButton(m_window, button_id) == GLFW_PRESS;
+
+        bool isPressed  = stateOn  && !button_state;
+        bool isRepeated = stateOn  &&  button_state;
+        bool isReleased = !stateOn &&  button_state;
+
+        if (!stateOn && !button_state)
+            continue;
+
+        Action action = isPressed  ? Action::Pressed:
+                        isRepeated ? Action::Repeated:
+                                     Action::Released;
+
+        m_buttons_pressed[button_id] = stateOn;
+        Event::Emit(CommonEvents::MouseButton(button_id, action));
+    }
+
+
+    // Keyboard keys
+    for (const auto& key : m_keys_pressed) {
+        unsigned int key_id = key.first;
+        bool key_state      = key.second;
+
+        bool stateOn = glfwGetKey(m_window, key_id) == GLFW_PRESS;
+
+        bool isPressed  = stateOn  && !key_state;
+        bool isRepeated = stateOn  &&  key_state;
+        bool isReleased = !stateOn &&  key_state;
+
+        if (!stateOn && !key_state)
+            continue;
+
+        Action action = isPressed  ? Action::Pressed:
+                        isRepeated ? Action::Repeated:
+                                     Action::Released;
+
+        m_keys_pressed[key_id] = stateOn;
+        Event::Emit(CommonEvents::KeyPressed(key_id, action));
+    }
 }
