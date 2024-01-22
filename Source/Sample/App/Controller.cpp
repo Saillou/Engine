@@ -16,11 +16,11 @@ Controller::Controller(std::shared_ptr<BaseScene> scene):
 
     // Lights
     m_pontential_lights = {
-        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  -1.50f, 1.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  +1.50f, 1.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  0,    0,    1.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
+        Light(glm::vec3{  -1.50f,  0, 1.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  +1.50f,  0, 1.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
     m_view->lights() = m_pontential_lights;
 
@@ -58,6 +58,16 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             m_view->camera().position += 0.05f * dir;
         }
     }
+
+    // Actions
+    if (evt.action == Action::Pressed)
+    {
+        switch (evt.key)
+        {
+            case 'R': m_view->enable_filter = !m_view->enable_filter; break;
+        }
+    }
+    
 
     // Lights
     if (evt.action == Action::Pressed) 

@@ -7,19 +7,19 @@
 #include <glm/gtx/string_cast.hpp>
 #include <Engine/Utils/RayCaster.hpp>
 
-View::View(int widthHint, int heightHint):
+View::View(int widthHint, int heightHint) :
     BaseScene(widthHint, heightHint),
     m_mousePos(0.0f, 0.0f)
 {
     // Camera
-    camera().position  = glm::vec3(0, -4, 0.25f);
-    camera().direction = glm::vec3(0,  0, 0);
+    camera().position = glm::vec3(0, -4, 0.75f);
+    camera().direction = glm::vec3(0, 0, 0);
 
     // Entities
-    m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Box"]     = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Target"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_entities["Ground"] = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Cube"] = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Box"] = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Target"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
     m_entities["Lantern"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
 
     // Scene objects
@@ -51,9 +51,9 @@ View::View(int widthHint, int heightHint):
         m_entities["Cube"]->setPoses(poses);
     }
 
-    m_scene_objects = { 
-        m_entities["Ground"], 
-        m_entities["Cube"] 
+    m_scene_objects = {
+        m_entities["Ground"],
+        m_entities["Cube"]
     };
 
     // Decors
@@ -62,12 +62,19 @@ View::View(int widthHint, int heightHint):
 
     // Lights
     m_entities["Lantern"]->localMaterial().cast_shadow = true;
+
+    // Others render elements
+    _initFilters();
 }
 
 // Callbacks
 void View::mouse_on(int x, int y) {
     m_mousePos.x = (float)x / m_width;
     m_mousePos.y = (float)y / m_height;
+}
+
+void View::_on_resize() {
+    m_filter.resize(width(), height());
 }
 
 // Methods
@@ -104,11 +111,50 @@ void View::_draw() {
             renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
         }
     }
+}
+
+void View::_post_draw() {
+    BaseScene::clear();
+
+    // Apply filter
+    if (enable_filter) {
+        m_filter.apply(framebuffer_main());
+        BaseScene::drawFrame(m_filter.frame());
+    }
+    else {
+        BaseScene::drawFrame(framebuffer_main());
+    }
 
     // Draw debug texts
-    float dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000.0f;
-
-    renderer().text("Cam pos: " + glm::to_string(camera().position),  15.0f, m_height - 20.0f, 0.4f);
+    renderer().text("Cam pos: " + glm::to_string(camera().position), 15.0f, m_height - 20.0f, 0.4f);
     renderer().text("Cam dir: " + glm::to_string(camera().direction), 15.0f, m_height - 40.0f, 0.4f);
-    renderer().text("Mouse: "   + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 60.0f, 0.4f);
+    renderer().text("Mouse: " + std::to_string(m_width * m_mousePos.x) + " x " + std::to_string(m_height * m_mousePos.y), 15.0f, m_height - 60.0f, 0.4f);
+}
+
+void View::_initFilters() {
+    m_filter.shader()
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("out", "vec2", "TexCoords")
+            .add_func("void", "main", "", R"_main_(
+                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+                float tx = aPos.x > 0 ? 1.0 : 0.0;
+                float ty = aPos.y > 0 ? 1.0 : 0.0;
+                TexCoords = vec2(tx, ty);
+            )_main_")
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec2", "TexCoords")
+            .add_var("uniform", "sampler2D", "quadTexture")
+            .add_var("out", "vec4", "FragColor")
+            .add_func("void", "main", "", R"_main_(
+                vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
+                vec2 tex_offset = 1.0 / tex_size;
+                vec2 tex_id     = TexCoords/tex_offset;
+
+                vec3 seg_color = distance(texture(quadTexture, TexCoords).rgb, vec3(0,0,0)) * vec3(1,1,1);
+                FragColor = vec4(seg_color, 1.0);
+            )_main_")
+        )
+        .link();
 }

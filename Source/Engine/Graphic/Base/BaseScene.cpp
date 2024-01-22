@@ -5,7 +5,7 @@
 BaseScene::BaseScene(int widthHint, int heightHint):
     m_width(widthHint),
     m_height(heightHint),
-    m_framebuffer_main(Framebuffer::Multisample, widthHint, heightHint),
+    _framebuffer_main(Framebuffer::Multisample, widthHint, heightHint),
     _internalFrame(Framebuffer::Unique, widthHint, heightHint)
 {
     _init_gl_config();
@@ -33,27 +33,26 @@ void BaseScene::run() {
     _renderer.deferred = m_enable_deffered_draw;
     _draw();
 
-    if (!m_enable_deffered_draw)
-        return;
+    if (m_enable_deffered_draw) {
+        // Resolve draw order and render shadow scene
+        Viewport(_renderer._shadower.width(), _renderer._shadower.height());
+        _renderer._compute();
 
-    // Resolve draw order and render shadow scene
-    Viewport(_renderer._shadower.width(), _renderer._shadower.height());
-    _renderer._compute();
+        // Render main scene
+        Viewport(width(), height());
+        _framebuffer_main.bind();
+        {
+            _framebuffer_main.clear();
 
-    // Render main scene
-    Viewport(width(), height());
-    m_framebuffer_main.bind();
-    {
-        m_framebuffer_main.clear();
-
-        _renderer.deferred = false;
-        _renderer._draw();
+            _renderer.deferred = false;
+            _renderer._draw();
+        }
+        _framebuffer_main.unbind();
+    
+        // Apply filters
+        _framebuffer_main.texture().activate(GL_TEXTURE0);
+        _post_draw();
     }
-    m_framebuffer_main.unbind();
-
-    // Apply filters
-    clear();
-    _post_draw();
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +66,8 @@ void BaseScene::_draw() {
 
 void BaseScene::_post_draw() {
     // Just write the results in the main frame
-    BaseScene::drawFrame(m_framebuffer_main);
+    clear();
+    BaseScene::drawFrame(_framebuffer_main);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -104,7 +104,7 @@ void BaseScene::Viewport(int x, int y, int width, int height) {
 void BaseScene::resize(int width, int height) {
     m_width  = width;
     m_height = height;
-    m_framebuffer_main.resize(width, height);
+    _framebuffer_main.resize(width, height);
 
     _update_camera();
     _on_resize();
@@ -142,4 +142,8 @@ Camera& BaseScene::camera() {
 }
 std::vector<Light>& BaseScene::lights() {
     return _renderer._lights;
+}
+
+Framebuffer& BaseScene::framebuffer_main() {
+    return _framebuffer_main;
 }

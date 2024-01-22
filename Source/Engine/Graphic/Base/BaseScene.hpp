@@ -26,6 +26,7 @@ struct BaseScene {
     Renderer& renderer();
     Camera& camera();
     std::vector<Light>& lights();
+    Framebuffer& framebuffer_main();
 
 protected:
     virtual void _init_gl_config(); // Override this to enable or disable some opengl functionalities. (eg PENCIL_TEST)
@@ -40,11 +41,11 @@ protected:
     int m_width  = 0;
     int m_height = 0;
 
-    Framebuffer m_framebuffer_main;
 
 
 private:
     Renderer _renderer;
     Framebuffer _internalFrame;     // Used when drawing multisample frame
+    Framebuffer _framebuffer_main;
     Quad _quad;
 };

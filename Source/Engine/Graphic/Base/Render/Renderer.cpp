@@ -114,7 +114,10 @@ void Renderer::_compute()
         // Check if models already used for another draw
         if (first_model_id.find(di.copied_entity._model) != first_model_id.cend()) {
             _entitiesDuplicates.insert(di.drawId);
-            _entitiesDuplicates.insert(first_model_id[di.copied_entity._model]);
+
+            // First one will also need to be redrawn
+            if (_entitiesDuplicates.find(first_model_id[di.copied_entity._model]) == _entitiesDuplicates.cend())
+                _entitiesDuplicates.insert(first_model_id[di.copied_entity._model]);
             continue; // gpu buffer needs to be setup after
         }
 
