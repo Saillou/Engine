@@ -15,6 +15,7 @@ View::View(Scene& scene) :
     _subscribe(&View::_draw);
     _subscribe(&View::_on_resize);
     _subscribe(&View::_post_process);
+    _subscribe(&View::_on_mouse_moved);
 
     // Camera
     m_scene.camera().position = glm::vec3(0, -4, 0.75f);
@@ -73,22 +74,22 @@ View::View(Scene& scene) :
     _initFilters();
 }
 
-// Callbacks
-void View::mouse_on(int x, int y) {
-    m_mousePos.x = (float)x / m_scene.width();
-    m_mousePos.y = (float)y / m_scene.height();
-}
-
+// Accessors
 Scene& View::scene() {
     return m_scene;
+}
+
+// Callbacks
+void View::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
+    m_mousePos.x = (float)evt.x / m_scene.width();
+    m_mousePos.y = (float)evt.y / m_scene.height();
 }
 
 void View::_on_resize(const SceneEvents::Resized& evt) {
     m_filter.resize(m_scene.width(), m_scene.height());
 }
 
-// Methods
-void View::_draw(const SceneEvents::Draw& evt) {
+void View::_draw(const SceneEvents::Draw&) {
     m_timer.tic();
     auto& renderer = m_scene.renderer();
 
@@ -124,7 +125,6 @@ void View::_draw(const SceneEvents::Draw& evt) {
 }
 
 void View::_post_process(const SceneEvents::PostDraw&) {
-    // Apply filter
     if (enable_filter) {
         m_filter.apply(m_scene.framebuffer_main());
         m_scene.drawFrame(m_filter.frame());
@@ -143,6 +143,7 @@ void View::_post_process(const SceneEvents::PostDraw&) {
     renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
 }
 
+// Helpers
 void View::_initFilters() {
     m_filter.shader()
         .attachSource(GL_VERTEX_SHADER, ShaderSource{}

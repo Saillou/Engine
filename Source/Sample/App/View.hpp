@@ -10,10 +10,10 @@
 #include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
 
+#include <Engine/Events/CommonEvents.hpp>
+
 struct View : private Event::Subscriber {
     View(Scene& scene);
-
-    void mouse_on(int x, int y);
 
     Scene& scene();
     bool enable_filter = false;
@@ -23,6 +23,7 @@ protected:
     void _draw          (const SceneEvents::Draw&);
     void _post_process  (const SceneEvents::PostDraw&);
     void _on_resize     (const SceneEvents::Resized&);
+    void _on_mouse_moved(const CommonEvents::MouseMoved&);
 
 private:
     void _initFilters();

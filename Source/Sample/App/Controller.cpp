@@ -88,7 +88,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
-    m_view.mouse_on(evt.x, evt.y);
+    // ..
 }
 
 void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
