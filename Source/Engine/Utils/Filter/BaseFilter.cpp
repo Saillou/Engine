@@ -16,22 +16,25 @@ void BaseFilter::apply(Framebuffer& fIn) {
 }
 
 void BaseFilter::apply(const Framebuffer& fIn, Framebuffer& fOut) {
-    // Multisample -> Monosample
     Framebuffer::Blit(fIn, _framebuffer);
+    {
+        compute();
+    }
+    Framebuffer::Blit(_framebuffer, fOut);
+}
 
-    // Draw
-    _framebuffer.bind();
+void BaseFilter::compute(Framebuffer* pF) {
+    Framebuffer* pFramebuffer = pF ? pF : &_framebuffer;
+
+    pFramebuffer->bind();
     glDisable(GL_DEPTH_TEST);
     {
         _shader.use();
-        _framebuffer.texture().bind();
+        pFramebuffer->texture().bind();
         _surface.drawElements();
     }
     glEnable(GL_DEPTH_TEST);
-    _framebuffer.unbind();
-
-    // Monosample -> Multisample
-    Framebuffer::Blit(_framebuffer, fOut);
+    pFramebuffer->unbind();
 }
 
 void BaseFilter::resize(int width, int height) {

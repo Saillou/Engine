@@ -15,6 +15,7 @@ struct BaseFilter {
 
     void apply  (Framebuffer& fInOut);
     void apply  (const Framebuffer& fIn, Framebuffer& fOut);
+    void compute(Framebuffer* = nullptr); // When nullptr, apply to _framebuffer
     void resize (int width, int height);
 
     // Members
