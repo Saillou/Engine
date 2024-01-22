@@ -44,7 +44,7 @@ namespace Thomas
         m_transform->position = { newpos.x, newpos.y, evt.z };
     }
 
-    void ConstructComponent::onMouseClick(const CommonEvents::MouseClicked& evt)
+    void ConstructComponent::onMouseClick(const CommonEvents::MouseButton& evt)
     {
         if (!m_alive)
             return;
@@ -68,8 +68,7 @@ namespace Thomas
         if (!m_grid)
             return;
 
-        m_grid->setState(GridComponent::GridComponentState::Visible);
-
+        m_grid->setState(GridComponent::GridComponentState::Visible);   
     }
 
     void ConstructComponent::cancel()

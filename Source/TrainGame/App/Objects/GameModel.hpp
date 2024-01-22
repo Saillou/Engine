@@ -16,7 +16,9 @@ namespace Thomas
         Track,
         TrackLeft,
         TrackRight,
-        Building1
+        Building1,
+        CubeBasic,
+        CubeGeometry
     };
 
     struct GameModel

@@ -9,6 +9,7 @@ struct SceneEvents : public Event {
         Draw_ = 1024,
         PostDraw_,
         Resized_,
+        RenderFinished_,
     };
 
     // -- Inputs --
@@ -29,6 +30,11 @@ struct SceneEvents : public Event {
 
         int width;
         int height;
+    };
+    struct RenderFinished : public _Base {
+        RenderFinished() :
+            _Base(_Type::RenderFinished_)
+        {};
     };
 };
 

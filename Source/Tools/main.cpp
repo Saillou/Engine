@@ -10,6 +10,7 @@
 int main() 
 {
     Window window(1280, 720, "Tools");
+    window.scene().renderer().deferred = false;
     Menu menu(window.backend());
 
     MaterialEditor materialEditor(&window);
@@ -20,7 +21,9 @@ int main()
 
     while (window.update()) 
     {
-        window.scene()->clear();
+        window.scene().framebuffer_main().bind();
+
+        //window.scene().clear();
 
         //window.scene()->camera().lookAt(glm::vec3(0, 0, 0.01f));
         
@@ -61,6 +64,7 @@ int main()
             modelEditor.onUpdate();
 
         menu.Render();
+        window.scene().framebuffer_main().unbind();
     }
 
     return 0;

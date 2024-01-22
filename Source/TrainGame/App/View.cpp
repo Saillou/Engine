@@ -24,17 +24,21 @@ namespace Thomas
     static std::uniform_real_distribution<float> dstr_one(0.0f, 1.0f);
     static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
-    View::View(int widthHint, int heightHint) :
-        Scene(widthHint, heightHint)
+    View::View(Scene& scene) :
+        scene(scene)
     {
+        // Root events
+        _subscribe(&View::_draw);
+        _subscribe(&View::_on_resize);
+        _subscribe(&View::_post_process);
         _subscribe(&View::_on_mouse_moved);
 
         // Camera
-        m_camera.position = glm::vec3(0.0f, -6.0f, 3.0f);
-        m_camera.direction = glm::vec3(0.0f, 0.0, 0.0f);
+        scene.camera().position = glm::vec3(0.f, -3.5f, 8.0f);
+        scene.camera().direction = glm::vec3(0.0f, 0.0, 0.0f);
 
         // Lightnings
-        m_lights = {
+        scene.lights() = {
             Light(glm::vec3{  0,  0, 0.50f }, glm::vec4{ 1, 0.7, 0.3, 1 })
         };
 
@@ -48,18 +52,35 @@ namespace Thomas
         std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
 
-    void View::draw() {
+    void View::_post_process(const SceneEvents::PostDraw& evt)
+    {
+        scene.framebuffer_main().bind();
+
+        // Skybox
+        m_skybox->draw(scene.camera());
+
+        scene.framebuffer_main().unbind();
+        //scene.drawFrame(scene.framebuffer_main());
+        
+    }
+
+    void View::_on_resize(const SceneEvents::Resized& evt)
+    {
+
+    }
+
+    void View::_draw(const SceneEvents::Draw& evt) {
         float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
         m_timer.tic();
-
+        auto& renderer = scene.renderer();
         // Main scene
-        Scene::Viewport(width(), height());
-        Scene::clear();
         {
             // Lights
-            for (auto& light : m_lights) {
-                m_model_sphere->get(Cookable::CookType::Basic)->use().set("diffuse_color", light.color);
-                m_model_sphere->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
+            for (auto& light : scene.lights())
+            {
+                m_model_sphere->localMaterial().diffuse_color = light.color;
+                m_model_sphere->poses() = { glm::scale(glm::translate(glm::mat4(1.0f), light.position),  glm::vec3(0.1f)) };
+                renderer.draw(Render::DrawType::Basic, *m_model_sphere);
             }
 
             // Draw game objects
@@ -82,46 +103,70 @@ namespace Thomas
                     worldTransform = glm::rotate(worldTransform, t.rotation.z, glm::vec3(0, 0, 1));
                     worldTransform = glm::scale(worldTransform, t.scale);
 
-                    m_gameModels[model.first]->drawOne(Cookable::CookType::Basic, m_camera, worldTransform * localTransform, m_lights);
+                    if (model.first != ModelId::CubeGeometry && model.first != ModelId::CubeBasic)
+                    {
+                        m_gameModels[model.first]->poses() = { worldTransform * localTransform };
+                        renderer.draw(Render::DrawType::Shadows, *m_gameModels[model.first]);
+
+                        //m_gameModels[model.first]->drawOne(Cookable::CookType::Basic, m_camera, worldTransform * localTransform, m_lights);
+                    }
+                    else
+                    {
+                        if (model.first == ModelId::CubeGeometry)
+                        {
+                            m_gameModels[model.first]->localMaterial().diffuse_color = {1,1,1,1};
+                            m_gameModels[model.first]->poses() = { worldTransform * localTransform };
+                            renderer.draw(Render::DrawType::Geometry, *m_gameModels[model.first]);
+                        }
+                        else
+                        {
+                            m_gameModels[model.first]->localMaterial().diffuse_color = { 0.3,0.6,0.3,1 };
+                            m_gameModels[model.first]->poses() = { worldTransform * localTransform };
+                            renderer.draw(Render::DrawType::Basic, *m_gameModels[model.first]);
+                        }
+                    }
 
                     // draw debug center
-                    m_model_sphere->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
-                    m_model_sphere->drawOne(Cookable::CookType::Geometry, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), t.position), glm::vec3(0.05f)));
+                    m_model_sphere->localMaterial().diffuse_color = {0.7f, 0.5f, 0.f, 1.f};
+                    m_model_sphere->poses() = { glm::scale(glm::translate(glm::mat4(1.0f), t.position),  glm::vec3(0.05f)) };
+                    renderer.draw(Render::DrawType::Basic, *m_model_sphere);
                 }
             }
-            
-            auto cast_res = RayCaster::Intersect(m_mousePos, m_camera, *m_groundEntity.entity, m_groundEntity.transform.getMat4());
+
+            auto cast_res = RayCaster::Intersect(m_mousePos, scene.camera(), *m_groundEntity.entity, m_groundEntity.transform.getMat4());
 
             if (cast_res.has_value())
             {
                 Event::Emit(CommonEvents::MouseHit(cast_res.value().x, cast_res.value().y, 0.05f));
 
-                m_target->get(Cookable::CookType::Basic)->use().set("diffuse_color", glm::vec4(1, 1, 1, 1));
-                m_target->drawOne(Cookable::CookType::Basic, m_camera, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f)));
+                m_target->localMaterial().diffuse_color = { 1.f, 1.f, 1.f, 1.f };
+                m_target->poses() = { glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f)) };
+                renderer.draw(Render::DrawType::Basic, *m_target);
             }
-            m_groundEntity.entity->drawBasic(m_camera, m_lights);
-            
+
+            m_groundEntity.entity->localMaterial().diffuse_color = { 1.f, 1.f, 1.f, 1.f };
+            m_groundEntity.entity->poses() = { m_groundEntity.transform.getMat4()};
+
+            renderer.draw(Render::DrawType::Shadows, *m_groundEntity.entity);
 
             drawGrid();
-
-            // Skybox
-            m_skybox->draw(m_camera);
         }
 
         // Some static texts
         std::ostringstream ss;
-        ss << "x: " << m_lights[0].position.x << ", z: " << m_lights[0].position.z;
+        ss << "x: " << scene.lights()[0].position.x << ", z: " << scene.lights()[0].position.z;
         std::string s(ss.str());
 
-        TextEngine::Write(s, 50, 50, 1.0f, glm::vec3(1, 1, 1));
+        renderer.text(s, 50, 50, 1.0f);
+        //TextEngine::Write(, glm::vec3(1, 1, 1));
 
         m_modelsToDraw.clear();
 
-        Event::Emit(CommonEvents::SceneFinishedRender());
-
+      
         // Prepare next
-        m_timer.tic();
-    }
+            m_timer.tic();
+        }
+
 
     void View::loadModels(size_t size)
     {
@@ -133,12 +178,14 @@ namespace Thomas
         // Misha: can this part be async at some point ?
         m_timer.tic();
         {
-            m_gameModels[ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive_no_wheels.glb");
+            m_gameModels[ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive.glb");
             m_gameModels[ModelId::Wagon] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
             m_gameModels[ModelId::Track] = std::make_unique<Entity>("Resources/objects/train/track_forward.glb");
             m_gameModels[ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
             m_gameModels[ModelId::TrackRight] = std::make_unique<Entity>("Resources/objects/train/track_right.glb");
             m_gameModels[ModelId::Building1] = std::make_unique<Entity>("Resources/objects/train/building_1.glb");
+            m_gameModels[ModelId::CubeBasic] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+            m_gameModels[ModelId::CubeGeometry] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         }
         std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
@@ -158,25 +205,25 @@ namespace Thomas
 
         m_entityGridCells.cells = cells;
 
-        std::vector<glm::mat4> mats;
-        std::vector<glm::vec4> colors;
+        std::vector<Pose> mats;
+        std::vector<Material> colors;
 
         mats.reserve(cells.size());
         colors.reserve(cells.size());
 
         for (auto& c : m_entityGridCells.cells)
         {
-            glm::vec4 color = {0,0,0,0};
+            Material color = { {0,0,0,0}, false  };
             switch (c.second.type)
             {
             case GridCell::CellType::Visible:
-                color = {0.7f,0.6f,0.3f,0.5f};
+                color.diffuse_color = {0.7f,0.6f,0.3f,0.5f};
                 break;
             case GridCell::CellType::ConstructOk:
-                color = { 0.3f,0.6f,0.3f,0.5f };
+                color.diffuse_color = { 0.3f,0.6f,0.3f,0.5f };
                 break;
             case GridCell::CellType::ConstructBad:
-                color = { 0.7f,0.3f,0.3f,0.5f };
+                color.diffuse_color = { 0.7f,0.3f,0.3f,0.5f };
                 break;
             }
 
@@ -184,18 +231,18 @@ namespace Thomas
             mats.push_back(c.second.transform.getMat4());
         }
 
-        m_entityGridCells.entity->model.setBatch(mats, colors);
+        m_entityGridCells.entity->setPosesWithMaterials(mats, colors);
     }
 
     void View::drawGrid()
     {
-        m_entityGridCells.entity->drawBasic(m_camera);
+        scene.renderer().draw(Render::Basic, *m_entityGridCells.entity);
     }
 
     void View::_on_mouse_moved(const CommonEvents::MouseMoved& evt)
     {
-        m_mousePos.x = (float)evt.x / m_width;
-        m_mousePos.y = (float)evt.y / m_height;
+        m_mousePos.x = (float)evt.x / scene.width();
+        m_mousePos.y = (float)evt.y / scene.height();
     }
 
     void View::_initObjects() {
@@ -209,9 +256,6 @@ namespace Thomas
                 "Resources/textures/skybox/back.jpg"
         });
 
-        // Box - Test shadow
-        m_model_box_shadow = std::make_unique<Entity>(Entity::SimpleShape::Cube);
-
         // Grid cells
         m_entityGridCells.entity = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         m_entityGridCells.cells.clear();
@@ -220,9 +264,8 @@ namespace Thomas
         m_target = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
 
         // Ground - Grid
-        m_groundEntity.transform = { {0,0,-0.1f}, {2.f, 2.f, 0.12f}, {0,0,0} };
+        m_groundEntity.transform = { {0.5f,0.5f,-0.1f}, {3.f, 3.f, 0.12f}, {0,0,0} };
         m_groundEntity.entity = std::make_unique<Entity>(Entity::SimpleShape::Cube);
-        m_groundEntity.entity->model.setBatch({ m_groundEntity.transform.getMat4() }, { {1,1,1,1} });
 
         // Lanterns
         m_model_sphere = std::make_unique<Entity>(Entity::Sphere);
@@ -234,8 +277,4 @@ namespace Thomas
         m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Locomotive, { 1,1,1 }));
         m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Wagon, { 2,2,2 }));
     }
-
-    void View::_onResize() {
-    }
-
 } // namespace Thomas

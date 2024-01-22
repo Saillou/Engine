@@ -8,7 +8,10 @@ namespace Thomas
         None = 0,
         TrainController,
         GridComponent,
-        ConstructComponent
+        ConstructComponent,
+        InventoryComponent,
+        ProduceComponent,
+        DropComponent
     };
 
     class Component

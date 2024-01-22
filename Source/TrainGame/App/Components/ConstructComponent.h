@@ -22,7 +22,7 @@ namespace Thomas
 
     private:
         void onMouseHit(const CommonEvents::MouseHit& evt);
-        void onMouseClick(const CommonEvents::MouseClicked& evt);
+        void onMouseClick(const CommonEvents::MouseButton& evt);
 
         void construct();
         void cancel();
