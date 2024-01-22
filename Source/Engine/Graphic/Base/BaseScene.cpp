@@ -51,6 +51,7 @@ void BaseScene::run() {
     
         // Apply filters
         _framebuffer_main.texture().activate(GL_TEXTURE0);
+        clear();
         _post_draw();
     }
 }
@@ -65,8 +66,6 @@ void BaseScene::_draw() {
 }
 
 void BaseScene::_post_draw() {
-    // Just write the results in the main frame
-    clear();
     BaseScene::drawFrame(_framebuffer_main);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

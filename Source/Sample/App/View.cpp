@@ -98,7 +98,6 @@ void View::_draw() {
     renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
     renderer().draw(Render::DrawType::Shadows, *m_entities["Box"]);
 
-
     // Draw intersections
     for (auto& obj : m_scene_objects) {
         for (auto& pose : obj->poses()) {
@@ -114,8 +113,6 @@ void View::_draw() {
 }
 
 void View::_post_draw() {
-    BaseScene::clear();
-
     // Apply filter
     if (enable_filter) {
         m_filter.apply(framebuffer_main());
