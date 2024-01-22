@@ -23,9 +23,7 @@ namespace Thomas
         _subscribe(&Game::onSceneFinishedRender);
 
         m_window = std::make_unique<Window>(1600, 900, "Train game");
-        m_view = std::make_shared<View>(m_window->width(), m_window->height());
-        m_window->scene(m_view);
-
+        m_view = std::make_shared<View>(m_window->scene());
         m_ui = std::make_unique<MainUI>(m_window->backend());
     }
 
@@ -76,6 +74,11 @@ namespace Thomas
         }
 
         // tracks
+        // 
+        // class Level l1;
+        // l1.loadFromFile();
+
+        
 
         {
             GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y), {1.f, 1.f, 1.f}, {0,0,0.f} } });
@@ -367,6 +370,10 @@ namespace Thomas
 
         if (m_ui->state.building)
         {
+            Building b(Trasform{});
+            //
+            ObjectManager::createObject(b.obj); // m_objects[b.id] = b.obj;
+
             m_ui->state.building = false;
             GameObject* obj = new GameObject({ gs_id++, ModelId::Building1, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             ConstructComponent* constructComponent = new ConstructComponent(&obj->transform);
@@ -410,6 +417,8 @@ namespace Thomas
 
             GameObject* progressBar2 = new GameObject({ gs_id++, ModelId::CubeGeometry, {{0,0,1}, {0.3f, 0.1f, 0.1f}, {0.785f,0,0.f} } });
             m_objects[progressBar2->id] = progressBar2;
+
+            
         }
 
         m_timer.tic();
@@ -444,7 +453,7 @@ namespace Thomas
     {
 
     }
-    void Game::onSceneFinishedRender(const CommonEvents::SceneFinishedRender& evt)
+    void Game::onSceneFinishedRender(const SceneEvents::RenderFinished& evt)
     {
         if(m_ui && m_ui->ready)
             m_ui->Render();

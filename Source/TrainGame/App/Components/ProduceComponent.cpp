@@ -28,7 +28,7 @@ namespace Thomas
         else
         {
             m_timerS = 0.f;
-        }
+        }        
 
         if (m_timerS >= m_timeS)
         {

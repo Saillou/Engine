@@ -1,6 +1,5 @@
 #include <Engine/Graphic/Window.hpp>
 
-#include "App/Controller.hpp"
 #include "App/View.hpp"
 
 #include "TrainGame/TrainGame/TrainGameModels.hpp"
@@ -11,11 +10,8 @@ void initGameModels();
 
 // -- Entry point --
 int main() {
-    // Setup
     Thomas::Game game;
     game.createScene();
-    //Window window(1600, 900, "Sample scene");
-    //Controller controller(window.scene(std::make_shared<View>(window.width(), window.height())));
 
     initGameModels();
 
@@ -40,7 +36,7 @@ int main() {
         ));
 
         for (auto button : game.window()->buttonPressed()) {
-            Event::Emit(CommonEvents::MouseClicked(button));
+            Event::Emit(CommonEvents::MouseButton(button, Action::Pressed));
             break;
         }
 
@@ -56,6 +52,8 @@ int main() {
 
 void initGameModels()
 {
+    // TODO: Load models here
+
     // Misha: is it really a good way of doing it ?
     // TODO: brainstorm about it
     Thomas::GameModelTable::addGameModel(Thomas::ModelId::Locomotive, { { -0.04f, 0.f, -0.12f }, { 1.f, 1.f, 1.f }, {1.57f, -1.57f, 0.f} });

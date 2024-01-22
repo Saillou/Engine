@@ -26,6 +26,8 @@ namespace Thomas
         float   m_timerS;
         size_t  m_limit;
         size_t  m_currentSize;
+
+        ProgressBar m_bar;
     };
 
 } // namespace Thomas

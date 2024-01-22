@@ -51,8 +51,10 @@ void Scene::run() {
         // Apply filters
         _framebuffer_main.texture().activate(GL_TEXTURE0);
         clear();
-        drawFrame(_framebuffer_main);
+        
         Event::Emit(SceneEvents::PostDraw());
+        drawFrame(_framebuffer_main);
+        Event::Emit(SceneEvents::RenderFinished());
     }
 }
 

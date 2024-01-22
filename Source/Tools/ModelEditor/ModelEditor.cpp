@@ -12,11 +12,11 @@ ModelEditor::~ModelEditor()
 void ModelEditor::onEnter()
 {
     m_center = std::make_unique<Entity>(Entity::Sphere);
-    m_center->material.diffuse_color = glm::vec4(1, 1, 1, 1);
+    m_center->localMaterial().diffuse_color = glm::vec4(1, 1, 1, 1);
 
     m_model = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
 
-    m_window->scene()->lights() = {
+    m_window->scene().lights() = {
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
 
@@ -27,7 +27,7 @@ void ModelEditor::onExit()
 {
     m_center.reset();
     m_model.reset();
-    m_window->scene()->lights().clear();
+    m_window->scene().lights().clear();
 
     glPolygonMode(GL_FRONT, GL_FILL);
     glPolygonMode(GL_BACK, GL_FILL);
@@ -46,20 +46,20 @@ void ModelEditor::onUpdate()
         glPolygonMode(GL_BACK, GL_FILL);
     }
 
-    Camera& camera = m_window->scene()->camera();
+    Camera& camera = m_window->scene().camera();
     switch (m_menu.state.cameraType)
     {
     case 0:
-        m_window->scene()->camera().position = glm::vec3{ 0, -1, 0 };
-        m_window->scene()->camera().lookAt(glm::vec3(0, 0, 1));
+        m_window->scene().camera().position = glm::vec3{ 0, -1, 0 };
+        m_window->scene().camera().lookAt(glm::vec3(0, 0, 1));
         break;
     case 1:
-        m_window->scene()->camera().position = glm::vec3{ 0,0,1 };
-        m_window->scene()->camera().lookAt(glm::vec3(0, 1, 0));
+        m_window->scene().camera().position = glm::vec3{ 0,0,1 };
+        m_window->scene().camera().lookAt(glm::vec3(0, 1, 0));
         break;
     case 2:
-        m_window->scene()->camera().position = glm::vec3{ -1, 0, 0 };
-        m_window->scene()->camera().lookAt(glm::vec3(0, 0, 1));
+        m_window->scene().camera().position = glm::vec3{ -1, 0, 0 };
+        m_window->scene().camera().lookAt(glm::vec3(0, 0, 1));
         break;
     }
 
@@ -69,7 +69,7 @@ void ModelEditor::onUpdate()
         m_model = std::make_unique<Entity>(m_menu.state.path);
     }
 
-    auto& renderer = m_window->scene()->renderer();
+    auto& renderer = m_window->scene().renderer();
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
     model = glm::rotate(model, m_menu.state.roll, glm::vec3(1, 0, 0));
@@ -80,10 +80,10 @@ void ModelEditor::onUpdate()
     model = glm::scale(model, m_menu.state.scale);
 
     glm::mat4 worldPos = glm::translate(glm::mat4(1.f), m_menu.state.worldPosition);
-    m_model->setPoses({ worldPos * model });
+    m_model->poses() = { worldPos * model };
     renderer.draw(Render::DrawType::Lights, *m_model);
 
-    m_center->setPoses({ glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)) });
+    m_center->poses() = { glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)) };
     renderer.draw(Render::DrawType::Basic, *m_center);
     m_menu.ShowMovableOptions();
 }
