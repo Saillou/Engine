@@ -94,27 +94,40 @@ void Renderer::_compute()
         di.drawPriority = std::numeric_limits<float>::max();
 
         if (di.copied_entity.localMaterial().diffuse_color.a < 1.0f) {
-            // Sort also poses
-            using dist_entity = std::pair<float, Pose>;
+            // Sort also poses in batch
+            using dist_entity = std::tuple<float, Pose, Material>;
             std::vector<dist_entity> all_dist_entity;
+
+            size_t i_element = 0;
+            auto& materials = di.copied_entity.materials();
 
             for (const Pose& pose : di.copied_entity.poses()) {
                 float entity_distance = RayCaster::OrientedDistance(_camera.position, di.copied_entity, pose);
 
-                all_dist_entity.push_back({ entity_distance, pose });
+                all_dist_entity.push_back({
+                    entity_distance, 
+                    pose, 
+                    i_element < materials.size() ? materials[i_element] : Material{{0,0,0,0}}
+                });
+
                 di.drawPriority = std::min(entity_distance, di.drawPriority);
+
+                i_element++;
             }
 
             std::sort(all_dist_entity.begin(), all_dist_entity.end(), [=](const dist_entity& di1, const dist_entity& di2) {
-                return di1.first > di2.first;
+                return std::get<0>(di1) > std::get<0>(di2);
             });
 
-            std::vector<Pose> sorted_poses;
+            std::vector<Pose> sorted_poses;          sorted_poses.reserve(all_dist_entity.size());
+            std::vector<Material> sorted_materials;  sorted_materials.reserve(all_dist_entity.size());
+
             for (const dist_entity& de: all_dist_entity) {
-                sorted_poses.push_back(de.second);
+                sorted_poses.push_back(std::get<1>(de));
+                sorted_materials.push_back(std::get<2>(de));
             }
 
-            di.copied_entity.poses() = sorted_poses;
+            di.copied_entity.setPosesWithMaterials(sorted_poses, sorted_materials);
         }
 
         // Check if models already used for another draw
