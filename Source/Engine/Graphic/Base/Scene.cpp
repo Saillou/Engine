@@ -22,14 +22,11 @@ void Scene::run() {
     // Setup
     _update_camera();
 
-    // Prepare
-    Viewport(width(), height());
-    clear();
-
     // Application draw
     _renderer._clear();
     _renderer.deferred = m_enable_deffered_draw;
-    
+
+    Viewport(width(), height());
     Event::Emit(SceneEvents::Draw());
 
     if (m_enable_deffered_draw) {

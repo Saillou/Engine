@@ -1,7 +1,7 @@
 #include "ModelEditor.h"
 
-ModelEditor::ModelEditor(Window* window)
-    : m_window(window)
+ModelEditor::ModelEditor(Scene& scene)
+    : scene(scene)
 {
 }
 
@@ -16,7 +16,7 @@ void ModelEditor::onEnter()
 
     m_model = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
 
-    m_window->scene().lights() = {
+    scene.lights() = {
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
 
@@ -27,7 +27,6 @@ void ModelEditor::onExit()
 {
     m_center.reset();
     m_model.reset();
-    m_window->scene().lights().clear();
 
     glPolygonMode(GL_FRONT, GL_FILL);
     glPolygonMode(GL_BACK, GL_FILL);
@@ -46,20 +45,20 @@ void ModelEditor::onUpdate()
         glPolygonMode(GL_BACK, GL_FILL);
     }
 
-    Camera& camera = m_window->scene().camera();
+    Camera& camera = scene.camera();
     switch (m_menu.state.cameraType)
     {
     case 0:
-        m_window->scene().camera().position = glm::vec3{ 0, -1, 0 };
-        m_window->scene().camera().lookAt(glm::vec3(0, 0, 1));
+        scene.camera().position = glm::vec3{ 0, -1, 0 };
+        scene.camera().lookAt(glm::vec3(0, 0, 1));
         break;
     case 1:
-        m_window->scene().camera().position = glm::vec3{ 0,0,1 };
-        m_window->scene().camera().lookAt(glm::vec3(0, 1, 0));
+        scene.camera().position = glm::vec3{ 0,0,1 };
+        scene.camera().lookAt(glm::vec3(0, 1, 0));
         break;
     case 2:
-        m_window->scene().camera().position = glm::vec3{ -1, 0, 0 };
-        m_window->scene().camera().lookAt(glm::vec3(0, 0, 1));
+        scene.camera().position = glm::vec3{ -1, 0, 0 };
+        scene.camera().lookAt(glm::vec3(0, 0, 1));
         break;
     }
 
@@ -69,7 +68,7 @@ void ModelEditor::onUpdate()
         m_model = std::make_unique<Entity>(m_menu.state.path);
     }
 
-    auto& renderer = m_window->scene().renderer();
+    auto& renderer = scene.renderer();
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
     model = glm::rotate(model, m_menu.state.roll, glm::vec3(1, 0, 0));

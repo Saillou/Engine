@@ -8,8 +8,8 @@ struct SceneEvents : public Event {
     enum _Type {
         Draw_ = 1024,
         PostDraw_,
-        Resized_,
         RenderFinished_,
+        Resized_,
     };
 
     // -- Inputs --
