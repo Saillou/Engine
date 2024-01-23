@@ -370,10 +370,6 @@ namespace Thomas
 
         if (m_ui->state.building)
         {
-            Building b(Trasform{});
-            //
-            ObjectManager::createObject(b.obj); // m_objects[b.id] = b.obj;
-
             m_ui->state.building = false;
             GameObject* obj = new GameObject({ gs_id++, ModelId::Building1, {{0,0,0}, {1.f, 1.f, 1.f}, {0,0,1.57f} } });
             ConstructComponent* constructComponent = new ConstructComponent(&obj->transform);
