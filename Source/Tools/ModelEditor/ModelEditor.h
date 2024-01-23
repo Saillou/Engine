@@ -3,15 +3,15 @@
 #include <memory>
 #include <vector>
 
-#include <Engine/Graphic/Window.hpp>
-#include "ModelEditorMenu.hpp"
-
+#include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
+
+#include "ModelEditorMenu.hpp"
 
 class ModelEditor
 {
 public:
-    ModelEditor(Window* window);
+    ModelEditor(Scene& scene);
     ~ModelEditor();
 
     void onEnter();
@@ -19,7 +19,7 @@ public:
     void onUpdate();
 
 private:
-    Window* m_window;
+    Scene& scene;
 
     std::unique_ptr<Entity>  m_center;
     std::unique_ptr<Entity>  m_model;

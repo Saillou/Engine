@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 #include "Base/Scene.hpp"
+#include "../Utils/Timer.hpp"
 
 struct Window {
     Window(int width, int height, const char* title, bool start_fs = false);
