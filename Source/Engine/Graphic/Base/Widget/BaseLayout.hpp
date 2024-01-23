@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <vector>
+#include <memory>
 
 #include "../Scene.hpp"
 #include "../../Wrapper/Framebuffer.hpp"
@@ -8,9 +10,21 @@
 #include "../../../Utils/Filter/CopyFilter.hpp"
 #include "../../../Utils/Timer.hpp"
 
-struct BaseWidget : Event::Subscriber {
-    BaseWidget(Scene& scene);
-    virtual ~BaseWidget() = default;
+// -- Widget --
+struct BaseWidget {
+    virtual void draw(Scene&) = 0;
+
+    float opacity = 1.0f;
+};
+
+// -- Layout --
+struct BaseLayout : Event::Subscriber
+{
+    BaseLayout(Scene& scene);
+    virtual ~BaseLayout() = default;
+
+    // Methods
+    void add(std::shared_ptr<BaseWidget>);
 
     // Setters
     Scene& scene();
@@ -30,4 +44,6 @@ private:
     Framebuffer m_frame;
     CopyFilter m_copyFilter;
     std::function<void(void)> m_callback_draw;
+
+    std::vector<std::shared_ptr<BaseWidget>> m_widgets;
 };

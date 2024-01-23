@@ -1,4 +1,4 @@
-#include "Button.hpp"
+#include "ButtonWidget.hpp"
 
 ButtonWidget::ButtonWidget():
     _surface(0.45f, 0.45f, 0.1f, 0.1f),

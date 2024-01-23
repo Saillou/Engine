@@ -1,11 +1,11 @@
 #pragma once
 
-#include "BaseWidget.hpp"
+#include "BaseLayout.hpp"
 
-struct ButtonWidget {
+struct ButtonWidget : public BaseWidget{
     ButtonWidget();
 
-    void draw(Scene&);
+    void draw(Scene&) override;
 
 private:
     Quad _surface;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Graphic/Base/Widget/Button.hpp>
+#include <Engine/Graphic/Base/Widget/BaseLayout.hpp>
 
 struct Ui : Event::Subscriber {
     Ui(Scene& scene);
@@ -16,6 +16,5 @@ private:
     void _cleanup();
 
     Scene& m_scene;
-    BaseWidget m_widget;
-    ButtonWidget m_button_start;
+    BaseLayout m_layout;
 };

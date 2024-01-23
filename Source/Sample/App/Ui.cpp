@@ -1,16 +1,19 @@
 #include "Ui.hpp"
 
+#include <Engine/Graphic/Base/Widget/ButtonWidget.hpp>
+
 Ui::Ui(Scene& scene) : 
     m_scene(scene),
-    m_widget(scene)
+    m_layout(scene)
 {
     // Define events
-    m_widget.on_draw() = [&]() { 
+    m_layout.on_draw() = [&]() {
         draw(); 
     };
 
     // Setup root widget
-    m_widget.opacity = 1.0f;
+    m_layout.opacity = 1.0f;
+    m_layout.add(std::make_shared<ButtonWidget>());
 }
 
 void Ui::draw() {
@@ -20,11 +23,12 @@ void Ui::draw() {
     }
 
     m_scene.clear();
-    m_button_start.draw(m_scene);
+
+    // .. do something ..
 }
 
 
 void Ui::_cleanup() {
-    if(m_widget.opacity > 0)
-        m_widget.opacity -= 0.03f;
+    if(m_layout.opacity > 0)
+        m_layout.opacity -= 0.03f;
 }
