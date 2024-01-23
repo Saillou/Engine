@@ -20,7 +20,7 @@ Controller::Controller(View& view):
         Light(glm::vec3{  -1.50f,  0, 1.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{  +1.50f,  0, 1.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 1);
+    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 2);
 
     // Start
     m_timer.tic();

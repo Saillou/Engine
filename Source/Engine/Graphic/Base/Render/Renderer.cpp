@@ -98,6 +98,7 @@ void Renderer::_compute()
             // Sort also poses in batch
             using dist_entity = std::tuple<float, Pose, Material>;
             std::vector<dist_entity> all_dist_entity;
+            all_dist_entity.reserve(di.copied_entity.materials().size());
 
             size_t i_element = 0;
             auto& materials = di.copied_entity.materials();

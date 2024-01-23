@@ -90,39 +90,22 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 float RayCaster::ApproxDistance(const glm::vec3& origin, const Entity& objModel, const glm::mat4& quat)
 {
-	float distance_entity = std::numeric_limits<float>::max();
-
-	// Traverse model's nodes
-	if (!objModel.model().root())
+	// Will just check the root element..
+	if (!objModel.model().root() || objModel.model().root()->meshes.empty())
 		return -1.0f;
 
-	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&objModel.model().root());
+	// Check all meshes of root
+	float avg_distance = 0.0f;
+	const glm::mat4 Q = quat * objModel.model().root()->transform * glm::mat4(objModel.localPose());
 
-	while (!st.empty()) {
-		// Get next in line
-		const auto currNode = st.top();
-		st.pop();
-
-		// Check all meshes of this node
-		for (const auto& mesh : (*currNode)->meshes) {
-			const glm::mat4 Q = quat * (*currNode)->transform * glm::mat4(objModel.localPose());
-			const float distance_mesh = glm::distance(vec3(Q * mesh->obb()[3]), origin);
-			distance_entity = std::min(distance_entity, distance_mesh);
-		}
-
-		// Add children
-		for (size_t i = 0; i < (*currNode)->children.size(); i++) {
-			st.push(&(*currNode)->children[i]);
-		}
+	for (const auto& mesh : objModel.model().root()->meshes) {
+		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);
 	}
 
-	return distance_entity;
+	return avg_distance / objModel.model().root()->meshes.size();
 }
 
 // - Helpers -
-
-
 bool RayCaster::IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos, const glm::vec3& camDir, const glm::mat4& quat)
 {
 	return _intersect_mesh(mousePos, camPos, camDir, *GetCube(), quat).has_value();
