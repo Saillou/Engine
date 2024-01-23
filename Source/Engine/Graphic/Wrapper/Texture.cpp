@@ -165,6 +165,11 @@ void Texture::activate(GLuint target) {
 	glActiveTexture(target);
 }
 
+void Texture::deactivate(GLuint texture_type, GLuint target) {
+	glActiveTexture(target);
+	glBindTexture(texture_type, 0);
+}
+
 void Texture::_setParameters() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 

@@ -3,7 +3,8 @@
 #include <memory>
 #include <iostream>
 
-Controller::Controller(View& view):
+Controller::Controller(Ui& ui, View& view):
+    m_ui(ui),
     m_view(view)
 {
     // Root events
@@ -12,15 +13,19 @@ Controller::Controller(View& view):
     _subscribe(&Controller::_on_mouse_moved);
     _subscribe(&Controller::_on_mouse_button);
 
+    // Camera
+    m_view.scene().camera().position = glm::vec3(m_distance, 0, 1.25f);
+    m_view.scene().camera().direction = glm::vec3(0, 0, 0);
+
     // Lights
     m_pontential_lights = {
-        Light(glm::vec3{  0,  -1.50f, 1.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{  0,  +1.50f, 1.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  0,    0,    1.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{  -1.50f,  0, 1.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  +1.50f,  0, 1.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  -1.50f, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{  0,  +1.50f, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  0,    0,    3.0f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
+        Light(glm::vec3{  -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{  +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 2);
+    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 5);
 
     // Start
     m_timer.tic();
@@ -45,15 +50,20 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
         {
             case Key::ArrowRight: dir.x = +1.0f; break;
             case Key::ArrowLeft:  dir.x = -1.0f; break;
-            case Key::ArrowUp:    dir.y = +1.0f; break;
-            case Key::ArrowDown:  dir.y = -1.0f; break;
+            case Key::ArrowUp:    dir.y = -1.0f; break;
+            case Key::ArrowDown:  dir.y = +1.0f; break;
             case 'Q':             dir.z = +1.0f; break;
             case 'W':             dir.z = -1.0f; break;
         }
 
         if (dir != glm::vec3(0, 0, 0)) 
         {
-            m_view.scene().camera().position += 0.05f * dir;
+            m_theta    += 0.01f * dir.x;
+            m_distance += 0.05f * dir.y;
+
+            m_view.scene().camera().position.x = m_distance * cos(m_theta);
+            m_view.scene().camera().position.y = m_distance * sin(m_theta);
+            m_view.scene().camera().position.z += 0.05f * dir.z;
         }
     }
 

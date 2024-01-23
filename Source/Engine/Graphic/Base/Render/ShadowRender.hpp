@@ -3,8 +3,8 @@
 #include <vector>
 #include <functional>
 
-#include "../../Utils/Shader.hpp"
-#include "../../Utils/Framebuffer.hpp"
+#include "../../Wrapper/Shader.hpp"
+#include "../../Wrapper/Framebuffer.hpp"
 #include "../../Light.hpp"
 #include "../../Camera.hpp"
 

@@ -12,7 +12,7 @@
 
 #include <Engine/Events/CommonEvents.hpp>
 
-struct View : private Event::Subscriber {
+struct View : Event::Subscriber {
     View(Scene& scene);
 
     Scene& scene();
@@ -29,7 +29,7 @@ private:
     void _initFilters();
 
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
-    std::vector<std::shared_ptr<Entity>> m_scene_objects;
+    std::vector<std::shared_ptr<Entity>> m_interact_objects;
 
     Scene& m_scene;
     BaseFilter m_filter;

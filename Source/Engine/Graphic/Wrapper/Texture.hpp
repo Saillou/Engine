@@ -31,6 +31,7 @@ public:
 	void resize(unsigned int width, unsigned int height, void* data = nullptr, GLuint target = -1);
 
 	static void activate(GLuint target);
+	static void deactivate(GLuint texture_type, GLuint target);
 
 protected:
 	void _setParameters();

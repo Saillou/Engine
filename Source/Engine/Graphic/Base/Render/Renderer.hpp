@@ -4,7 +4,7 @@
 #include "../../Cookable.hpp"
 #include "../../Light.hpp"
 #include "../../TextEngine.hpp"
-#include "../../Utils/Framebuffer.hpp"
+#include "../../Wrapper/Framebuffer.hpp"
 #include "../Model/Entity.hpp"
 #include "../Render/RenderType.hpp"
 #include "ShadowRender.hpp"

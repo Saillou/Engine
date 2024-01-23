@@ -48,3 +48,7 @@ Shader& BaseFilter::shader() {
 const Framebuffer& BaseFilter::frame() const {
     return _framebuffer;
 }
+
+const Quad& BaseFilter::surface() const {
+    return _surface;
+}

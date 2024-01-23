@@ -17,10 +17,6 @@ View::View(Scene& scene) :
     _subscribe(&View::_post_process);
     _subscribe(&View::_on_mouse_moved);
 
-    // Camera
-    m_scene.camera().position  = glm::vec3(0, -8.0f, 1.25f);
-    m_scene.camera().direction = glm::vec3(0, 0, 0);
-
     // Entities
     m_entities["Ground"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Cube"]      = std::make_shared<Entity>(Entity::SimpleShape::Cube);
@@ -37,13 +33,13 @@ View::View(Scene& scene) :
     m_entities["Ground"]->poses()         = { glm::mat4(1.0f) };
 
     m_entities["Cube"]->localMaterial()   = paper;
-    m_entities["Cube"]->localPose()       = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
+    m_entities["Cube"]->localPose()       = glm::scale(glm::mat4(1.0f), glm::vec3(0.15f));
     {
-        const float n_size = 0.15f;
-        const int n_side = 3;
+        const float n_size = 0.5f;
+        const int n_side = 2;
         for (int x = -n_side; x <= n_side; x++) {
             for (int y = -n_side; y <= n_side; y++) {
-                for (int z = 0; z <= 2*n_side; z++) {
+                for (int z = 0; z <= n_side; z++) {
                     m_entities["Cube"]->poses().push_back(
                         glm::translate(glm::mat4(1.0f), glm::vec3(n_size * x, n_size * y, 0.1f + n_size * z))
                     );
@@ -52,9 +48,8 @@ View::View(Scene& scene) :
         }
     }
 
-    m_scene_objects = {
-        m_entities["Ground"],
-        m_entities["Cube"],
+    m_interact_objects = {
+        m_entities["Ground"]
     };
 
     // Decors
@@ -104,7 +99,7 @@ void View::_draw(const SceneEvents::Draw&) {
     renderer.draw(Render::DrawType::Shadows, *m_entities["Cube"]);
 
     // Draw intersections
-    for (auto& obj : m_scene_objects) {
+    for (auto& obj : m_interact_objects) {
         for (auto& pose : obj->poses()) {
             auto intersect_result = RayCaster::Intersect(m_mousePos, m_scene.camera(), *obj, pose);
             if (!intersect_result.has_value())
@@ -120,7 +115,10 @@ void View::_draw(const SceneEvents::Draw&) {
 void View::_post_process(const SceneEvents::PostDraw&) {
     // Filters
     if (enable_filter) {
+        Texture::activate(GL_TEXTURE0);
+        m_filter.shader().use().set("quadTexture", 0);
         m_filter.apply(m_scene.framebuffer_main());
+        Texture::deactivate(GL_TEXTURE_2D, GL_TEXTURE0);
     }
 
     float total_draw_time = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
@@ -137,6 +135,7 @@ void View::_post_process(const SceneEvents::PostDraw&) {
         renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
         renderer.text("Draw : " + std::to_string(total_draw_time) + " ms", 15.0f, h - 80.0f, 0.4f);
     }
+    m_scene.framebuffer_main().unbind();
 }
 
 // Helpers

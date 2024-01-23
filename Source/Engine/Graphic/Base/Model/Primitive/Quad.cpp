@@ -43,8 +43,8 @@ Quad::Quad(float x, float y, float w, float h)
     setupGPU(quad_mesh);
 }
 
-void Quad::draw() {
-    shader_quad.use();
+void Quad::draw(int texture_location) {
+    shader_quad.use().set("quadTexture", texture_location);
     drawElements();
 }
 

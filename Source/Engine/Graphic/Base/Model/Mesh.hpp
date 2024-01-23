@@ -4,10 +4,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../../Utils/Shader.hpp"
-#include "../../Utils/Array.hpp"
-#include "../../Utils/Buffer.hpp"
-#include "../../Utils/Texture.hpp"
+#include "../../Wrapper/Shader.hpp"
+#include "../../Wrapper/Array.hpp"
+#include "../../Wrapper/Buffer.hpp"
+#include "../../Wrapper/Texture.hpp"
 
 #include <string>
 #include <vector>

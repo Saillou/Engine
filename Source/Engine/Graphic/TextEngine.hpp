@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Utils/Array.hpp"
-#include "Utils/Buffer.hpp"
-#include "Utils/Shader.hpp"
-#include "Utils/Texture.hpp"
+#include "Wrapper/Array.hpp"
+#include "Wrapper/Buffer.hpp"
+#include "Wrapper/Shader.hpp"
+#include "Wrapper/Texture.hpp"
 
 #include <string>
 #include <memory>

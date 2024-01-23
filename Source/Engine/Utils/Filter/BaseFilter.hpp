@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Graphic/Utils/Shader.hpp"
-#include "../../Graphic/Utils/Framebuffer.hpp"
+#include "../../Graphic/Wrapper/Shader.hpp"
+#include "../../Graphic/Wrapper/Framebuffer.hpp"
 #include "../../Graphic/Base/Model/Primitive/Quad.hpp"
 
 struct BaseFilter {
@@ -21,6 +21,7 @@ struct BaseFilter {
     // Members
     Shader& shader();
     const Framebuffer& frame() const;
+    const Quad& surface() const;
 
 protected:
     Shader      _shader;

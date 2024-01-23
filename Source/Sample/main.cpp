@@ -2,13 +2,15 @@
 
 #include "App/View.hpp"
 #include "App/Controller.hpp"
+#include "App/Ui.hpp"
 
 // -- Entry point --
 int main() {
     // Setup
     Window     window(1600, 900, "Sample scene");
     View       view(window.scene());
-    Controller controller(view);
+    Ui         ui(window.scene());
+    Controller controller(ui, view);
 
     // Loop
     do {
