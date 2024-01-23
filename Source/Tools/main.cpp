@@ -39,10 +39,10 @@ App::App(Window& window) :
     materialEditor(window.scene()),
     modelEditor(window.scene())
 {
-    window.scene().renderer().deferred = false;
-
     _subscribe(&App::draw);
     _subscribe(&App::end_draw);
+
+    window.scene().directDraw(true);
 }
 
 void App::pre_draw() {

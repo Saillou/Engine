@@ -1,12 +1,13 @@
 #include "Renderer.hpp"
 
+#include "../../../Utils/Timer.hpp"
 #include "../../../Utils/RayCaster.hpp"
 #include <iostream>
 #include <algorithm>
 #include <glm/gtx/string_cast.hpp>
 
 void Renderer::draw(Render::DrawType type, Entity& entity) {
-    if (!deferred)
+    if (!_deferred)
         return _drawEntitySync(type, entity);
 
     _DrawEntity di;
@@ -19,7 +20,7 @@ void Renderer::draw(Render::DrawType type, Entity& entity) {
 }
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
-    if(!deferred)
+    if(!_deferred)
         return TextEngine::Write(text, x, y, scale, color);
 
     _DrawText dt;
@@ -102,7 +103,7 @@ void Renderer::_compute()
             auto& materials = di.copied_entity.materials();
 
             for (const Pose& pose : di.copied_entity.poses()) {
-                float entity_distance = RayCaster::OrientedDistance(_camera.position, di.copied_entity, pose);
+                float entity_distance = RayCaster::ApproxDistance(_camera.position, di.copied_entity, pose);
 
                 all_dist_entity.push_back({
                     entity_distance, 

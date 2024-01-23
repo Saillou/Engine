@@ -44,7 +44,7 @@ struct Scene {
 
     Scene(int widthHint = 0, int heightHint = 0);
 
-    void clear();
+    static void clear();
     void run();                       
     void resize(int width, int height);
 
@@ -53,6 +53,9 @@ struct Scene {
 
     // utils
     void drawFrame(const Framebuffer& framebuffer);
+
+    // setters
+    void directDraw(bool);
 
     // getters
     int width() const;

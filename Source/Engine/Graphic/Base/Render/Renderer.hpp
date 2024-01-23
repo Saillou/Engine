@@ -19,13 +19,13 @@ struct Renderer : private Cookable {
 	// Methods
 	void draw(Render::DrawType, Entity& entity);
 	void text(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
-	bool deferred = true;
 
 private:
 	Renderer() = default;
 
 	Shader& _setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower);
 
+	bool _deferred = true;
 	Camera _camera				= {};
 	std::vector<Light> _lights	= {};
 	ShadowRender _shadower;

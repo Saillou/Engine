@@ -88,7 +88,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 
 
-float RayCaster::OrientedDistance(const glm::vec3& origin, const Entity& objModel, const glm::mat4& quat)
+float RayCaster::ApproxDistance(const glm::vec3& origin, const Entity& objModel, const glm::mat4& quat)
 {
 	float distance_entity = std::numeric_limits<float>::max();
 
@@ -107,7 +107,7 @@ float RayCaster::OrientedDistance(const glm::vec3& origin, const Entity& objMode
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
 			const glm::mat4 Q = quat * (*currNode)->transform * glm::mat4(objModel.localPose());
-			const float distance_mesh = RayCaster::OrientedDistance(origin, *mesh, Q);
+			const float distance_mesh = glm::distance(vec3(Q * mesh->obb()[3]), origin);
 			distance_entity = std::min(distance_entity, distance_mesh);
 		}
 
@@ -118,17 +118,6 @@ float RayCaster::OrientedDistance(const glm::vec3& origin, const Entity& objMode
 	}
 
 	return distance_entity;
-}
-
-float RayCaster::OrientedDistance(const glm::vec3& origin, const Mesh& mesh, const glm::mat4& quat)
-{
-	float distance_mesh = std::numeric_limits<float>::max();
-
-	for (const Vertex& vertex: mesh.vertices()) {
-		distance_mesh = std::min(distance_mesh, glm::distance(vec3(quat * vec4(vertex.Position, +1.0f)), origin));
-	}
-
-	return distance_mesh;
 }
 
 // - Helpers -

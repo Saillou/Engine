@@ -13,9 +13,7 @@ namespace RayCaster {
 	std::optional<glm::vec4> Intersect(const glm::vec2& mousePos, const Camera&, const Entity&, const glm::mat4& quat);
 	std::optional<glm::vec4> Intersect(const glm::vec2& mousePos, const Camera&, const Mesh&,	const glm::mat4& quat);
 
-	// Todo: add ray direction because it's not oriented currently lol
-	float OrientedDistance(const glm::vec3& origin, const Entity&, const glm::mat4& quat);
-	float OrientedDistance(const glm::vec3& origin, const Mesh&, const glm::mat4& quat);
+	float ApproxDistance(const glm::vec3& origin, const Entity&, const glm::mat4& quat);
 
 	// For internally purpose, but feel free to use
 	std::optional<glm::vec4> Intersect(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle);

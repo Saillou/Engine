@@ -24,7 +24,10 @@ void Scene::run() {
 
     // Application draw
     _renderer._clear();
-    _renderer.deferred = m_enable_deffered_draw;
+    _renderer._deferred = m_enable_deffered_draw;
+
+    if (!m_enable_deffered_draw)
+        clear();
 
     Viewport(width(), height());
     Event::Emit(SceneEvents::Draw());
@@ -40,7 +43,7 @@ void Scene::run() {
         {
             _framebuffer_main.clear();
 
-            _renderer.deferred = false;
+            _renderer._deferred = false;
             _renderer._draw();
         }
         _framebuffer_main.unbind();
@@ -76,6 +79,10 @@ void Scene::drawFrame(const Framebuffer& framebuffer) {
     Texture::unbind(GL_TEXTURE_2D);
 
     glEnable(GL_DEPTH_TEST); // set back to original state.
+}
+
+void Scene::directDraw(bool b) {
+    m_enable_deffered_draw = !b;
 }
 
 void Scene::Viewport(int width, int height) {

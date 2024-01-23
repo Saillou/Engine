@@ -24,33 +24,27 @@ View::View(Scene& scene) :
     // Entities
     m_entities["Ground"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Cube"]      = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Box"]       = std::make_shared<Entity>(Entity::SimpleShape::Cube);
     m_entities["Target"]    = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
     m_entities["Lantern"]   = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
 
     // Scene objects
     Material stone = { glm::vec4(0.7f, 0.7f, 0.7f, 1.0f) };
-    Material paper = { glm::vec4(0.3f, 1.0f, 1.0f, 0.2f) };
+    Material paper = { glm::vec4(0.8f, 0.8f, 0.6f, 0.1f) };
     Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f), false };
 
     m_entities["Ground"]->localMaterial() = stone;
-    m_entities["Ground"]->localPose()     = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.1f));
+    m_entities["Ground"]->localPose()     = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.01f));
     m_entities["Ground"]->poses()         = { glm::mat4(1.0f) };
 
-    m_entities["Box"]->localMaterial()    = stone;
-    m_entities["Box"]->poses()            = { glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(0, 0, 1.0f)) };
-
     m_entities["Cube"]->localMaterial()   = paper;
+    m_entities["Cube"]->localPose()       = glm::scale(glm::mat4(1.0f), glm::vec3(0.25f));
     {
-        const float n_size = 5.0f;
-        const int n_side = 2;
+        const float n_size = 0.6f;
+        const int n_side = 35;
         for (int x = -n_side; x <= n_side; x++) {
             for (int y = -n_side; y <= n_side; y++) {
-                if (x == 0 && y == 0)
-                    continue;
-
                 m_entities["Cube"]->poses().push_back(
-                    glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(n_size * x, n_size * y, 1.0f))
+                    glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)), glm::vec3(n_size * x, n_size * y, 0.25f))
                 );
             }
         }
@@ -59,7 +53,6 @@ View::View(Scene& scene) :
     m_scene_objects = {
         m_entities["Ground"],
         m_entities["Cube"],
-        m_entities["Box"]
     };
 
     // Decors
@@ -107,20 +100,19 @@ void View::_draw(const SceneEvents::Draw&) {
     // Draw objects
     renderer.draw(Render::DrawType::Shadows, *m_entities["Ground"]);
     renderer.draw(Render::DrawType::Shadows, *m_entities["Cube"]);
-    renderer.draw(Render::DrawType::Shadows, *m_entities["Box"]);
 
-    // Draw intersections
-    for (auto& obj : m_scene_objects) {
-        for (auto& pose : obj->poses()) {
-            auto intersect_result = RayCaster::Intersect(m_mousePos, m_scene.camera(), *obj, pose);
-            if (!intersect_result.has_value())
-                continue;
+    //// Draw intersections
+    //for (auto& obj : m_scene_objects) {
+    //    for (auto& pose : obj->poses()) {
+    //        auto intersect_result = RayCaster::Intersect(m_mousePos, m_scene.camera(), *obj, pose);
+    //        if (!intersect_result.has_value())
+    //            continue;
 
-            const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
-            m_entities["Target"]->poses() = { Q };
-            renderer.draw(Render::DrawType::Basic, *m_entities["Target"]);
-        }
-    }
+    //        const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
+    //        m_entities["Target"]->poses() = { Q };
+    //        renderer.draw(Render::DrawType::Basic, *m_entities["Target"]);
+    //    }
+    //}
 }
 
 void View::_post_process(const SceneEvents::PostDraw&) {
@@ -128,6 +120,8 @@ void View::_post_process(const SceneEvents::PostDraw&) {
     if (enable_filter) {
         m_filter.apply(m_scene.framebuffer_main());
     }
+
+    float total_draw_time = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
 
     // Draw debug texts
     m_scene.framebuffer_main().bind();
@@ -139,6 +133,7 @@ void View::_post_process(const SceneEvents::PostDraw&) {
         renderer.text("Cam pos: " + glm::to_string(m_scene.camera().position), 15.0f, h - 20.0f, 0.4f);
         renderer.text("Cam dir: " + glm::to_string(m_scene.camera().direction), 15.0f, h - 40.0f, 0.4f);
         renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
+        renderer.text("Draw : " + std::to_string(total_draw_time) + " ms", 15.0f, h - 80.0f, 0.4f);
     }
 }
 
