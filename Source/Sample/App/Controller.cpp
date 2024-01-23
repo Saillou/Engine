@@ -120,4 +120,9 @@ void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
     }
 
     std::cout << msg_mouse << std::endl;
+
+    // Close UI
+    if (evt.button == Button::Left && Action::Pressed) {
+        m_ui.visible = false;
+    }
 }
