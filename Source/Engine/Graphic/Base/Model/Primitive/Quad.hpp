@@ -11,9 +11,17 @@ struct Quad :
     ~Quad() = default;
 
     void draw(int texture_location = 0);
+    void draw(const glm::vec4& background_color);
+
     void drawElements();
 
+    float x() const;
+    float y() const;
+    float w() const;
+    float h() const;
+
 private:
+    float _x, _y, _w, _h;
     Mesh quad_mesh;
     Shader shader_quad;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Graphic/Base/Widget/BaseWidget.hpp>
+#include <Engine/Graphic/Base/Widget/Button.hpp>
 
 struct Ui : Event::Subscriber {
     Ui(Scene& scene);
@@ -17,5 +17,5 @@ private:
 
     Scene& m_scene;
     BaseWidget m_widget;
-    Shader shad_quad;
+    ButtonWidget m_button_start;
 };
