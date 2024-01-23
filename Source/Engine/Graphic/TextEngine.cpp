@@ -10,7 +10,7 @@ void TextEngine::Write(const std::string& text, float x, float y, float scale, c
 }
 
 void TextEngine::SetViewport(int x, int y, int width, int height) {
-    _getInstance().m_text_shader.set("projection", glm::ortho((float)x, (float)width, (float)y, (float)height));
+    _getInstance().m_text_shader.use().set("projection", glm::ortho((float)x, (float)width, (float)y, (float)height));
 }
 
 // - Private
@@ -44,8 +44,7 @@ TextEngine::TextEngine():
                 FragColor    = vec4(textColor) * sampled;
             )_main_")
         )
-        .link()
-        .use();
+        .link();
 
     // TODO: Font choice (here hardcoded)
     FT_Library ft;
@@ -98,8 +97,7 @@ TextEngine::TextEngine():
 // Methods
 void TextEngine:: _render(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
     // activate corresponding render state	
-    m_text_shader.use();
-    m_text_shader.set("textColor", color);
+    m_text_shader.use().set("textColor", color);
 
     Texture::activate(GL_TEXTURE0);
     m_vao.bind();

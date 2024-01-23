@@ -115,10 +115,8 @@ void View::_draw(const SceneEvents::Draw&) {
 void View::_post_process(const SceneEvents::PostDraw&) {
     // Filters
     if (enable_filter) {
-        Texture::activate(GL_TEXTURE0);
         m_filter.shader().use().set("quadTexture", 0);
-        m_filter.apply(m_scene.framebuffer_main());
-        Texture::deactivate(GL_TEXTURE_2D, GL_TEXTURE0);
+        m_filter.apply(m_scene.framebuffer_main(), 0);
     }
 
     float total_draw_time = m_timer.elapsed<Timer::microsecond>() / 1000.0f;

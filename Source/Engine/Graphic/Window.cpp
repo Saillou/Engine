@@ -158,7 +158,6 @@ void Window::_init(const char* title) {
 
 // Private
 void Window::_resize(int width, int height) {
-    Scene::Viewport(width, height);
     TextEngine::SetViewport(0, 0, width, height);
 
     if (m_scene)

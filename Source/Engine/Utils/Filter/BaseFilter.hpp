@@ -13,9 +13,9 @@ struct BaseFilter {
     BaseFilter(const BaseFilter&) = delete;
     BaseFilter(BaseFilter&&) = delete;
 
-    void apply  (Framebuffer& fInOut);
-    void apply  (const Framebuffer& fIn, Framebuffer& fOut);
-    void compute(Framebuffer* = nullptr); // When nullptr, apply to _framebuffer
+    void apply  (Framebuffer& fInOut, int texture_location = 0);
+    void apply  (const Framebuffer& fIn, Framebuffer& fOut, int texture_location = 0);
+    void compute(Framebuffer* = nullptr, int texture_location = 0); // When nullptr, apply to _framebuffer
     void resize (int width, int height);
 
     // Members
