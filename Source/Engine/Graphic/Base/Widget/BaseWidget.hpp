@@ -32,6 +32,8 @@ struct BaseWidget :
 
     // Members
     float opacity = 1.0f;
+    float x = 0.0f;
+    float y = 0.0f;
 
 protected:
     // Used to know draw reference

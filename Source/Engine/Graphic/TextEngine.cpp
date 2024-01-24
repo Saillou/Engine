@@ -9,8 +9,34 @@ void TextEngine::Write(const std::string& text, float x, float y, float scale, c
     _getInstance()._render(text, x, y, scale, color);
 }
 
+glm::vec2 TextEngine::Measure(const std::string& text, float scale) {
+    return _getInstance()._measure(text, scale);
+}
+
+glm::vec2 TextEngine::MeasureRel(const std::string& text, float scale) {
+    if (_getInstance().m_w <= 0 || _getInstance().m_h <= 0)
+        return glm::vec2(1.0f, 1.0f);
+
+    glm::vec2 size = Measure(text, scale);
+    return glm::vec2(size.x / _getInstance().m_w, size.y / _getInstance().m_h);
+}
+
 void TextEngine::SetViewport(int x, int y, int width, int height) {
-    _getInstance().m_text_shader.use().set("projection", glm::ortho((float)x, (float)width, (float)y, (float)height));
+    _getInstance().m_text_shader
+        .use()
+        .set("projection", glm::ortho((float)x, (float)width, (float)y, (float)height));
+
+    _getInstance().m_x = x;
+    _getInstance().m_y = y;
+    _getInstance().m_w = width;
+    _getInstance().m_h = height;
+}
+
+void TextEngine::GetViewport(int& x, int& y, int& width, int& height) {
+    x      = _getInstance().m_x;
+    y      = _getInstance().m_y;
+    width  = _getInstance().m_w;
+    height = _getInstance().m_h;
 }
 
 // - Private
@@ -92,6 +118,20 @@ TextEngine::TextEngine():
 
     m_vbo.unbind();
     m_vao.unbind();
+}
+
+glm::vec2 TextEngine::_measure(const std::string& text, float scale)
+{
+    glm::vec2 size = { 0.f, 0.f };
+
+    // iterate through all characters
+    for (const char c : text) {
+        const _Character& ch = m_char_map.at(c);
+        size.x += (ch.advance >> 6) * scale;
+        size.y = std::max(size.y, ch.size.y* scale);
+    }
+
+    return size;
 }
 
 // Methods

@@ -16,6 +16,10 @@ struct TextEngine {
     static void Write(const std::string& text, float x, float y, float scale, const glm::vec4& color);
     static void SetViewport(int x, int y, int width, int height);
 
+    static void GetViewport(int& x, int& y, int& width, int &height);
+    static glm::vec2 Measure(const std::string& text, float scale);
+    static glm::vec2 MeasureRel(const std::string& text, float scale);
+
 private:
     static TextEngine& _getInstance();
 
@@ -29,10 +33,16 @@ private:
 
     // Instance
     TextEngine();
+
+    glm::vec2 _measure(const std::string& text, float scale);
     void _render(const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
     Array m_vao;
     Buffer m_vbo;
     Shader m_text_shader;
     std::unordered_map<GLchar, _Character> m_char_map;
+    int m_x = 0;
+    int m_y = 0;
+    int m_w = 1;
+    int m_h = 1;
 };

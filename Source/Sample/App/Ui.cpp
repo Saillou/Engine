@@ -10,6 +10,8 @@ Ui::Ui(Scene& scene) :
     // Create gui elements
     m_layout                 = std::make_shared<BaseLayout>(scene);
     m_widgets["StartButton"] = std::make_shared<ButtonWidget>("Start");
+    m_widgets["StartButton"]->x = 0.45f;
+    m_widgets["StartButton"]->y = 0.45f;
 
     // Define events
     _subscribe(m_layout.get(),                    &Ui::draw);
