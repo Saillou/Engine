@@ -20,17 +20,28 @@ CopyFilter::CopyFilter(int width, int height):
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
             .add_var("uniform", "float", "opacity")
+            .add_var("uniform", "vec4", "background")
             .add_var("uniform", "sampler2D", "texture_0")
             .add_var("uniform", "sampler2D", "texture_1")
             .add_var("out", "vec4", "FragColor")
             .add_func("void", "main", "", R"_main_(
-                FragColor = (1-opacity) * texture(texture_0, TexCoords) + opacity * texture(texture_1, TexCoords);
+                float ratio = opacity;
+
+                vec4 color_source = texture(texture_0, TexCoords);
+                vec4 color_copy = texture(texture_1, TexCoords);
+
+                // Remove background color
+                if(color_copy.rgb == background.rgb) {
+                    ratio *= background.a;
+                }
+                    
+                FragColor = (1-ratio) * color_source + ratio * color_copy;
             )_main_")
         )
         .link();
 }
 
-void CopyFilter::apply(const Framebuffer& fb0, const Framebuffer& fb1, float opacity) {
+void CopyFilter::apply(const Framebuffer& fb0, const Framebuffer& fb1, float opacity, const glm::vec4& background) {
     // Multisample frame to mono
     Framebuffer::Blit(fb0, _frame_solo_a);
     Framebuffer::Blit(fb1, _frame_solo_b);
@@ -49,6 +60,7 @@ void CopyFilter::apply(const Framebuffer& fb0, const Framebuffer& fb1, float opa
         _frame_solo_b.texture().bind();
 
         _shader.use()
+            .set("background", background)
             .set("opacity", opacity)
             .set("texture_0", 0)
             .set("texture_1", 1);

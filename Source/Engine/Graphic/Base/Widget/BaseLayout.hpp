@@ -16,6 +16,10 @@ struct BaseWidget {
     virtual void draw(Scene&) = 0;
 
     float opacity = 1.0f;
+
+    static glm::vec4 Transparent() {
+        return glm::vec4(0, 0, 0, 0);
+    }
 };
 
 // -- Layout --
@@ -28,12 +32,14 @@ struct BaseLayout :
 
     // Methods
     void add(std::shared_ptr<BaseWidget>);
+    void clean();
 
     // Setters
     Scene& scene();
 
     // Members
     float opacity = 1.0f;
+    glm::vec4 background_color = glm::vec4(0,0,0,1);
 
 protected:
     virtual void _on_resize(const SceneEvents::Resized&);

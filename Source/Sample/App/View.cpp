@@ -4,7 +4,6 @@
 #include <sstream>
 #include <algorithm>
 
-#include <glm/gtx/string_cast.hpp>
 #include <Engine/Utils/RayCaster.hpp>
 
 View::View(Scene& scene) :
@@ -55,6 +54,15 @@ View::View(Scene& scene) :
     // Decors
     m_entities["Target"]->localMaterial() = glass;
     m_entities["Target"]->localPose()     = glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f));
+
+    m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
+        "Resources/textures/skybox/front.jpg",
+        "Resources/textures/skybox/front.jpg",
+        "Resources/textures/skybox/front.jpg",
+        "Resources/textures/skybox/front.jpg",
+        "Resources/textures/skybox/front.jpg",
+        "Resources/textures/skybox/front.jpg",
+    });
 
     // Lights
     m_entities["Lantern"]->localMaterial().cast_shadow = true;
@@ -119,19 +127,10 @@ void View::_post_process(const SceneEvents::PostDraw&) {
         m_filter.apply(m_scene.framebuffer_main(), 0);
     }
 
-    float total_draw_time = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
-
-    // Draw debug texts
+    // Draw decors
     m_scene.framebuffer_main().bind();
     {
-        auto& renderer = m_scene.renderer();
-        const float w = (float)m_scene.width();
-        const float h = (float)m_scene.height();
-
-        renderer.text("Cam pos: " + glm::to_string(m_scene.camera().position), 15.0f, h - 20.0f, 0.4f);
-        renderer.text("Cam dir: " + glm::to_string(m_scene.camera().direction), 15.0f, h - 40.0f, 0.4f);
-        renderer.text("Mouse: " + std::to_string(w * m_mousePos.x) + " x " + std::to_string(h * m_mousePos.y), 15.0f, h - 60.0f, 0.4f);
-        renderer.text("Draw : " + std::to_string(total_draw_time) + " ms", 15.0f, h - 80.0f, 0.4f);
+        m_skybox->draw(m_scene.camera());
     }
     m_scene.framebuffer_main().unbind();
 }

@@ -16,6 +16,10 @@ void BaseLayout::add(std::shared_ptr<BaseWidget> widget) {
     m_widgets.push_back(widget);
 }
 
+void BaseLayout::clean() {
+    m_widgets = {};
+}
+
 Scene& BaseLayout::scene() {
     return m_scene;
 }
@@ -29,7 +33,8 @@ void BaseLayout::_draw(const SceneEvents::RenderFinished&) {
     m_frame.bind();
     {
         m_frame.texture().bind();
-        m_frame.clear();
+        glClearColor(background_color.r, background_color.g, background_color.b, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         _emit(LayoutEvents::Draw());
 
@@ -42,6 +47,6 @@ void BaseLayout::_draw(const SceneEvents::RenderFinished&) {
     m_frame.unbind();
 
     // Draw frame
-    m_copyFilter.apply(m_scene.framebuffer_main(), m_frame, opacity);
+    m_copyFilter.apply(m_scene.framebuffer_main(), m_frame, opacity, background_color);
     m_scene.drawFrame(m_copyFilter.result());
 }

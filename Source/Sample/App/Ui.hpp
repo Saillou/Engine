@@ -8,14 +8,19 @@ struct Ui : Event::Subscriber {
     Ui(Scene& scene);
     virtual ~Ui() = default;
 
-    bool visible = true;
+    enum class State {
+        Start,
+        InGame
+    };
+    
+    void setState(Ui::State state);
 
 protected:
     void draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg);
 
 private:
-    void _cleanup();
 
     Scene& m_scene;
     BaseLayout m_layout;
+    Ui::State m_state;
 };

@@ -18,6 +18,7 @@ Skybox::Skybox(const std::array<std::string, 6>& textures_path):
     for (unsigned int i = 0; i < textures_path.size(); i++) {
         m_texture.load(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, textures_path[i].c_str());
     }
+    Texture::Cache::Clean();
 
     // Shader
     shader.
