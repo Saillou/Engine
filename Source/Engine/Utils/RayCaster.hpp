@@ -5,6 +5,7 @@
 
 #include "../Graphic/Camera.hpp"
 #include "../Graphic/Base/Model/Entity.hpp"
+#include "../Graphic/Base/Model/Primitive/Quad.hpp"
 
 namespace RayCaster {
 	using Triangle = std::array<glm::vec3, 3>;
@@ -20,6 +21,7 @@ namespace RayCaster {
 
 	bool IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos, const glm::vec3& camDir, const glm::mat4& quat);
 	bool PointInRect(const glm::vec2& point, const glm::vec2& rectTopLeft, const glm::vec2& rectBotRight);
+	bool PointInRect(const glm::vec2& point, const Quad& quad);
 
 	std::shared_ptr<Mesh> GetCube();
 }

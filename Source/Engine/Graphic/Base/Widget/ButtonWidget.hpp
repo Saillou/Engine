@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-#include "BaseLayout.hpp"
+#include "BaseWidget.hpp"
 
 struct ButtonWidget : public BaseWidget {
     ButtonWidget(const std::string& text);
@@ -9,8 +8,6 @@ struct ButtonWidget : public BaseWidget {
     void draw(Scene&) override;
 
 private:
-
-    Quad _surface;
     const std::string _text;
 
     glm::vec4 _backgroundColor;

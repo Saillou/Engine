@@ -15,19 +15,29 @@ struct BaseWidget :
     protected Event::Subscriber,
     protected Event::Emitter 
 {
+    friend struct BaseLayout;
+
     BaseWidget();
 
     // Methods
     virtual void draw(Scene&) = 0;
 
     // Helper
+    static bool IsIn(const BaseWidget&, int x, int y);
     static glm::vec4 Transparent();
+
+    // Access
+    const BaseLayout* parent() const;
 
     // Members
     float opacity = 1.0f;
 
 protected:
-    virtual void _onClick();
+    // Used to know draw reference
+    BaseLayout* _parent = nullptr;
+
+    // Used for draw and mouse hitbox
+    std::vector<std::unique_ptr<Quad>> _surfaces;
 
 private:
     void _on_mouse_button(const CommonEvents::MouseButton& evt);

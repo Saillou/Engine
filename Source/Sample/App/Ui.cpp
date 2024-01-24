@@ -15,6 +15,7 @@ Ui::Ui(Scene& scene) :
     _subscribe(m_layout.get(),                    &Ui::draw);
     _subscribe(m_widgets.at("StartButton").get(), &Ui::onClickStart);
 
+    // Let's start
     setState(Ui::State::Start);
 }
 
@@ -64,7 +65,6 @@ void Ui::draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg) {
     }
 }
 
-void Ui::onClickStart(const BaseWidget* emitter, const CommonEvents::MouseButton& msg) 
-{
+void Ui::onClickStart(const BaseWidget* emitter, const CommonEvents::MouseButton& msg) {
     setState(State::InGame);
 }

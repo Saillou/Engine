@@ -1,5 +1,7 @@
-#include "../Graphic/Base/Model/Primitive/Cube.hpp"
 #include "RayCaster.hpp"
+
+#include "../Graphic/Base/Model/Primitive/Cube.hpp"
+
 #include <stack>
 #include <glm/gtx/string_cast.hpp>
 
@@ -156,6 +158,14 @@ bool RayCaster::PointInRect(const glm::vec2& point, const glm::vec2& rectTopLeft
 		return false;
 
 	return true;
+}
+
+bool RayCaster::PointInRect(const glm::vec2& point, const Quad& quad)
+{
+	const glm::vec2 rectTopLeft  = glm::vec2(quad.x(), quad.y());
+	const glm::vec2 rectBotRight = rectTopLeft + glm::vec2(quad.w(), quad.h());
+
+	return PointInRect(point, rectTopLeft, rectBotRight);
 }
 
 std::shared_ptr<Mesh> RayCaster::GetCube() {

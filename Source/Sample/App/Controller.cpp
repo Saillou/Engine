@@ -27,7 +27,7 @@ Controller::Controller(Ui& ui, View& view):
         Light(glm::vec3{  -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{  +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 5);
+    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 2);
 
     // Start
     m_timer.tic();
@@ -35,23 +35,19 @@ Controller::Controller(Ui& ui, View& view):
 
 // Events
 void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
-    float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
-
     // .. do stuff ..
-
-    m_timer.tic();
 }
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
-    // No key on init
+    // Nothing until click on start
     if (m_ui.state() != Ui::State::InGame)
         return;
 
-    // Movement
-    glm::vec3 dir(0, 0, 0);
-
+    // Camera movement
     if(evt.action == Action::Pressed || evt.action == Action::Repeated) 
     {
+        glm::vec3 dir(0, 0, 0);
+
         switch (evt.key)
         {
             case Key::ArrowRight: dir.x = +1.0f; break;
@@ -78,7 +74,8 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         switch (evt.key)
         {
-            case 'R': m_view.enable_filter = !m_view.enable_filter; break;
+            case 'R': m_view.enable_filter      = !m_view.enable_filter;      break;
+            case 'T': m_view.enable_interaction = !m_view.enable_interaction; break;
         }
     }
     
