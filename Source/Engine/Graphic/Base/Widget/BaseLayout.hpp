@@ -20,7 +20,8 @@ struct BaseWidget {
 
 // -- Layout --
 struct BaseLayout : 
-    Event::Subscriber
+    Event::Subscriber,
+    Event::Emitter
 {
     BaseLayout(Scene& scene);
     virtual ~BaseLayout() = default;

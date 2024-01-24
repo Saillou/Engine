@@ -7,20 +7,18 @@ Ui::Ui(Scene& scene) :
     m_layout(scene)
 {
     // Define events
-    _subscribe(&m_layout, &Ui::draw_sp);
+    _subscribe(&m_layout, &Ui::draw);
 
     // Setup root widget
     m_layout.opacity = 1.0f;
     m_layout.add(ButtonWidget::Create());
 }
 
-void Ui::draw_sp(const BaseLayout* emitter, const LayoutEvents::Draw& msg) {
+void Ui::draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg) {
     if (!visible) {
         _cleanup();
         return;
     }
-
-    m_scene.clear();
 
     // .. do something ..
 }

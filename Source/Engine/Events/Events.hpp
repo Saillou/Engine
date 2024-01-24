@@ -24,9 +24,22 @@ protected:
 	};
 
 public:
-	// [Emitter]
+	// [Static Emitter]
 	template <typename T> inline
 		static void Emit(const T& event, const void* _emitter = nullptr);
+
+	// [Emitter]
+	class Emitter {
+		friend Event;
+
+	public:
+		Emitter() = default;
+		virtual ~Emitter() = default;
+
+	protected:
+		template <typename T> inline
+			void _emit(const T& event);
+	};
 
 	// [Receiver]
 	class Subscriber {
@@ -60,7 +73,7 @@ private:
 	static std::unordered_set<Subscriber*> _allSubscribers;
 };
 
-// Template Implementation
+// -- Emitter --
 template<typename T>
 inline void Event::Emit(const T& event, const void* _emitter)
 {
@@ -84,6 +97,14 @@ inline void Event::Emit(const T& event, const void* _emitter)
 	}
 }
 
+template<typename T>
+inline void Event::Emitter::_emit(const T& event) {
+	Event::Emit(event, this);
+}
+
+
+
+// -- Receiver --
 template<class _subscriber, typename _message>
 inline void Event::Subscriber::_subscribe(void(_subscriber::*callback)(const _message&))
 {

@@ -11,7 +11,7 @@ struct Ui : Event::Subscriber {
     bool visible = true;
 
 protected:
-    void draw_sp(const BaseLayout* emitter, const LayoutEvents::Draw& msg);
+    void draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg);
 
 private:
     void _cleanup();

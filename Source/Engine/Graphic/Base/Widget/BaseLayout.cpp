@@ -29,8 +29,9 @@ void BaseLayout::_draw(const SceneEvents::RenderFinished&) {
     m_frame.bind();
     {
         m_frame.texture().bind();
+        m_frame.clear();
 
-        Event::Emit(LayoutEvents::Draw(), this);
+        _emit(LayoutEvents::Draw());
 
         for (auto& widget : m_widgets) {
             widget->draw(m_scene);
