@@ -18,6 +18,7 @@ struct View : Event::Subscriber {
 
     Scene& scene();
     bool enable_filter = false;
+    bool enable_interaction = false;
 
 protected:
     // Events
@@ -28,6 +29,10 @@ protected:
 
 private:
     void _initFilters();
+
+    void _drawLights();
+    void _drawObjects();
+    void _drawTarget();
 
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
     std::vector<std::shared_ptr<Entity>> m_interact_objects;

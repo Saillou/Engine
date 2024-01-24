@@ -124,5 +124,6 @@ void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
     // Change UI
     if (evt.button == Button::Left && Action::Pressed) {
         m_ui.setState(Ui::State::InGame);
+        m_view.enable_interaction = true;
     }
 }

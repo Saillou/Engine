@@ -88,9 +88,15 @@ void View::_on_resize(const SceneEvents::Resized& evt) {
 
 void View::_draw(const SceneEvents::Draw&) {
     m_timer.tic();
-    auto& renderer = m_scene.renderer();
 
-    // Draw lights
+    _drawLights();
+    _drawObjects();
+
+    if (enable_interaction)
+        _drawTarget();
+}
+
+void View::_drawLights() {
     {
         std::vector<Pose> Qs;
         std::vector<Material> Ms;
@@ -100,13 +106,15 @@ void View::_draw(const SceneEvents::Draw&) {
         }
         m_entities["Lantern"]->setPosesWithMaterials(Qs, Ms);
     }
-    renderer.draw(Render::DrawType::Basic, *m_entities["Lantern"]);
+    m_scene.renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
+}
 
-    // Draw objects
-    renderer.draw(Render::DrawType::Shadows, *m_entities["Ground"]);
-    renderer.draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+void View::_drawObjects() {
+    m_scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
+    m_scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+}
 
-    // Draw intersections
+void View::_drawTarget() {
     for (auto& obj : m_interact_objects) {
         for (auto& pose : obj->poses()) {
             auto intersect_result = RayCaster::Intersect(m_mousePos, m_scene.camera(), *obj, pose);
@@ -115,7 +123,7 @@ void View::_draw(const SceneEvents::Draw&) {
 
             const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
             m_entities["Target"]->poses() = { Q };
-            renderer.draw(Render::DrawType::Basic, *m_entities["Target"]);
+            m_scene.renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
         }
     }
 }
