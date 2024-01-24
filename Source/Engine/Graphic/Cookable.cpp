@@ -248,9 +248,10 @@ void Cookable::_set_shader_shape(Shader& shader) {
     shader
         .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("uniform", "mat4", "LocalModel")
             .add_var("out", "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(
-                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+                gl_Position = LocalModel * vec4(aPos.x, aPos.y, 0.0, 1.0);
                 float tx = aPos.x > 0 ? 1.0 : 0.0;
                 float ty = aPos.y > 0 ? 1.0 : 0.0;
                 TexCoords = vec2(tx, ty);

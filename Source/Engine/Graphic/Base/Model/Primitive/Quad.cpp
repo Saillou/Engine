@@ -6,18 +6,12 @@
 Quad::Quad(float x, float y, float w, float h):
     _x(x), _y(y), _w(w), _h(h)
 {
-    float x1 = x*2.0f - 1.0f;
-    float y1 = y*2.0f - 1.0f;
-
-    float x2 = (x+w)*2.0f - 1.0f;
-    float y2 = (y+h)*2.0f - 1.0f;
-
     // Shape
     createQuad(quad_mesh,
-        glm::vec3(x1, y2, 0),
-        glm::vec3(x1, y1, 0),
-        glm::vec3(x2, y1, 0),
-        glm::vec3(x2, y2, 0)
+        glm::vec3(-1, +1, 0),
+        glm::vec3(-1, -1, 0),
+        glm::vec3(+1, -1, 0),
+        glm::vec3(+1, +1, 0)
     );
 
     setupGPU(quad_mesh);
@@ -38,4 +32,21 @@ float Quad::w() const {
 }
 float Quad::h() const  {
     return _h;
+}
+
+float& Quad::x() {
+    return _x;
+}
+float& Quad::y() {
+    return _y;
+}
+float& Quad::w() {
+    return _w;
+}
+float& Quad::h() {
+    return _h;
+}
+
+Pose Quad::pose() const {
+    return Pose(glm::vec3(2.0f*_x + (_w - 1.0f), -_y*2.0f + (1.0f - _h), 0.0f), glm::vec3(_w, _h, 0.0f));
 }

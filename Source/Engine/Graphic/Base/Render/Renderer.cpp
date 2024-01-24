@@ -203,7 +203,8 @@ void Renderer::_drawQuadSync(const Quad& surface) {
     addRecipe(Cookable::CookType::Shape);
 
     Shader& sh = get(Cookable::CookType::Shape)->use()
-        .set("quadTexture", surface.texture_location)
+        .set("LocalModel",       surface.pose())
+        .set("quadTexture",      surface.texture_location)
         .set("background_color", surface.material.diffuse_color);
 
     surface.drawElements();

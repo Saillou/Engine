@@ -2,6 +2,7 @@
 
 #include "PrimitiveHelper.hpp"
 #include "../Material.hpp"
+#include "../Pose.hpp"
 #include "../Mesh.hpp"
 #include "../../../Wrapper/Shader.hpp"
 
@@ -18,9 +19,15 @@ struct Quad :
     float w() const;
     float h() const;
 
+    float& x();
+    float& y();
+    float& w();
+    float& h();
+
     // Draw instructions
     int texture_location = 0;
     Material material    = {};
+    Pose pose() const;
 
 private:
     float _x, _y, _w, _h;
