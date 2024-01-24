@@ -27,6 +27,7 @@ struct BaseWidget :
     static glm::vec4 Transparent();
 
     // Access
+    bool isMouseOver() const;
     const BaseLayout* parent() const;
 
     // Members
@@ -41,4 +42,7 @@ protected:
 
 private:
     void _on_mouse_button(const CommonEvents::MouseButton& evt);
+    void _on_mouse_move(const CommonEvents::MouseMoved& evt);
+
+    bool _mouse_over = false;
 };

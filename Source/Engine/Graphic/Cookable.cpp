@@ -13,6 +13,10 @@ void Cookable::Set(CookType type, Shader& recipe) {
         _set_shader_geometry(recipe);
         break;
 
+    case CookType::Shape:
+        _set_shader_shape(recipe);
+        break;
+
     default:
         std::cerr << "[Warning] No shader created." << std::endl;
         return;
@@ -236,6 +240,31 @@ void Cookable::_set_shader_geometry(Shader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 FragColor = diffuse_color;
+            )_main_")
+        );
+}
+
+void Cookable::_set_shader_shape(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("out", "vec2", "TexCoords")
+            .add_func("void", "main", "", R"_main_(
+                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+                float tx = aPos.x > 0 ? 1.0 : 0.0;
+                float ty = aPos.y > 0 ? 1.0 : 0.0;
+                TexCoords = vec2(tx, ty);
+            )_main_")
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec2", "TexCoords")
+            .add_var("uniform", "sampler2D", "quadTexture")
+            .add_var("uniform", "vec4", "background_color")
+            .add_var("out", "vec4", "FragColor")
+            .add_func("void", "main", "", R"_main_(
+                vec2 tex_size = textureSize(quadTexture, 0);
+                vec4 bk_color = tex_size.x * tex_size.y > 1 ? texture(quadTexture, TexCoords) : background_color;
+                FragColor = bk_color;
             )_main_")
         );
 }

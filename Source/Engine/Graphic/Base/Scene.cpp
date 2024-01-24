@@ -74,7 +74,8 @@ void Scene::drawFrame(const Framebuffer& framebuffer) {
     }
     
     // Draw
-    _quad.draw(0);
+    _quad.texture_location = 0;
+    _renderer.quad(_quad);
 
     // set back to original state.
     Texture::deactivate(GL_TEXTURE_2D, GL_TEXTURE0);

@@ -6,6 +6,15 @@
 #include <algorithm>
 #include <glm/gtx/string_cast.hpp>
 
+// Public
+void Renderer::quad(const Quad& surface) {
+    if (!_deferred)
+        return _drawQuadSync(surface);
+
+    // TODO: deals with quad draw (maybe create entity)
+    std::cerr << "[Warning] Renderer: can't draw quad in deferred mode." << std::endl;
+}
+
 void Renderer::draw(Render::DrawType type, Entity& entity) {
     if (!_deferred)
         return _drawEntitySync(type, entity);
@@ -21,7 +30,7 @@ void Renderer::draw(Render::DrawType type, Entity& entity) {
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
     if(!_deferred)
-        return TextEngine::Write(text, x, y, scale, color);
+        return _drawTextSync(text, x, y, scale, color);
 
     _DrawText dt;
     dt.text = text;
@@ -33,6 +42,7 @@ void Renderer::text(const std::string& text, float x, float y, float scale, cons
     _heapText.emplace_back(std::move(dt));
 }
 
+// --
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     addRecipe(type);
 
@@ -185,8 +195,18 @@ void Renderer::_draw() {
     }
 
     for (_DrawText& dt : _heapText) {
-        TextEngine::Write(dt.text, dt.x, dt.y, dt.scale, dt.color);
+        _drawTextSync(dt.text, dt.x, dt.y, dt.scale, dt.color);
     }
+}
+
+void Renderer::_drawQuadSync(const Quad& surface) {
+    addRecipe(Cookable::CookType::Shape);
+
+    Shader& sh = get(Cookable::CookType::Shape)->use()
+        .set("quadTexture", surface.texture_location)
+        .set("background_color", surface.material.diffuse_color);
+
+    surface.drawElements();
 }
 
 void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool update_buffer) {
@@ -203,4 +223,8 @@ void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool updat
             case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
         } return placeHolder;
     }().set("diffuse_color", entity._localMaterial.diffuse_color));
+}
+
+void Renderer::_drawTextSync(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
+    TextEngine::Write(text, x, y, scale, color);
 }

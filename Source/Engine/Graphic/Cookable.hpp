@@ -12,6 +12,7 @@ struct Cookable {
     enum class CookType {       
         Basic,
         Geometry,
+        Shape
     };
 
     // Shader helper
@@ -32,6 +33,7 @@ protected:
 
     static void _set_shader_basic(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
+    static void _set_shader_shape(Shader& shader);
 
     // Members
     std::unordered_map<CookType, UShader> m_shaders;

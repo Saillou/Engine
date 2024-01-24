@@ -17,12 +17,13 @@ void ButtonWidget::draw(Scene& scene) {
 
     auto& surface = _surfaces.front();
 
-    surface->draw(_backgroundColor);
+    surface->material.diffuse_color = isMouseOver() ? _foregroundColor : _backgroundColor;
+    scene.renderer().quad(*surface);
 
     scene.renderer().text(_text,
         scene.width()  * (surface->x() + surface->w()/3.0f),
         scene.height() * (surface->y() + surface->h()/2.5f),
         0.5f,
-        _foregroundColor
+        isMouseOver() ? _backgroundColor : _foregroundColor
     );
 }

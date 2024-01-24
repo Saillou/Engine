@@ -4,6 +4,7 @@
 
 BaseWidget::BaseWidget() {
 	_subscribe(&BaseWidget::_on_mouse_button);
+	_subscribe(&BaseWidget::_on_mouse_move);
 }
 
 // Helpers
@@ -11,8 +12,11 @@ glm::vec4 BaseWidget::Transparent() {
     return glm::vec4(0, 0, 0, 0);
 }
 
-const BaseLayout* BaseWidget::parent() const
-{
+bool BaseWidget::isMouseOver() const {
+	return _mouse_over;
+}
+
+const BaseLayout* BaseWidget::parent() const {
 	return _parent;
 }
 
@@ -40,9 +44,13 @@ bool BaseWidget::IsIn(const BaseWidget& widget, int x, int y) {
 
 // Callbacks
 void BaseWidget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
-	if (evt.button == Button::Left && evt.action == Action::Pressed) {
+	if (evt.button == Button::Left && evt.action == Action::Released) {
 		if (IsIn(*this, evt.x, evt.y)) {
 			_emit(evt);
 		}
 	}
+}
+
+void BaseWidget::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
+	_mouse_over = IsIn(*this, evt.x, evt.y);
 }
