@@ -202,7 +202,7 @@ void Window::_manage_inputs() {
                                      Action::Released;
 
         m_buttons_pressed[button_id] = stateOn;
-        Event::Emit(CommonEvents::MouseButton(button_id, action));
+        Event::Emit(CommonEvents::MouseButton(button_id, action, m_mouse_pos.x, m_mouse_pos.y));
     }
 
 

@@ -79,20 +79,19 @@ inline void Event::Emit(const T& event, const void* _emitter)
 {
 	static_assert(std::is_base_of<Event::_Base, T>(), "Can't emit non inherited BaseEvent.");
 
-	// Broadcast event
 	for (Subscriber* subscriber : _allSubscribers) {
-		for (const Subscriber::_crushyCallback& callback : subscriber->_callbacks[event.type()]) {
-			callback(static_cast<const Event::_Base*>(&event));
+		// Broadcast event
+		if (!_emitter) {
+			for (const Subscriber::_crushyCallback& callback : subscriber->_callbacks[event.type()]) {
+				callback(static_cast<const Event::_Base*>(&event));
+			}
 		}
-	}
 
-	if (!_emitter)
-		return;
-
-	// Select specifics
-	for (Subscriber* subscriber : _allSubscribers) {
-		for (const Subscriber::_crushySpeCallback& speCallback : subscriber->_spe_callbacks[event.type()]) {
-			speCallback(static_cast<const void*>(_emitter), static_cast<const Event::_Base*>(&event));
+		// Select specifics
+		else {
+			for (const Subscriber::_crushySpeCallback& speCallback : subscriber->_spe_callbacks[event.type()]) {
+				speCallback(static_cast<const void*>(_emitter), static_cast<const Event::_Base*>(&event));
+			}
 		}
 	}
 }

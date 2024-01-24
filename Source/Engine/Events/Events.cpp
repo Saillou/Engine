@@ -16,6 +16,7 @@ Event::Subscriber::~Subscriber() {
 
 void Event::Subscriber::_unsubscribeAll() {
 	_callbacks.clear();
+	_spe_callbacks.clear();
 }
 
 // - Events -

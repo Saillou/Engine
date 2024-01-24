@@ -13,6 +13,8 @@ Controller::Controller(Ui& ui, View& view):
     _subscribe(&Controller::_on_mouse_moved);
     _subscribe(&Controller::_on_mouse_button);
 
+    _subscribe(&ui, &Controller::_on_ui_update);
+
     // Camera
     m_view.scene().camera().position = glm::vec3(m_distance, 0, 1.25f);
     m_view.scene().camera().direction = glm::vec3(0, 0, 0);
@@ -41,6 +43,10 @@ void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
 }
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
+    // No key on init
+    if (m_ui.state() != Ui::State::InGame)
+        return;
+
     // Movement
     glm::vec3 dir(0, 0, 0);
 
@@ -102,28 +108,11 @@ void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
 }
 
 void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
-    std::string msg_mouse = "Mouse button: ";
+    // ..
+}
 
-    switch (evt.button) 
-    {
-        case Button::Left:  msg_mouse += "left" ; break;
-        case Button::Right: msg_mouse += "right"; break;
-    }
-
-    msg_mouse += " is ";
-
-    switch (evt.action)
-    {
-        case Action::Pressed:  msg_mouse += "pressed";  break;
-        case Action::Released: msg_mouse += "released"; break;
-        case Action::Repeated: msg_mouse += "repeated"; break;
-    }
-
-    std::cout << msg_mouse << std::endl;
-
-    // Change UI
-    if (evt.button == Button::Left && Action::Pressed) {
-        m_ui.setState(Ui::State::InGame);
+void Controller::_on_ui_update(const Ui* ui, const CommonEvents::StateUpdated& evt) {
+    if (ui->state() == Ui::State::InGame) {
         m_view.enable_interaction = true;
     }
 }

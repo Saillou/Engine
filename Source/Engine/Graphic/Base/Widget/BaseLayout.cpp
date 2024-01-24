@@ -1,7 +1,6 @@
 #include "BaseLayout.hpp"
 
 
-// ----
 BaseLayout::BaseLayout(Scene& scene) :
     m_scene(scene),
     m_frame(Framebuffer::Multisample, scene.width(), scene.height()),

@@ -1,22 +1,20 @@
 #include "ButtonWidget.hpp"
 
-ButtonWidget::ButtonWidget():
+ButtonWidget::ButtonWidget(const std::string& text):
     _surface(0.45f, 0.45f, 0.1f, 0.1f),
-    _text("Start"),
+    _text(text),
     _backgroundColor(0.7f, 0.5f, 0.3f, 1.0f),
     _foregroundColor(1,1,1,1)
 {
 }
 
-std::shared_ptr<ButtonWidget> ButtonWidget::Create() {
-    return std::make_shared<ButtonWidget>();
-}
-
 void ButtonWidget::draw(Scene& scene) {
-    _surface.draw(glm::vec4(0.7f, 0.4f, 0.2f, 1.0f));
+    _surface.draw(_backgroundColor);
 
-    scene.renderer().text("Start", 
+    scene.renderer().text(_text,
         scene.width()  * (_surface.x() + _surface.w()/3.0f),
-        scene.height() * (_surface.y() + _surface.h()/2.5f)
+        scene.height() * (_surface.y() + _surface.h()/2.5f),
+        0.5f,
+        _foregroundColor
     );
 }

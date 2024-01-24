@@ -16,9 +16,11 @@ struct CommonEvents : public Event {
 		int y;
 	};
 	struct MouseButton : public _Base {
-		MouseButton(int button = -1, int action = -1);
+		MouseButton(int button = -1, int action = -1, int x = -1, int y = -1);
 		int button;
 		int action;
+		int x;
+		int y;
 	};
 
 	// -- State --

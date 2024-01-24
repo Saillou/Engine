@@ -4,23 +4,9 @@
 #include <vector>
 #include <memory>
 
-#include "WidgetEvents.hpp"
+#include "BaseWidget.hpp"
 #include "../Scene.hpp"
-#include "../../Wrapper/Framebuffer.hpp"
-#include "../../../Events/CommonEvents.hpp"
 #include "../../../Utils/Filter/CopyFilter.hpp"
-#include "../../../Utils/Timer.hpp"
-
-// -- Widget --
-struct BaseWidget {
-    virtual void draw(Scene&) = 0;
-
-    float opacity = 1.0f;
-
-    static glm::vec4 Transparent() {
-        return glm::vec4(0, 0, 0, 0);
-    }
-};
 
 // -- Layout --
 struct BaseLayout : 

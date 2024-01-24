@@ -3,24 +3,31 @@
 #include <Engine/Events/Events.hpp>
 #include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Widget/BaseLayout.hpp>
+#include <Engine/Graphic/Base/Widget/ButtonWidget.hpp>
 
 struct Ui : Event::Subscriber {
     Ui(Scene& scene);
     virtual ~Ui() = default;
 
     enum class State {
+        Idle,
         Start,
         InGame
     };
     
+    // Accessors
     void setState(Ui::State state);
+
+    State state() const;
 
 protected:
     void draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg);
+    void onClickStart(const BaseWidget* emitter, const CommonEvents::MouseButton& msg);
 
 private:
-
     Scene& m_scene;
-    BaseLayout m_layout;
-    Ui::State m_state;
+
+    State m_state;
+    std::shared_ptr<BaseLayout> m_layout;
+    std::unordered_map<std::string, std::shared_ptr<BaseWidget>> m_widgets;
 };

@@ -3,9 +3,8 @@
 #include <memory>
 #include "BaseLayout.hpp"
 
-struct ButtonWidget : public BaseWidget{
-    ButtonWidget();
-    static std::shared_ptr<ButtonWidget> Create();
+struct ButtonWidget : public BaseWidget {
+    ButtonWidget(const std::string& text);
 
     void draw(Scene&) override;
 
