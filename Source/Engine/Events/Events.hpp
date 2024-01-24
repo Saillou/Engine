@@ -1,21 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 #include <functional>
 
 #include "Common.hpp"
-
-/*
-	How to use:
-	 - Create an XXEvent struct inherited from Event::_Base (or use one defined in CommonEvents.hpp)
-	 - For the sender:
-		`Event::Emit(xx_event)` | xx_event: an instance of XXEvent
-	 - For the receiver, inherit the class `Event::Subscriber`, then, sub:
-		`_subscribe(method);` | method signature: void(const XXEvent& evt);
-*/
 
 class Event {
 protected:
@@ -35,7 +26,7 @@ protected:
 public:
 	// [Emitter]
 	template <typename T> inline
-		static void Emit(const T& event);
+		static void Emit(const T& event, const void* _emitter = nullptr);
 
 	// [Receiver]
 	class Subscriber {
@@ -49,6 +40,9 @@ public:
 		template <class _subscriber, typename _message> inline
 			void _subscribe(void(_subscriber::*callback)(const _message&));
 
+		template <class _emitter, class _subscriber, typename _message> inline
+			void _subscribe(const _emitter*, void(_subscriber::* callback)(const _emitter*, const _message&));
+
 		void _unsubscribeAll();
 
 	private:
@@ -56,7 +50,10 @@ public:
 		//	these are temporary callbacks used to crush the _message type to _Base (inherited) type,
 		//  the final callback provided by the subscriber is encapsulated in the crushy callback.
 		typedef std::function<void(const Event::_Base*)> _crushyCallback;
+		typedef std::function<void(const void*, const Event::_Base*)> _crushySpeCallback;
+
 		std::unordered_map<_Type, std::vector<_crushyCallback>> _callbacks;
+		std::unordered_map<_Type, std::vector<_crushySpeCallback>> _spe_callbacks;
 	};
 
 private:
@@ -65,19 +62,30 @@ private:
 
 // Template Implementation
 template<typename T>
-inline void Event::Emit(const T& event)
+inline void Event::Emit(const T& event, const void* _emitter)
 {
 	static_assert(std::is_base_of<Event::_Base, T>(), "Can't emit non inherited BaseEvent.");
 
+	// Broadcast event
 	for (Subscriber* subscriber : _allSubscribers) {
 		for (const Subscriber::_crushyCallback& callback : subscriber->_callbacks[event.type()]) {
 			callback(static_cast<const Event::_Base*>(&event));
 		}
 	}
+
+	if (!_emitter)
+		return;
+
+	// Select specifics
+	for (Subscriber* subscriber : _allSubscribers) {
+		for (const Subscriber::_crushySpeCallback& speCallback : subscriber->_spe_callbacks[event.type()]) {
+			speCallback(static_cast<const void*>(_emitter), static_cast<const Event::_Base*>(&event));
+		}
+	}
 }
 
 template<class _subscriber, typename _message>
-inline void Event::Subscriber::_subscribe(void(_subscriber::*finalCallback)(const _message&))
+inline void Event::Subscriber::_subscribe(void(_subscriber::*callback)(const _message&))
 {
 	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
 
@@ -87,9 +95,31 @@ inline void Event::Subscriber::_subscribe(void(_subscriber::*finalCallback)(cons
 	// Encapsulate the final callback
 	const _crushyCallback crushy = [=](const Event::_Base* msg) -> void 
 	{
-		std::invoke(finalCallback, static_cast<_subscriber*>(this), *static_cast<const _message*>(msg));
+		std::invoke(callback, static_cast<_subscriber*>(this), *static_cast<const _message*>(msg));
 	};
 
 	// Add to callbacks
 	_callbacks[type].push_back(crushy);
+}
+
+template<class _emitter, class _subscriber, typename _message>
+inline void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscriber::*callback)(const _emitter*, const _message&))
+{
+	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
+
+	// Memorize type
+	static const _Type type = _message{}.type();
+
+	// Encapsulate the final callback
+	const _crushySpeCallback crushy = [=](const void* emitter, const Event::_Base* msg) -> void
+	{
+		std::invoke(callback, 
+			static_cast<_subscriber*>(this), 
+			static_cast<const _emitter*>(emitter), 
+			*static_cast<const _message*>(msg)
+		);
+	};
+
+	// Add to callbacks
+	_spe_callbacks[type].push_back(crushy);
 }

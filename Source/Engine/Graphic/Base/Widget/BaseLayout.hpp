@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+#include "WidgetEvents.hpp"
 #include "../Scene.hpp"
 #include "../../Wrapper/Framebuffer.hpp"
 #include "../../../Events/CommonEvents.hpp"
@@ -18,7 +19,8 @@ struct BaseWidget {
 };
 
 // -- Layout --
-struct BaseLayout : Event::Subscriber
+struct BaseLayout : 
+    Event::Subscriber
 {
     BaseLayout(Scene& scene);
     virtual ~BaseLayout() = default;
@@ -28,9 +30,6 @@ struct BaseLayout : Event::Subscriber
 
     // Setters
     Scene& scene();
-
-    // Callbacks
-    std::function<void(void)>& on_draw();
 
     // Members
     float opacity = 1.0f;
@@ -43,7 +42,6 @@ private:
     Scene& m_scene;
     Framebuffer m_frame;
     CopyFilter m_copyFilter;
-    std::function<void(void)> m_callback_draw;
 
     std::vector<std::shared_ptr<BaseWidget>> m_widgets;
 };

@@ -8,6 +8,10 @@ ButtonWidget::ButtonWidget():
 {
 }
 
+std::shared_ptr<ButtonWidget> ButtonWidget::Create() {
+    return std::make_shared<ButtonWidget>();
+}
+
 void ButtonWidget::draw(Scene& scene) {
     _surface.draw(glm::vec4(0.7f, 0.4f, 0.2f, 1.0f));
 

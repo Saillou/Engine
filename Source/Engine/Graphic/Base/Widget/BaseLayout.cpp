@@ -5,8 +5,7 @@
 BaseLayout::BaseLayout(Scene& scene) :
     m_scene(scene),
     m_frame(Framebuffer::Multisample, scene.width(), scene.height()),
-    m_copyFilter(scene.width(), scene.height()),
-    m_callback_draw(nullptr)
+    m_copyFilter(scene.width(), scene.height())
 {
     // Events
     _subscribe(&BaseLayout::_on_resize);
@@ -21,27 +20,22 @@ Scene& BaseLayout::scene() {
     return m_scene;
 }
 
-std::function<void(void)>& BaseLayout::on_draw() {
-    return m_callback_draw;
-}
-
-
 void BaseLayout::_on_resize(const SceneEvents::Resized& size) {
     m_frame.resize(size.width, size.height);
     m_copyFilter.resize(size.width, size.height);
 }
 
 void BaseLayout::_draw(const SceneEvents::RenderFinished&) {
-    // Ui frame:
     m_frame.bind();
     {
         m_frame.texture().bind();
-        if (m_callback_draw) {
-            m_callback_draw();
-        }
+
+        Event::Emit(LayoutEvents::Draw(), this);
+
         for (auto& widget : m_widgets) {
             widget->draw(m_scene);
         }
+
         m_frame.texture().unbind();
     }
     m_frame.unbind();
