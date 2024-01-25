@@ -12,8 +12,11 @@ BaseLayout::BaseLayout(Scene& scene) :
     );
 
     // Events
-    _subscribe(&BaseLayout::_on_resize);
-    _subscribe(&BaseLayout::_draw);
+    _subscribe(&BaseLayout::_on_draw);
+    _subscribe([=](const SceneEvents::Resized & size) {
+        m_frame.resize(size.width, size.height);
+        m_copyFilter.resize(size.width, size.height);
+    });
 }
 
 // Methods
@@ -50,12 +53,7 @@ void BaseLayout::draw(Scene& scene) {
 }
 
 // Callbacks
-void BaseLayout::_on_resize(const SceneEvents::Resized& size) {
-    m_frame.resize(size.width, size.height);
-    m_copyFilter.resize(size.width, size.height);
-}
-
-void BaseLayout::_draw(const SceneEvents::RenderFinished&) {
+void BaseLayout::_on_draw(const SceneEvents::RenderFinished&) {
     m_frame.bind();
     {
         m_frame.texture().bind();

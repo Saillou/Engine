@@ -41,11 +41,15 @@ public:
 		template <class _subscriber, typename _message>
 			void _subscribe(void(_subscriber::*callback)(const _message&));
 
+		// ... with a lambda
+		template <typename _lambda>
+			void _subscribe(_lambda);
+
 		// Sub to a specific emitter
 		template <class _emitter, class _subscriber, typename _message>
 			void _subscribe(const _emitter*, void(_subscriber::* callback)(const _message&));
 
-		// Sub to a specific emitter with a lambda
+		// ... with a lambda
 		template <class _emitter, typename _lambda>
 			void _subscribe(const _emitter*, _lambda);
 
@@ -93,10 +97,18 @@ void Event::Emit(const T& event, const void* _emitter)
 }
 
 // -- Receiver --
+// .. 
+
 template<class _subscriber, typename _message>
 void Event::Subscriber::_subscribe(void(_subscriber::*callback)(const _message&))
 {
 	_subscribe((void*)nullptr, callback);
+}
+
+template<typename _lambda>
+void Event::Subscriber::_subscribe(_lambda func)
+{
+	_subscribe((void*)nullptr, func);
 }
 
 template<class _emitter, class _subscriber, typename _message>

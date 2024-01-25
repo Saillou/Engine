@@ -32,10 +32,9 @@ struct BaseLayout :
 protected:
     virtual void draw(Scene&) override;
 
-    virtual void _on_resize(const SceneEvents::Resized&);
-    virtual void _draw(const SceneEvents::RenderFinished&);
-
 private:
+    virtual void _on_draw(const SceneEvents::RenderFinished&);
+
     Scene& m_scene;
     Framebuffer m_frame;
     CopyFilter m_copyFilter;
