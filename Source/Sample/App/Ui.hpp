@@ -27,8 +27,6 @@ protected:
     void onClickStart(const CommonEvents::MouseButton& msg);
     void onClickOption(const CommonEvents::MouseButton& msg);
     void onClickApply(const CommonEvents::MouseButton& msg);
-    void onClickPlus(const CommonEvents::MouseButton& msg);
-    void onClickMinus(const CommonEvents::MouseButton& msg);
 
 private:
     Scene& m_scene;

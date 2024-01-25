@@ -47,8 +47,14 @@ Ui::Ui(Scene& scene) :
     _subscribe(m_widgets.at("StartButton").get(),  &Ui::onClickStart);
     _subscribe(m_widgets.at("ResumeButton").get(), &Ui::onClickStart);
 
-    _subscribe(m_widgets.at("MoinsButton").get(), &Ui::onClickMinus);
-    _subscribe(m_widgets.at("PlusButton").get(), &Ui::onClickPlus);
+    _subscribe(m_widgets.at("MoinsButton").get(), [=](const CommonEvents::MouseButton&) -> void {
+        if (m_count > 0)
+            m_count--;
+    });
+    _subscribe(m_widgets.at("PlusButton").get(), [=](const CommonEvents::MouseButton&) -> void {
+        if (m_count < 5)
+            m_count++;
+    });
 
     // Let's start
     setState(Ui::State::Start);
@@ -166,14 +172,3 @@ void Ui::onClickOption(const CommonEvents::MouseButton& msg) {
 void Ui::onClickApply(const CommonEvents::MouseButton& msg) {
     setState(State::Start);
 }
-
-void Ui::onClickPlus(const CommonEvents::MouseButton& msg) {
-    if (m_count < 5)
-        m_count++;
-}
-
-void Ui::onClickMinus(const CommonEvents::MouseButton& msg) {
-    if (m_count > 0)
-        m_count--;
-}
-

@@ -24,6 +24,9 @@ void BaseLayout::add(std::shared_ptr<BaseWidget> widget) {
 }
 
 void BaseLayout::clean() {
+    for (auto& widget : m_widgets)
+        widget->_parent = nullptr;
+
     m_widgets = {};
 }
 

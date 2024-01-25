@@ -25,7 +25,7 @@ protected:
 
 public:
 	// [Static Emitter]
-	template <typename T> inline
+	template <typename T>
 		static void Emit(const T& event, const void* _emitter = nullptr);
 
 	// [Receiver]
@@ -38,12 +38,16 @@ public:
 
 	protected:
 		// Sub to any emitter
-		template <class _subscriber, typename _message> inline
+		template <class _subscriber, typename _message>
 			void _subscribe(void(_subscriber::*callback)(const _message&));
 
 		// Sub to a specific emitter
-		template <class _emitter, class _subscriber, typename _message> inline
+		template <class _emitter, class _subscriber, typename _message>
 			void _subscribe(const _emitter*, void(_subscriber::* callback)(const _message&));
+
+		// Sub to a specific emitter with a lambda
+		template <class _emitter, typename _lambda>
+			void _subscribe(const _emitter*, _lambda);
 
 		void _unsubscribeAll();
 
@@ -61,9 +65,20 @@ private:
 	static std::unordered_set<Subscriber*> _allSubscribers;
 };
 
+// -- Type Helper --
+template<typename _lambda>
+struct GetFrom {
+	template<typename ReturnType, typename Message>
+	static Message TypeMessage(ReturnType(_lambda::*)(const Message&) const);
+
+	// required for mutable lambdas
+	template<typename ReturnType, typename Message>
+	static Message TypeMessage(ReturnType(_lambda::*)(const Message&));
+};
+
 // -- Emitter --
 template<typename T>
-inline void Event::Emit(const T& event, const void* _emitter)
+void Event::Emit(const T& event, const void* _emitter)
 {
 	static_assert(std::is_base_of<Event::_Base, T>(), "Can't emit non inherited BaseEvent.");
 
@@ -85,7 +100,7 @@ void Event::Subscriber::_subscribe(void(_subscriber::*callback)(const _message&)
 }
 
 template<class _emitter, class _subscriber, typename _message>
-inline void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscriber::*callback)(const _message&))
+void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscriber::*callback)(const _message&))
 {
 	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
 
@@ -100,6 +115,28 @@ inline void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscri
 		};
 	cbk.emitter = (void*)emitter;
 
+	// Add to callbacks
+	_callbacks[type].push_back(cbk);
+}
+
+template<class _emitter, typename _lambda>
+void Event::Subscriber::_subscribe(const _emitter* emitter, _lambda func)
+{
+	using _message = decltype(GetFrom<_lambda>::TypeMessage(&_lambda::operator()));
+
+	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
+	
+	// Memorize type
+	static const _Type type = _message{}.type();
+	
+	// Encapsulate the final callback
+	_callback cbk;
+	cbk.func = [=](const Event::_Base* msg) -> void
+		{
+			std::invoke(func, *static_cast<const _message*>(msg));
+		};
+	cbk.emitter = (void*)emitter;
+	
 	// Add to callbacks
 	_callbacks[type].push_back(cbk);
 }
