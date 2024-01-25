@@ -27,6 +27,8 @@ protected:
     void draw(const LayoutEvents::Draw& msg);
 
 private:
+    void _updateCount(int delta);
+
     Scene& m_scene;
 
     State m_state;

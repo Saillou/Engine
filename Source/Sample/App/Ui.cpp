@@ -2,7 +2,6 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-
 Ui::Ui(Scene& scene) : 
     m_scene(scene),
     m_state(Ui::State::Idle)
@@ -89,16 +88,10 @@ Ui::Ui(Scene& scene) :
         setState(State::InGame);
     });
     _subscribe(m_buttons.at("Moins").get(), [=](const CommonEvents::MouseButton&) {
-        if (m_count > 0) 
-            m_count--;
-
-        m_texts["Count"]->setText(std::to_string(m_count));
+        _updateCount(-1);
     });
     _subscribe(m_buttons.at("Plus").get(), [=](const CommonEvents::MouseButton&) {
-        if (m_count < 5) 
-            m_count++;
-
-        m_texts["Count"]->setText(std::to_string(m_count));
+        _updateCount(+1);
     });
 
     // Let's start
@@ -157,26 +150,29 @@ Ui::State Ui::state() const {
 }
 
 void Ui::draw(const LayoutEvents::Draw& msg) {
-    auto& renderer = m_scene.renderer();
-    const float w  = (float)m_scene.width();
-    const float h  = (float)m_scene.height();
+    switch (m_state) {
+    case State::InGame:
+        m_texts["Ig1"]->at(0) = "Cam pos: " + glm::to_string(m_scene.camera().position);
+        m_texts["Ig1"]->at(1) = "Cam dir: " + glm::to_string(m_scene.camera().direction);
+        break;
+    }
+}
+
+void Ui::_updateCount(int delta) {
+    if (m_count + delta < 0 || delta + delta > 5)
+        return;
+
+    m_count += delta;
 
     const auto color_normal = glm::vec4(0.7f, 0.5f, 0.3f, 1.0f);
     const auto color_danger = glm::vec4(1.0f, 0.3f, 0.3f, 1.0f);
     const auto color_white  = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     const auto color_gray   = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 
-    switch (m_state) {
-    case State::Option:
-        m_buttons["Plus"]->backgroundColor = (m_count >= 5) ? color_danger : color_normal;
-        m_buttons["Plus"]->foregroundColor = (m_count >= 5) ? color_gray : color_white;
-        m_buttons["Moins"]->backgroundColor = (m_count <= 0) ? color_danger : color_normal;
-        m_buttons["Moins"]->foregroundColor = (m_count <= 0) ? color_gray : color_white;
-        break;
+    m_buttons["Plus"]->backgroundColor  = (m_count >= 5) ? color_danger : color_normal;
+    m_buttons["Plus"]->foregroundColor  = (m_count >= 5) ? color_gray   : color_white;
+    m_buttons["Moins"]->backgroundColor = (m_count <= 0) ? color_danger : color_normal;
+    m_buttons["Moins"]->foregroundColor = (m_count <= 0) ? color_gray   : color_white;
 
-    case State::InGame:
-        m_texts["Ig1"]->at(0) = "Cam pos: " + glm::to_string(m_scene.camera().position);
-        m_texts["Ig1"]->at(1) = "Cam dir: " + glm::to_string(m_scene.camera().direction);
-        break;
-    }
+    m_texts["Count"]->setText(std::to_string(m_count));
 }
