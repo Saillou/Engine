@@ -59,7 +59,7 @@ public:
 		struct _callback {
 			typedef std::function<void(const Event::_Base*)> crushy;
 			crushy	func;
-			void*	emitter;
+			void*	emitter = nullptr;
 		};
 
 		std::unordered_map<_Type, std::vector<_callback>> _callbacks;
@@ -97,8 +97,6 @@ void Event::Emit(const T& event, const void* _emitter)
 }
 
 // -- Receiver --
-// .. 
-
 template<class _subscriber, typename _message>
 void Event::Subscriber::_subscribe(void(_subscriber::*callback)(const _message&))
 {
@@ -115,19 +113,14 @@ template<class _emitter, class _subscriber, typename _message>
 void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscriber::*callback)(const _message&))
 {
 	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
-
-	// Memorize type
 	static const _Type type = _message{}.type();
 
-	// Encapsulate the final callback
 	_callback cbk;
-	cbk.func = [=](const Event::_Base* msg) -> void
-		{
-			std::invoke(callback, static_cast<_subscriber*>(this), *static_cast<const _message*>(msg));
-		};
+	cbk.func = [=](const Event::_Base* msg) {
+		std::invoke(callback, static_cast<_subscriber*>(this), *static_cast<const _message*>(msg));
+	};
 	cbk.emitter = (void*)emitter;
 
-	// Add to callbacks
 	_callbacks[type].push_back(cbk);
 }
 
@@ -135,20 +128,14 @@ template<class _emitter, typename _lambda>
 void Event::Subscriber::_subscribe(const _emitter* emitter, _lambda func)
 {
 	using _message = decltype(GetFrom<_lambda>::TypeMessage(&_lambda::operator()));
-
 	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
-	
-	// Memorize type
 	static const _Type type = _message{}.type();
 	
-	// Encapsulate the final callback
 	_callback cbk;
-	cbk.func = [=](const Event::_Base* msg) -> void
-		{
-			std::invoke(func, *static_cast<const _message*>(msg));
-		};
+	cbk.func = [=](const Event::_Base* msg) {
+		std::invoke(func, *static_cast<const _message*>(msg));
+	};
 	cbk.emitter = (void*)emitter;
 	
-	// Add to callbacks
 	_callbacks[type].push_back(cbk);
 }

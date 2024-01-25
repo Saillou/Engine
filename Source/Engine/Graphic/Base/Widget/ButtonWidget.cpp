@@ -1,6 +1,7 @@
 #include "ButtonWidget.hpp"
 
 ButtonWidget::ButtonWidget(const std::string& text):
+    BaseWidget(EventListened::MouseMove | EventListened::MouseButton),
     text(text),
     backgroundColor(0.7f, 0.5f, 0.3f, 1.0f),
     foregroundColor(1,1,1,1)
@@ -33,7 +34,6 @@ void ButtonWidget::draw(Scene& scene) {
         isMouseOver() ? backgroundColor : foregroundColor
     );
 }
-
 
 float& ButtonWidget::w() {
     return _surfaces.front()->w();

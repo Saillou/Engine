@@ -16,7 +16,14 @@ struct BaseWidget :
 {
     friend struct BaseLayout;
 
-    BaseWidget();
+    enum EventListened {
+        None            = 0,
+        MouseMove       = (1 << 0),
+        MouseButton     = (1 << 1),
+        KeyboardButton  = (1 << 2)
+    };
+
+    explicit BaseWidget(int eventListened = EventListened::None);
 
     // Methods
     virtual void draw(Scene&) = 0;

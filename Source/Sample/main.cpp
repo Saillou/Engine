@@ -16,8 +16,7 @@ int main() {
     do {
         // Inputs
         for (auto key : window.keyPressed()) {
-            switch (key) 
-            {
+            switch (key) {
             case GLFW_KEY_ESCAPE:
                 window.close(); 
                 break;

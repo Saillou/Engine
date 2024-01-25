@@ -2,10 +2,13 @@
 #include "BaseLayout.hpp"
 #include "../../../Utils/RayCaster.hpp"
 
-BaseWidget::BaseWidget() 
+BaseWidget::BaseWidget(int evt)
 {
-	_subscribe(&BaseWidget::_on_mouse_button);
-	_subscribe(&BaseWidget::_on_mouse_move);
+	if(evt & EventListened::MouseButton)
+		_subscribe(&BaseWidget::_on_mouse_button);
+
+	if (evt & EventListened::MouseMove)
+		_subscribe(&BaseWidget::_on_mouse_move);
 }
 
 // Helpers
