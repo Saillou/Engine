@@ -26,6 +26,9 @@ protected:
     void draw(const LayoutEvents::Draw& msg);
     void onClickStart(const CommonEvents::MouseButton& msg);
     void onClickOption(const CommonEvents::MouseButton& msg);
+    void onClickApply(const CommonEvents::MouseButton& msg);
+    void onClickPlus(const CommonEvents::MouseButton& msg);
+    void onClickMinus(const CommonEvents::MouseButton& msg);
 
 private:
     Scene& m_scene;
@@ -33,5 +36,5 @@ private:
     State m_state;
     std::shared_ptr<BaseLayout> m_layout;
     std::unordered_map<std::string, std::shared_ptr<BaseWidget>> m_widgets;
-    int m_count = 0;
+    int m_count = 2;
 };

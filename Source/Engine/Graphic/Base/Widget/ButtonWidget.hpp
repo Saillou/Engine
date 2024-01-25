@@ -6,14 +6,12 @@ struct ButtonWidget : public BaseWidget {
     ButtonWidget(const std::string& text);
 
     void draw(Scene&) override;
-    std::string& text();
 
     float& w();
     float& h();
 
-private:
-    std::string _text;
+    std::string text;
 
-    glm::vec4 _backgroundColor;
-    glm::vec4 _foregroundColor;
+    glm::vec4 backgroundColor;
+    glm::vec4 foregroundColor;
 };

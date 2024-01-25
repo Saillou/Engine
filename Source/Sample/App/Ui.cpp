@@ -22,6 +22,10 @@ Ui::Ui(Scene& scene) :
     m_widgets["ResumeButton"]->x = 0.45f;
     m_widgets["ResumeButton"]->y = 0.45f;
 
+    m_widgets["ApplyButton"] = std::make_shared<ButtonWidget>("Apply");
+    m_widgets["ApplyButton"]->x = 0.45f;
+    m_widgets["ApplyButton"]->y = 0.55f;
+
     m_widgets["MoinsButton"] = std::make_shared<ButtonWidget>("o");
     m_widgets["MoinsButton"]->x = 0.41f;
     m_widgets["MoinsButton"]->y = 0.47f;
@@ -31,16 +35,20 @@ Ui::Ui(Scene& scene) :
     m_widgets["PlusButton"]->y = 0.47f;
 
     // Some overrides
-    std::dynamic_pointer_cast<ButtonWidget>(m_widgets["StartButton"])->w()    = std::dynamic_pointer_cast<ButtonWidget>(m_widgets["OptionButton"])->w();
-    std::dynamic_pointer_cast<ButtonWidget>(m_widgets["MoinsButton"])->text() = "-";
-    std::dynamic_pointer_cast<ButtonWidget>(m_widgets["PlusButton"])->text()  = "+";
+    std::dynamic_pointer_cast<ButtonWidget>(m_widgets["StartButton"])->w()  = std::dynamic_pointer_cast<ButtonWidget>(m_widgets["OptionButton"])->w();
+    std::dynamic_pointer_cast<ButtonWidget>(m_widgets["MoinsButton"])->text = "-";
+    std::dynamic_pointer_cast<ButtonWidget>(m_widgets["PlusButton"])->text  = "+";
 
     // Define events
     _subscribe(m_layout.get(), &Ui::draw);
 
     _subscribe(m_widgets.at("OptionButton").get(), &Ui::onClickOption);
+    _subscribe(m_widgets.at("ApplyButton").get(),  &Ui::onClickApply);
     _subscribe(m_widgets.at("StartButton").get(),  &Ui::onClickStart);
     _subscribe(m_widgets.at("ResumeButton").get(), &Ui::onClickStart);
+
+    _subscribe(m_widgets.at("MoinsButton").get(), &Ui::onClickMinus);
+    _subscribe(m_widgets.at("PlusButton").get(), &Ui::onClickPlus);
 
     // Let's start
     setState(Ui::State::Start);
@@ -66,6 +74,7 @@ void Ui::setState(Ui::State state) {
     case State::Option:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+        m_layout->add(m_widgets["ApplyButton"]);
         m_layout->add(m_widgets["MoinsButton"]);
         m_layout->add(m_widgets["PlusButton"]);
         break;
@@ -107,6 +116,26 @@ void Ui::draw(const LayoutEvents::Draw& msg) {
         textSize = TextEngine::Measure("Options", 0.7f);
         renderer.text("Options", w / 2.0f - textSize.x / 2.0f, h / 2.0f + 100.0f, 0.7f);
         renderer.text(std::to_string(m_count), w/2.0f - 20.f, h/2.0f -10.f, 0.7f);
+
+        std::dynamic_pointer_cast<ButtonWidget>(m_widgets["PlusButton"])->backgroundColor =
+            (m_count >= 5) ?
+            glm::vec4(1.0f, 0.3f, 0.3f, 1.0f) :
+            glm::vec4(0.7f, 0.5f, 0.3f, 1.0f);
+
+        std::dynamic_pointer_cast<ButtonWidget>(m_widgets["MoinsButton"])->backgroundColor =
+            (m_count <= 0) ?
+            glm::vec4(1.0f, 0.3f, 0.3f, 1.0f) :
+            glm::vec4(0.7f, 0.5f, 0.3f, 1.0f);
+
+        std::dynamic_pointer_cast<ButtonWidget>(m_widgets["PlusButton"])->foregroundColor =
+            (m_count >= 5) ?
+            glm::vec4(0.2f, 0.2f, 0.2f, 1.0f) :
+            glm::vec4(1,1,1,1);
+
+        std::dynamic_pointer_cast<ButtonWidget>(m_widgets["MoinsButton"])->foregroundColor =
+            (m_count <= 0) ?
+            glm::vec4(0.2f, 0.2f, 0.2f, 1.0f) :
+            glm::vec4(1,1,1,1);
         break;
 
     case State::InGame:
@@ -132,5 +161,19 @@ void Ui::onClickStart(const CommonEvents::MouseButton& msg) {
 
 void Ui::onClickOption(const CommonEvents::MouseButton& msg) {
     setState(State::Option);
+}
+
+void Ui::onClickApply(const CommonEvents::MouseButton& msg) {
+    setState(State::Start);
+}
+
+void Ui::onClickPlus(const CommonEvents::MouseButton& msg) {
+    if (m_count < 5)
+        m_count++;
+}
+
+void Ui::onClickMinus(const CommonEvents::MouseButton& msg) {
+    if (m_count > 0)
+        m_count--;
 }
 
