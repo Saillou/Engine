@@ -12,8 +12,7 @@
 
 // -- Widget --
 struct BaseWidget : 
-    protected Event::Subscriber,
-    protected Event::Emitter 
+    protected Event::Subscriber
 {
     friend struct BaseLayout;
 

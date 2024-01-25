@@ -23,9 +23,9 @@ struct Ui : Event::Subscriber {
     State state() const;
 
 protected:
-    void draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg);
-    void onClickStart(const BaseWidget* emitter, const CommonEvents::MouseButton& msg);
-    void onClickOption(const BaseWidget* emitter, const CommonEvents::MouseButton& msg);
+    void draw(const LayoutEvents::Draw& msg);
+    void onClickStart(const CommonEvents::MouseButton& msg);
+    void onClickOption(const CommonEvents::MouseButton& msg);
 
 private:
     Scene& m_scene;

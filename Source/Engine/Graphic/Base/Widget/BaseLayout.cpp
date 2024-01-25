@@ -59,7 +59,7 @@ void BaseLayout::_draw(const SceneEvents::RenderFinished&) {
         glClearColor(background_color.r, background_color.g, background_color.b, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        _emit(LayoutEvents::Draw());
+        Event::Emit(LayoutEvents::Draw(), this);
 
         draw(m_scene);
 

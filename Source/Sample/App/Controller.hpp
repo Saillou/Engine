@@ -17,7 +17,7 @@ protected:
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
     void _on_mouse_button(const CommonEvents::MouseButton& evt);
 
-    void _on_ui_update(const Ui*, const CommonEvents::StateUpdated& evt);
+    void _on_ui_update(const CommonEvents::StateUpdated& evt);
 
 private:
     Ui& m_ui;

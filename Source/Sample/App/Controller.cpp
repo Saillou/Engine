@@ -117,8 +117,8 @@ void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
     // ..
 }
 
-void Controller::_on_ui_update(const Ui* ui, const CommonEvents::StateUpdated& evt) {
-    if (ui->state() == Ui::State::InGame) {
+void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
+    if (m_ui.state() == Ui::State::InGame) {
         m_view.enable_interaction = true;
     }
 }

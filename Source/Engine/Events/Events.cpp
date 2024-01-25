@@ -3,7 +3,6 @@
 // Static init
 std::unordered_set<Event::Subscriber*> Event::_allSubscribers;
 
-
 // - Subscriber -
 Event::Subscriber::Subscriber() {
 	_allSubscribers.insert(this);
@@ -16,7 +15,6 @@ Event::Subscriber::~Subscriber() {
 
 void Event::Subscriber::_unsubscribeAll() {
 	_callbacks.clear();
-	_spe_callbacks.clear();
 }
 
 // - Events -

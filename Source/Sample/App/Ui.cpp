@@ -90,7 +90,7 @@ Ui::State Ui::state() const {
     return m_state;
 }
 
-void Ui::draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg) {
+void Ui::draw(const LayoutEvents::Draw& msg) {
     auto& renderer = m_scene.renderer();
     const float w = (float)m_scene.width();
     const float h = (float)m_scene.height();
@@ -126,11 +126,11 @@ void Ui::draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg) {
     }
 }
 
-void Ui::onClickStart(const BaseWidget* emitter, const CommonEvents::MouseButton& msg) {
+void Ui::onClickStart(const CommonEvents::MouseButton& msg) {
     setState(State::InGame);
 }
 
-void Ui::onClickOption(const BaseWidget* emitter, const CommonEvents::MouseButton& msg) {
+void Ui::onClickOption(const CommonEvents::MouseButton& msg) {
     setState(State::Option);
 }
 

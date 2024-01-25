@@ -2,7 +2,8 @@
 #include "BaseLayout.hpp"
 #include "../../../Utils/RayCaster.hpp"
 
-BaseWidget::BaseWidget() {
+BaseWidget::BaseWidget() 
+{
 	_subscribe(&BaseWidget::_on_mouse_button);
 	_subscribe(&BaseWidget::_on_mouse_move);
 }
@@ -46,7 +47,7 @@ bool BaseWidget::IsIn(const BaseWidget& widget, int x, int y) {
 void BaseWidget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
 	if (evt.button == Button::Left && evt.action == Action::Released) {
 		if (IsIn(*this, evt.x, evt.y)) {
-			_emit(evt);
+			Event::Emit(evt, this);
 		}
 	}
 }
