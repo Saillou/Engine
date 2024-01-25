@@ -33,3 +33,17 @@ void ButtonWidget::draw(Scene& scene) {
         isMouseOver() ? _backgroundColor : _foregroundColor
     );
 }
+
+std::string& ButtonWidget::text() {
+    return _text;
+}
+
+
+float& ButtonWidget::w() {
+    return _surfaces.front()->w();
+}
+
+float& ButtonWidget::h() {
+    return _surfaces.front()->h();
+}
+

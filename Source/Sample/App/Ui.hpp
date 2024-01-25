@@ -11,8 +11,10 @@ struct Ui : Event::Subscriber {
 
     enum class State {
         Idle,
-        Start,
-        InGame
+        Start, 
+        Option,
+        InGame,
+        Pause
     };
     
     // Accessors
@@ -23,6 +25,7 @@ struct Ui : Event::Subscriber {
 protected:
     void draw(const BaseLayout* emitter, const LayoutEvents::Draw& msg);
     void onClickStart(const BaseWidget* emitter, const CommonEvents::MouseButton& msg);
+    void onClickOption(const BaseWidget* emitter, const CommonEvents::MouseButton& msg);
 
 private:
     Scene& m_scene;
@@ -30,4 +33,5 @@ private:
     State m_state;
     std::shared_ptr<BaseLayout> m_layout;
     std::unordered_map<std::string, std::shared_ptr<BaseWidget>> m_widgets;
+    int m_count = 0;
 };

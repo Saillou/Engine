@@ -77,7 +77,7 @@ TextEngine::TextEngine():
     FT_Init_FreeType(&ft);
 
     FT_Face face;
-    FT_New_Face(ft, "C:/Windows/Fonts/Candara.ttf", 0, &face);
+    FT_New_Face(ft, "C:/Windows/Fonts/Calibri.ttf", 0, &face);
     FT_Set_Pixel_Sizes(face, 0, 48);
 
     // load first 128 characters of ASCII set and put them in gl_textures

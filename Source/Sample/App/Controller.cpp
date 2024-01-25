@@ -40,8 +40,15 @@ void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     // Nothing until click on start
-    if (m_ui.state() != Ui::State::InGame)
+    if (m_ui.state() < Ui::State::InGame)
         return;
+
+    // Only one thing to do
+    if (m_ui.state() == Ui::State::Pause) {
+        if (evt.action == Action::Pressed && evt.key == Key::Space)
+            m_ui.setState(Ui::State::InGame);
+        return;
+    }
 
     // Camera movement
     if(evt.action == Action::Pressed || evt.action == Action::Repeated) 
@@ -76,6 +83,8 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
         {
             case 'R': m_view.enable_filter      = !m_view.enable_filter;      break;
             case 'T': m_view.enable_interaction = !m_view.enable_interaction; break;
+
+            case Key::Space: m_ui.setState(Ui::State::Pause); break;
         }
     }
     
