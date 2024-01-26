@@ -14,14 +14,9 @@ int main() {
 
     // Loop
     do {
-        // Inputs
-        for (auto key : window.keyPressed()) {
-            switch (key) {
-            case GLFW_KEY_ESCAPE:
-                window.close(); 
-                break;
-            }
-        }
+        // Check stuff
+        if (ui.wantQuit)
+            window.close();
 
         // States, Physics ..
         {

@@ -22,6 +22,7 @@ struct Ui : Event::Subscriber {
     void setState(Ui::State state);
 
     State state() const;
+    bool wantQuit = false;
 
 protected:
     void draw(const LayoutEvents::Draw& msg);
@@ -32,6 +33,8 @@ private:
     Scene& m_scene;
 
     State m_state;
+    State m_prev_state;
+
     std::shared_ptr<BaseLayout> m_layout;
     std::unordered_map<std::string, std::shared_ptr<ButtonWidget>> m_buttons;
     std::unordered_map<std::string, std::shared_ptr<TextWidget>> m_texts;

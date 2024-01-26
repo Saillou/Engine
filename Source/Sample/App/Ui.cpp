@@ -4,6 +4,7 @@
 
 Ui::Ui(Scene& scene) : 
     m_scene(scene),
+    m_prev_state(Ui::State::Idle),
     m_state(Ui::State::Idle)
 {
     m_layout = std::make_shared<BaseLayout>(scene);
@@ -20,17 +21,21 @@ Ui::Ui(Scene& scene) :
 
     m_buttons["Resume"] = std::make_shared<ButtonWidget>("Resume");
     m_buttons["Resume"]->x = 0.45f;
-    m_buttons["Resume"]->y = 0.45f;
+    m_buttons["Resume"]->y = 0.38f;
+
+    m_buttons["Quit"] = std::make_shared<ButtonWidget>("Quit");
+    m_buttons["Quit"]->x = 0.45f;
+    m_buttons["Quit"]->y = 0.70f;
 
     m_buttons["Apply"] = std::make_shared<ButtonWidget>("Apply");
     m_buttons["Apply"]->x = 0.45f;
     m_buttons["Apply"]->y = 0.55f;
 
-    m_buttons["Moins"] = std::make_shared<ButtonWidget>("o");
+    m_buttons["Moins"] = std::make_shared<ButtonWidget>("-");
     m_buttons["Moins"]->x = 0.41f;
     m_buttons["Moins"]->y = 0.47f;
 
-    m_buttons["Plus"] = std::make_shared<ButtonWidget>("o");
+    m_buttons["Plus"] = std::make_shared<ButtonWidget>("+");
     m_buttons["Plus"]->x = 0.52f;
     m_buttons["Plus"]->y = 0.47f;
 
@@ -68,9 +73,9 @@ Ui::Ui(Scene& scene) :
     m_texts["Ig2"]->y = 0.10f;
 
     // Some overrides
-    m_buttons["Start"]->w()  = m_buttons["Option"]->w();
-    m_buttons["Moins"]->text = "-";
-    m_buttons["Plus"]->text  = "+";
+    m_buttons["Start"]->w() = m_buttons["Option"]->w();
+    m_buttons["Moins"]->w() = m_buttons["Plus"]->w();
+    m_buttons["Moins"]->h() = m_buttons["Plus"]->h();
 
     // Define events
     _subscribe(m_layout.get(), &Ui::draw);
@@ -79,13 +84,16 @@ Ui::Ui(Scene& scene) :
         setState(State::Option);
     });
     _subscribe(m_buttons.at("Apply").get(), [=](const CommonEvents::MouseButton&) {
-        setState(State::Start);
+        setState(m_prev_state);
     });
     _subscribe(m_buttons.at("Start").get(), [=](const CommonEvents::MouseButton&) {
         setState(State::InGame);
     });
     _subscribe(m_buttons.at("Resume").get(), [=](const CommonEvents::MouseButton&) {
         setState(State::InGame);
+    });
+    _subscribe(m_buttons.at("Quit").get(), [=](const CommonEvents::MouseButton&) {
+        wantQuit = true;
     });
     _subscribe(m_buttons.at("Moins").get(), [=](const CommonEvents::MouseButton&) {
         _updateCount(-1);
@@ -102,6 +110,7 @@ void Ui::setState(Ui::State state) {
     if (m_state == state)
         return;
 
+    m_prev_state = m_state;
     m_state = state;
 
     // Change ui
@@ -113,6 +122,7 @@ void Ui::setState(Ui::State state) {
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
         m_layout->add(m_buttons["Start"]);
         m_layout->add(m_buttons["Option"]);
+        m_layout->add(m_buttons["Quit"]);
         m_layout->add(m_texts["Title"]);
         break;
 
@@ -137,6 +147,8 @@ void Ui::setState(Ui::State state) {
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
         m_layout->add(m_buttons["Resume"]);
+        m_layout->add(m_buttons["Option"]);
+        m_layout->add(m_buttons["Quit"]);
         m_layout->add(m_texts["Pause"]);
         break;
     }

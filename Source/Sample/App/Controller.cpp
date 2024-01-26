@@ -45,7 +45,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
     // Only one thing to do
     if (m_ui.state() == Ui::State::Pause) {
-        if (evt.action == Action::Pressed && evt.key == Key::Space)
+        if (evt.action == Action::Pressed && evt.key == Key::Escape)
             m_ui.setState(Ui::State::InGame);
         return;
     }
@@ -84,7 +84,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             case 'R': m_view.enable_filter      = !m_view.enable_filter;      break;
             case 'T': m_view.enable_interaction = !m_view.enable_interaction; break;
 
-            case Key::Space: m_ui.setState(Ui::State::Pause); break;
+            case Key::Escape: m_ui.setState(Ui::State::Pause); break;
         }
     }
     

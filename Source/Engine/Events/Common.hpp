@@ -3,6 +3,7 @@
 // To avoid glfw include
 enum Key {
 	Space      = 32,
+	Escape	   = 256,
 
 	ArrowRight = 262,
 	ArrowLeft  = 263,
