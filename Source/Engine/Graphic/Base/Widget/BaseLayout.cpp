@@ -26,6 +26,14 @@ void BaseLayout::add(std::shared_ptr<BaseWidget> widget) {
     m_widgets.push_back(widget);
 }
 
+void BaseLayout::add(std::shared_ptr<BaseWidget> widget, float x, float y) {
+    widget->_parent = this;
+    widget->x = x;
+    widget->y = y;
+
+    m_widgets.push_back(widget);
+}
+
 void BaseLayout::clean() {
     for (auto& widget : m_widgets)
         widget->_parent = nullptr;

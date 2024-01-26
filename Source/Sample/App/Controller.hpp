@@ -23,8 +23,10 @@ private:
     Ui& m_ui;
     View& m_view;
     std::vector<Light> m_pontential_lights;
-    Timer::Chronometre m_timer;
 
     float m_distance = 6.0f;
-    float m_theta = 0.0f;
+    float m_theta    = 0.0f;
+
+    bool m_enable_filter      = false;
+    bool m_enable_interaction = false;
 };

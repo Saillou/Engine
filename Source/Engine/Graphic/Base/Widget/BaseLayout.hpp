@@ -17,6 +17,7 @@ struct BaseLayout :
 
     // Methods
     void add(std::shared_ptr<BaseWidget>);
+    void add(std::shared_ptr<BaseWidget>, float x, float y);
     void clean();
 
     // Accessors

@@ -17,10 +17,10 @@ View::View(Scene& scene) :
     _subscribe(&View::_on_mouse_moved);
 
     // Entities
-    m_entities["Ground"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Cube"]      = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Target"]    = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
-    m_entities["Lantern"]   = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
+    m_entities["Target"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_entities["Lantern"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
 
     // Scene objects
     Material stone = { glm::vec4(0.7f, 0.7f, 0.7f, 1.0f) };
@@ -63,9 +63,6 @@ View::View(Scene& scene) :
         "Resources/textures/skybox/front.jpg",
         "Resources/textures/skybox/front.jpg",
     });
-
-    // Lights
-    m_entities["Lantern"]->localMaterial().cast_shadow = true;
 
     // Others render elements
     _initFilters();

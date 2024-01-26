@@ -10,70 +10,35 @@ Ui::Ui(Scene& scene) :
     m_layout = std::make_shared<BaseLayout>(scene);
 
     // - Create gui elements -
-    // Buttons
-    m_buttons["Start"] = std::make_shared<ButtonWidget>("Start");
-    m_buttons["Start"]->x = 0.45f;
-    m_buttons["Start"]->y = 0.38f;
-
+    m_buttons["Start"]  = std::make_shared<ButtonWidget>("Start");
     m_buttons["Option"] = std::make_shared<ButtonWidget>("Option");
-    m_buttons["Option"]->x = 0.45f;
-    m_buttons["Option"]->y = 0.45f;
-
     m_buttons["Resume"] = std::make_shared<ButtonWidget>("Resume");
-    m_buttons["Resume"]->x = 0.45f;
-    m_buttons["Resume"]->y = 0.38f;
+    m_buttons["Quit"]   = std::make_shared<ButtonWidget>("Quit");
+    m_buttons["Apply"]  = std::make_shared<ButtonWidget>("Apply");
+    m_buttons["Moins"]  = std::make_shared<ButtonWidget>("-");
+    m_buttons["Plus"]   = std::make_shared<ButtonWidget>("+");
 
-    m_buttons["Quit"] = std::make_shared<ButtonWidget>("Quit");
-    m_buttons["Quit"]->x = 0.45f;
-    m_buttons["Quit"]->y = 0.70f;
-
-    m_buttons["Apply"] = std::make_shared<ButtonWidget>("Apply");
-    m_buttons["Apply"]->x = 0.45f;
-    m_buttons["Apply"]->y = 0.55f;
-
-    m_buttons["Moins"] = std::make_shared<ButtonWidget>("-");
-    m_buttons["Moins"]->x = 0.41f;
-    m_buttons["Moins"]->y = 0.47f;
-
-    m_buttons["Plus"] = std::make_shared<ButtonWidget>("+");
-    m_buttons["Plus"]->x = 0.52f;
-    m_buttons["Plus"]->y = 0.47f;
-
-    // Texts
-    m_texts["Title"] = std::make_shared<TextWidget>("The Game", 0.7f);
-    m_texts["Title"]->x = 0.455f;
-    m_texts["Title"]->y = 0.31f;
-
-    m_texts["Pause"] = std::make_shared<TextWidget>("Game paused", 0.7f);
-    m_texts["Pause"]->x = 0.44f;
-    m_texts["Pause"]->y = 0.30f;
-
-    m_texts["Option"] = std::make_shared<TextWidget>("Options", 0.7f);
-    m_texts["Option"]->x = 0.46f;
-    m_texts["Option"]->y = 0.32f;
-
-    m_texts["Count"] = std::make_shared<TextWidget>(std::to_string(m_count), 0.7f);
-    m_texts["Count"]->x = 0.49f;
-    m_texts["Count"]->y = 0.51f;
-
-    m_texts["Ig1"] = std::make_shared<TextWidget>(std::vector<std::string>{
+    m_texts["Title"]  = std::make_shared<TextWidget>("The Game",              0.7f);
+    m_texts["Pause"]  = std::make_shared<TextWidget>("Game paused",           0.7f);
+    m_texts["Option"] = std::make_shared<TextWidget>("Options",               0.7f);
+    m_texts["Count"]  = std::make_shared<TextWidget>(std::to_string(m_count), 0.7f);
+    m_texts["Ig1"]    = std::make_shared<TextWidget>(std::vector<std::string>{
         "Cam pos: ",
         "Cam dir: " 
     }, 0.4f);
-    m_texts["Ig1"]->x = 0.01f;
-    m_texts["Ig1"]->y = 0.03f;
-
-    m_texts["Ig2"] = std::make_shared<TextWidget>(std::vector<std::string>{
+    m_texts["Ig2"]    = std::make_shared<TextWidget>(std::vector<std::string>{
         "Press [space] to pause",
         "Press [R] to dis/enable filters",
         "Press [T] to dis/enable casters",
         "Press [Numpad+(0-5)] to change lights"
     }, 0.4f);
-    m_texts["Ig2"]->x = 0.01f;
-    m_texts["Ig2"]->y = 0.10f;
 
     // Some overrides
-    m_buttons["Start"]->w() = m_buttons["Option"]->w();
+    const float default_width = m_buttons["Option"]->w();
+    m_buttons["Start"]->w()   = default_width;
+    m_buttons["Quit"]->w()    = default_width;
+    m_buttons["Resume"]->w()  = default_width;
+
     m_buttons["Moins"]->w() = m_buttons["Plus"]->w();
     m_buttons["Moins"]->h() = m_buttons["Plus"]->h();
 
@@ -120,36 +85,36 @@ void Ui::setState(Ui::State state) {
     case State::Start:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
-        m_layout->add(m_buttons["Start"]);
-        m_layout->add(m_buttons["Option"]);
-        m_layout->add(m_buttons["Quit"]);
-        m_layout->add(m_texts["Title"]);
+        m_layout->add(m_buttons["Start"],  .45f,  .38f);
+        m_layout->add(m_buttons["Option"], .45f,  .45f);
+        m_layout->add(m_buttons["Quit"],   .45f,  .55f);
+        m_layout->add(m_texts["Title"],    .455f, .31f);
         break;
 
     case State::Option:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
-        m_layout->add(m_buttons["Apply"]);
-        m_layout->add(m_buttons["Moins"]);
-        m_layout->add(m_buttons["Plus"]);
-        m_layout->add(m_texts["Option"]);
-        m_layout->add(m_texts["Count"]);
+        m_layout->add(m_buttons["Apply"], .45f, .55f);
+        m_layout->add(m_buttons["Moins"], .41f, .47f);
+        m_layout->add(m_buttons["Plus"],  .52f, .47f);
+        m_layout->add(m_texts["Option"],  .46f, .32f);
+        m_layout->add(m_texts["Count"],   .49f, .51f);
         break;
 
     case State::InGame:
         m_layout->opacity = 1.0f;
         m_layout->background_color = BaseWidget::Transparent();
-        m_layout->add(m_texts["Ig1"]);
-        m_layout->add(m_texts["Ig2"]);
+        m_layout->add(m_texts["Ig1"], .01f, .03f);
+        m_layout->add(m_texts["Ig2"], .01f, .10f);
         break;
 
     case State::Pause:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
-        m_layout->add(m_buttons["Resume"]);
-        m_layout->add(m_buttons["Option"]);
-        m_layout->add(m_buttons["Quit"]);
-        m_layout->add(m_texts["Pause"]);
+        m_layout->add(m_buttons["Resume"], .45f, .38f);
+        m_layout->add(m_buttons["Option"], .45f, .45f);
+        m_layout->add(m_buttons["Quit"],   .45f, .70f);
+        m_layout->add(m_texts["Pause"],    .44f, .30f);
         break;
     }
 

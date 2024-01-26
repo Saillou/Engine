@@ -16,21 +16,22 @@ Controller::Controller(Ui& ui, View& view):
     _subscribe(&ui, &Controller::_on_ui_update);
 
     // Camera
-    m_view.scene().camera().position = glm::vec3(m_distance, 0, 1.25f);
+    m_view.scene().camera().position  = glm::vec3(m_distance, 0, 1.25f);
     m_view.scene().camera().direction = glm::vec3(0, 0, 0);
 
     // Lights
     m_pontential_lights = {
-        Light(glm::vec3{  0,  -1.50f, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{  0,  +1.50f, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  0,    0,    3.0f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{  -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{ 0,  -1.50f, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{ 0,  +1.50f, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{ 0,    0,    3.0f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
+        Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
+        Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
     m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 2);
 
-    // Start
-    m_timer.tic();
+    // States
+    m_view.enable_filter      = m_enable_filter;
+    m_view.enable_interaction = m_enable_interaction;
 }
 
 // Events
@@ -43,14 +44,18 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     if (m_ui.state() < Ui::State::InGame)
         return;
 
-    // Only one thing to do
-    if (m_ui.state() == Ui::State::Pause) {
-        if (evt.action == Action::Pressed && evt.key == Key::Escape)
+    // Pause
+    if (m_ui.state() == Ui::State::Pause) 
+    {
+        if (evt.action == Action::Pressed && evt.key == Key::Escape) {
             m_ui.setState(Ui::State::InGame);
+            m_view.enable_interaction = false;
+        }
+
         return;
     }
 
-    // Camera movement
+    // In game
     if(evt.action == Action::Pressed || evt.action == Action::Repeated) 
     {
         glm::vec3 dir(0, 0, 0);
@@ -87,7 +92,6 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             case Key::Escape: m_ui.setState(Ui::State::Pause); break;
         }
     }
-    
 
     // Lights
     if (evt.action == Action::Pressed) 
@@ -118,7 +122,10 @@ void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
 }
 
 void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
-    if (m_ui.state() == Ui::State::InGame) {
-        m_view.enable_interaction = true;
+    switch (m_ui.state()) 
+    {
+        case Ui::State::InGame:
+            m_view.enable_interaction = m_enable_interaction;
+            break;
     }
 }
