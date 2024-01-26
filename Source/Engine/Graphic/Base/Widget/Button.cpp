@@ -1,7 +1,7 @@
-#include "ButtonWidget.hpp"
+#include "Button.hpp"
 
-ButtonWidget::ButtonWidget(const std::string& text):
-    BaseWidget(EventListened::MouseMove | EventListened::MouseButton),
+Button::Button(const std::string& text):
+    Widget(Tag::Button, EventListened::MouseMove | EventListened::MouseButton),
     text(text),
     backgroundColor(0.7f, 0.5f, 0.3f, 1.0f),
     foregroundColor(1,1,1,1)
@@ -15,7 +15,7 @@ ButtonWidget::ButtonWidget(const std::string& text):
     );
 }
 
-void ButtonWidget::draw(Scene& scene) {
+void Button::draw(Scene& scene) {
     auto& surface = _surfaces.front();
 
     // Update data
@@ -35,11 +35,11 @@ void ButtonWidget::draw(Scene& scene) {
     );
 }
 
-float& ButtonWidget::w() {
+float& Button::w() {
     return _surfaces.front()->w();
 }
 
-float& ButtonWidget::h() {
+float& Button::h() {
     return _surfaces.front()->h();
 }
 

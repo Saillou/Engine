@@ -197,9 +197,9 @@ void Window::_manage_inputs() {
         if (!stateOn && !button_state)
             continue;
 
-        Action action = isPressed  ? Action::Pressed:
-                        isRepeated ? Action::Repeated:
-                                     Action::Released;
+        InputAction action = isPressed  ? InputAction::Pressed:
+                             isRepeated ? InputAction::Repeated:
+                                          InputAction::Released;
 
         m_buttons_pressed[button_id] = stateOn;
         Event::Emit(CommonEvents::MouseButton(button_id, action, m_mouse_pos.x, m_mouse_pos.y));
@@ -220,9 +220,9 @@ void Window::_manage_inputs() {
         if (!stateOn && !key_state)
             continue;
 
-        Action action = isPressed  ? Action::Pressed:
-                        isRepeated ? Action::Repeated:
-                                     Action::Released;
+        InputAction action = isPressed  ? InputAction::Pressed:
+                             isRepeated ? InputAction::Repeated:
+                                          InputAction::Released;
 
         m_keys_pressed[key_id] = stateOn;
         Event::Emit(CommonEvents::KeyPressed(key_id, action));

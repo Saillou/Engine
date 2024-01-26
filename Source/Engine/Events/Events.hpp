@@ -49,9 +49,17 @@ public:
 		template <class _emitter, class _subscriber, typename _message>
 			void _subscribe(const _emitter*, void(_subscriber::* callback)(const _message&));
 
+		// ... with a shared ptr
+		template <class _emitter, class _subscriber, typename _message>
+			void _subscribe(const std::shared_ptr<_emitter>, void(_subscriber::* callback)(const _message&));
+
 		// ... with a lambda
 		template <class _emitter, typename _lambda>
 			void _subscribe(const _emitter*, _lambda);
+
+		// ... with a lambda and shared_ptr
+		template <class _emitter, typename _lambda>
+			void _subscribe(const std::shared_ptr<_emitter>, _lambda);
 
 		void _unsubscribeAll();
 
@@ -124,6 +132,12 @@ void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscriber::*c
 	_callbacks[type].push_back(cbk);
 }
 
+template<class _emitter, class _subscriber, typename _message>
+void Event::Subscriber::_subscribe(const std::shared_ptr<_emitter> shr_emitter, void(_subscriber::* callback)(const _message&))
+{
+	_subscribe(shr_emitter.get(), callback);
+}
+
 template<class _emitter, typename _lambda>
 void Event::Subscriber::_subscribe(const _emitter* emitter, _lambda func)
 {
@@ -138,4 +152,10 @@ void Event::Subscriber::_subscribe(const _emitter* emitter, _lambda func)
 	cbk.emitter = (void*)emitter;
 	
 	_callbacks[type].push_back(cbk);
+}
+
+template<class _emitter, typename _lambda>
+void Event::Subscriber::_subscribe(const std::shared_ptr<_emitter> shr_emitter, _lambda func)
+{
+	_subscribe(shr_emitter.get(), func);
 }

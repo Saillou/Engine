@@ -1,30 +1,31 @@
-#include "BaseWidget.hpp"
+#include "Widget.hpp"
 #include "BaseLayout.hpp"
 #include "../../../Utils/RayCaster.hpp"
 
-BaseWidget::BaseWidget(int evt)
+Widget::Widget(Tag tag, int evt):
+	_tag(tag)
 {
 	if(evt & EventListened::MouseButton)
-		_subscribe(&BaseWidget::_on_mouse_button);
+		_subscribe(&Widget::_on_mouse_button);
 
 	if (evt & EventListened::MouseMove)
-		_subscribe(&BaseWidget::_on_mouse_move);
+		_subscribe(&Widget::_on_mouse_move);
 }
 
 // Helpers
-glm::vec4 BaseWidget::Transparent() {
+glm::vec4 Widget::Transparent() {
     return glm::vec4(0, 0, 0, 0);
 }
 
-bool BaseWidget::isMouseOver() const {
+bool Widget::isMouseOver() const {
 	return _mouse_over;
 }
 
-const BaseLayout* BaseWidget::parent() const {
+const BaseLayout* Widget::parent() const {
 	return _parent;
 }
 
-bool BaseWidget::IsIn(const BaseWidget& widget, int x, int y) {
+bool Widget::IsIn(const Widget& widget, int x, int y) {
 	if (!widget.parent())
 		return false;
 
@@ -47,14 +48,14 @@ bool BaseWidget::IsIn(const BaseWidget& widget, int x, int y) {
 }
 
 // Callbacks
-void BaseWidget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
-	if (evt.button == Button::Left && evt.action == Action::Released) {
+void Widget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
+	if (evt.button == MouseButton::Left && evt.action == InputAction::Released) {
 		if (IsIn(*this, evt.x, evt.y)) {
 			Event::Emit(evt, this);
 		}
 	}
 }
 
-void BaseWidget::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
+void Widget::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
 	_mouse_over = IsIn(*this, evt.x, evt.y);
 }

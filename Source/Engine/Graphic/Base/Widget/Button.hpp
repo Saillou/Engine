@@ -1,12 +1,14 @@
 #pragma once
 
-#include "BaseWidget.hpp"
+#include "Widget.hpp"
 
-struct ButtonWidget : public BaseWidget {
-    ButtonWidget(const std::string& text);
+struct Button : public Widget {
+    Button(const std::string& text);
 
+    // Methods
     void draw(Scene&) override;
 
+    // Members
     float& w();
     float& h();
 
@@ -14,4 +16,5 @@ struct ButtonWidget : public BaseWidget {
 
     glm::vec4 backgroundColor;
     glm::vec4 foregroundColor;
+
 };

@@ -4,20 +4,20 @@
 #include <vector>
 #include <memory>
 
-#include "BaseWidget.hpp"
+#include "Widget.hpp"
 #include "../Scene.hpp"
 #include "../../../Utils/Filter/CopyFilter.hpp"
 
 // -- Layout --
 struct BaseLayout : 
-    public BaseWidget
+    public Widget
 {
     BaseLayout(Scene& scene);
     virtual ~BaseLayout() = default;
 
     // Methods
-    void add(std::shared_ptr<BaseWidget>);
-    void add(std::shared_ptr<BaseWidget>, float x, float y);
+    void add(std::shared_ptr<Widget>);
+    void add(std::shared_ptr<Widget>, float x, float y);
     void clean();
 
     // Accessors
@@ -40,5 +40,5 @@ private:
     Framebuffer m_frame;
     CopyFilter m_copyFilter;
 
-    std::vector<std::shared_ptr<BaseWidget>> m_widgets;
+    std::vector<std::shared_ptr<Widget>> m_widgets;
 };

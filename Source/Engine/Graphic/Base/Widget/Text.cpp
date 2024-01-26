@@ -1,6 +1,7 @@
-#include "TextWidget.hpp"
+#include "Text.hpp"
 
-TextWidget::TextWidget(const std::string& text, float scale):
+Text::Text(const std::string& text, float scale):
+    Widget(Tag::Text),
     _texts({ text }),
     foregroundColor(1,1,1,1),
     _scale(scale),
@@ -9,7 +10,8 @@ TextWidget::TextWidget(const std::string& text, float scale):
     // ..
 }
 
-TextWidget::TextWidget(const std::vector<std::string>& texts, float scale) :
+Text::Text(const std::vector<std::string>& texts, float scale):
+    Widget(Tag::Text),
     _texts(texts),
     foregroundColor(1, 1, 1, 1),
     _scale(scale),
@@ -22,7 +24,7 @@ TextWidget::TextWidget(const std::vector<std::string>& texts, float scale) :
     }
 }
 
-void TextWidget::draw(Scene& scene) {
+void Text::draw(Scene& scene) {
     float y0 = y;
 
     for (const std::string& str : _texts) {
@@ -36,31 +38,31 @@ void TextWidget::draw(Scene& scene) {
     }
 }
 
-const std::string& TextWidget::getText() const {
+const std::string& Text::getText() const {
     return _texts.front();
 }
 
-const std::vector<std::string>& TextWidget::getTexts() const {
+const std::vector<std::string>& Text::getTexts() const {
     return _texts;
 }
 
-const glm::vec2& TextWidget::getSize() const {
+const glm::vec2& Text::getSize() const {
     return _size;
 }
 
-void TextWidget::setText(const std::string& txt) {
+void Text::setText(const std::string& txt) {
     _texts[0] = txt;
 }
 
-void TextWidget::setTexts(const std::vector<std::string>& txt) {
+void Text::setTexts(const std::vector<std::string>& txt) {
     _texts = txt;
 }
 
-std::string& TextWidget::at(size_t i) {
+std::string& Text::at(size_t i) {
     return _texts[i];
 }
 
-std::string& TextWidget::operator[](size_t i) {
+std::string& Text::operator[](size_t i) {
     return _texts[i];
 }
 

@@ -47,7 +47,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     // Pause
     if (m_ui.state() == Ui::State::Pause) 
     {
-        if (evt.action == Action::Pressed && evt.key == Key::Escape) {
+        if (evt.action == InputAction::Pressed && evt.key == KeyCode::Escape) {
             m_ui.setState(Ui::State::InGame);
             m_view.enable_interaction = false;
         }
@@ -56,18 +56,18 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     }
 
     // In game
-    if(evt.action == Action::Pressed || evt.action == Action::Repeated) 
+    if(evt.action == InputAction::Pressed || evt.action == InputAction::Repeated)
     {
         glm::vec3 dir(0, 0, 0);
 
         switch (evt.key)
         {
-            case Key::ArrowRight: dir.x = +1.0f; break;
-            case Key::ArrowLeft:  dir.x = -1.0f; break;
-            case Key::ArrowUp:    dir.y = -1.0f; break;
-            case Key::ArrowDown:  dir.y = +1.0f; break;
-            case 'Q':             dir.z = +1.0f; break;
-            case 'W':             dir.z = -1.0f; break;
+            case KeyCode::ArrowRight: dir.x = +1.0f; break;
+            case KeyCode::ArrowLeft:  dir.x = -1.0f; break;
+            case KeyCode::ArrowUp:    dir.y = -1.0f; break;
+            case KeyCode::ArrowDown:  dir.y = +1.0f; break;
+            case 'Q':                 dir.z = +1.0f; break;
+            case 'W':                 dir.z = -1.0f; break;
         }
 
         if (dir != glm::vec3(0, 0, 0)) 
@@ -82,19 +82,19 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     }
 
     // Actions
-    if (evt.action == Action::Pressed)
+    if (evt.action == InputAction::Pressed)
     {
         switch (evt.key)
         {
             case 'R': m_view.enable_filter      = !m_view.enable_filter;      break;
             case 'T': m_view.enable_interaction = !m_view.enable_interaction; break;
 
-            case Key::Escape: m_ui.setState(Ui::State::Pause); break;
+            case KeyCode::Escape: m_ui.setState(Ui::State::Pause); break;
         }
     }
 
     // Lights
-    if (evt.action == Action::Pressed) 
+    if (evt.action == InputAction::Pressed)
     {
         size_t nLightsEnabled = -1;
         switch (evt.key)

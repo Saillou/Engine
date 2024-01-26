@@ -20,13 +20,13 @@ BaseLayout::BaseLayout(Scene& scene) :
 }
 
 // Methods
-void BaseLayout::add(std::shared_ptr<BaseWidget> widget) {
+void BaseLayout::add(std::shared_ptr<Widget> widget) {
     widget->_parent = this;
 
     m_widgets.push_back(widget);
 }
 
-void BaseLayout::add(std::shared_ptr<BaseWidget> widget, float x, float y) {
+void BaseLayout::add(std::shared_ptr<Widget> widget, float x, float y) {
     widget->_parent = this;
     widget->x = x;
     widget->y = y;

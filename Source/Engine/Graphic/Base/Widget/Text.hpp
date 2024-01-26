@@ -1,11 +1,12 @@
 #pragma once
 
-#include "BaseWidget.hpp"
+#include "Widget.hpp"
 
-struct TextWidget : public BaseWidget {
-    TextWidget(const std::string& text, float scale = 0.5f);
-    TextWidget(const std::vector<std::string>& texts, float scale = 0.5f);
+struct Text : public Widget {
+    Text(const std::string& text, float scale = 0.5f);
+    Text(const std::vector<std::string>& texts, float scale = 0.5f);
 
+    // Methods
     void draw(Scene&) override;
 
     // Accessors
