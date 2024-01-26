@@ -3,17 +3,18 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <queue>
 
 #include "Widget.hpp"
 #include "../Scene.hpp"
 #include "../../../Utils/Filter/CopyFilter.hpp"
 
 // -- Layout --
-struct BaseLayout : 
+struct Layout : 
     public Widget
 {
-    BaseLayout(Scene& scene);
-    virtual ~BaseLayout() = default;
+    Layout(Scene& scene);
+    virtual ~Layout() = default;
 
     // Methods
     void add(std::shared_ptr<Widget>);

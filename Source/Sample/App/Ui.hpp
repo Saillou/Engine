@@ -2,7 +2,8 @@
 
 #include <Engine/Events/Events.hpp>
 #include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Graphic/Base/Widget/BaseLayout.hpp>
+
+#include <Engine/Graphic/Base/Widget/Layout.hpp>
 #include <Engine/Graphic/Base/Widget/Button.hpp>
 #include <Engine/Graphic/Base/Widget/Text.hpp>
 
@@ -35,8 +36,8 @@ private:
     State m_state;
     State m_prev_state;
 
-    std::shared_ptr<BaseLayout> m_layout;
+    std::shared_ptr<Layout> m_layout;
     std::unordered_map<std::string, std::shared_ptr<Button>> m_buttons;
-    std::unordered_map<std::string, std::shared_ptr<Text>> m_texts;
+    std::unordered_map<std::string, std::shared_ptr<Text>>   m_texts;
     int m_count = 2;
 };

@@ -14,7 +14,7 @@
 struct Widget : 
     protected Event::Subscriber
 {
-    friend struct BaseLayout;
+    friend struct Layout;
 
     // Enums
     enum EventListened {
@@ -26,7 +26,7 @@ struct Widget :
 
     enum class Tag {
         None = 0, 
-        Button, Text, 
+        Layout, Button, Text, 
         Custom = 400
     };
 
@@ -43,25 +43,33 @@ struct Widget :
 
     // Access
     bool isMouseOver() const;
-    const BaseLayout* parent() const;
+    const Layout* parent() const;
 
     // Members
     float opacity = 1.0f;
-    float x = 0.0f;
-    float y = 0.0f;
+
+    Quad& surface();
+    float& x();
+    float& y();
+    float& w();
+    float& h();
+
+    float x() const;
+    float y() const;
+    float w() const;
+    float h() const;
 
 protected:
     Widget(Tag = Tag::None, int eventListened = EventListened::None);
 
     // Used to know draw reference
-    BaseLayout* _parent = nullptr;
+    Layout* _parent = nullptr;
 
     // Used for draw and mouse hitbox
-    std::vector<std::unique_ptr<Quad>> _surfaces;
+    std::unique_ptr<Quad> _surface;
 
     // Used for styling only
     const Tag   _tag;
-    std::string _className;
     std::string _idName;
 
 private:

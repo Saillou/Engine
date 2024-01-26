@@ -1,40 +1,35 @@
-#include "BaseLayout.hpp"
+#include "Layout.hpp"
 
 
-BaseLayout::BaseLayout(Scene& scene) :
+Layout::Layout(Scene& scene) :
     m_scene(scene),
     m_frame(Framebuffer::Multisample, scene.width(), scene.height()),
     m_copyFilter(scene.width(), scene.height())
 {
-    // All the screen
-    _surfaces.emplace_back(
-        std::make_unique<Quad>()
-    );
-
     // Events
-    _subscribe(&BaseLayout::_on_draw);
-    _subscribe([=](const SceneEvents::Resized & size) {
+    _subscribe(&Layout::_on_draw);
+    _subscribe([=](const SceneEvents::Resized& size) {
         m_frame.resize(size.width, size.height);
         m_copyFilter.resize(size.width, size.height);
     });
 }
 
 // Methods
-void BaseLayout::add(std::shared_ptr<Widget> widget) {
+void Layout::add(std::shared_ptr<Widget> widget) {
     widget->_parent = this;
 
     m_widgets.push_back(widget);
 }
 
-void BaseLayout::add(std::shared_ptr<Widget> widget, float x, float y) {
+void Layout::add(std::shared_ptr<Widget> widget, float x, float y) {
     widget->_parent = this;
-    widget->x = x;
-    widget->y = y;
+    widget->x() = x;
+    widget->y() = y;
 
     m_widgets.push_back(widget);
 }
 
-void BaseLayout::clean() {
+void Layout::clean() {
     for (auto& widget : m_widgets)
         widget->_parent = nullptr;
 
@@ -42,26 +37,30 @@ void BaseLayout::clean() {
 }
 
 // Access
-Scene& BaseLayout::scene() {
+Scene& Layout::scene() {
     return m_scene;
 }
 
-int BaseLayout::width() const {
-    return m_frame.width();
+int Layout::width() const {
+    return int(m_frame.width() * w());
 }
 
-int BaseLayout::height() const {
-    return m_frame.height();
+int Layout::height() const {
+    return int(m_frame.height() * h());
 }
 
-void BaseLayout::draw(Scene& scene) {
+void Layout::draw(Scene& scene) {
     for (auto& widget : m_widgets) {
         widget->draw(m_scene);
     }
 }
 
 // Callbacks
-void BaseLayout::_on_draw(const SceneEvents::RenderFinished&) {
+void Layout::_on_draw(const SceneEvents::RenderFinished&) {
+    // The parent will call the draw and we don't want it twice
+    if (_parent)
+        return;
+
     m_frame.bind();
     {
         m_frame.texture().bind();
@@ -69,9 +68,9 @@ void BaseLayout::_on_draw(const SceneEvents::RenderFinished&) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         Event::Emit(LayoutEvents::Draw(), this);
-
-        draw(m_scene);
-
+        {
+            draw(m_scene);
+        }
         m_frame.texture().unbind();
     }
     m_frame.unbind();

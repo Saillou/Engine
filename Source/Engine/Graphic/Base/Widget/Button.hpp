@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "Text.hpp"
 
 struct Button : public Widget {
     Button(const std::string& text);
@@ -9,12 +10,9 @@ struct Button : public Widget {
     void draw(Scene&) override;
 
     // Members
-    float& w();
-    float& h();
-
-    std::string text;
-
+    Text content;
     glm::vec4 backgroundColor;
     glm::vec4 foregroundColor;
 
+private:
 };

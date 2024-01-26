@@ -7,7 +7,7 @@ Ui::Ui(Scene& scene) :
     m_prev_state(Ui::State::Idle),
     m_state(Ui::State::Idle)
 {
-    m_layout = std::make_shared<BaseLayout>(scene);
+    m_layout = std::make_shared<Layout>(scene);
 
     // - Create gui elements -
     m_buttons["Start"]  = Widget::Create<Button>("Start");
@@ -22,18 +22,15 @@ Ui::Ui(Scene& scene) :
     m_texts["Pause"]    = Widget::Create<Text>("Game paused",           0.7f);
     m_texts["Option"]   = Widget::Create<Text>("Options",               0.7f);
     m_texts["Count"]    = Widget::Create<Text>(std::to_string(m_count), 0.7f);
-    m_texts["Ig1"]      = Widget::Create<Text>(std::vector<std::string>{
-        "Cam pos: ",
-        "Cam dir: " 
-    }, 0.4f);
-    m_texts["Ig2"]      = Widget::Create<Text>(std::vector<std::string>{
+    m_texts["Ig1"]      = Widget::Create<Text>(Text::Block{}, 0.4f);
+    m_texts["Ig2"]      = Widget::Create<Text>(Text::Block{
         "Press [space] to pause",
         "Press [R] to dis/enable filters",
         "Press [T] to dis/enable casters",
         "Press [Numpad+(0-5)] to change lights"
     }, 0.4f);
 
-    // Some overrides
+    // Adjust some sizes
     const float default_width = m_buttons["Option"]->w();
     m_buttons["Start"]->w()  = default_width;
     m_buttons["Close"]->w()  = default_width;
@@ -71,6 +68,7 @@ void Ui::setState(Ui::State state) {
     case State::Start:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+
         m_layout->add(m_buttons["Start"],  .45f,  .38f);
         m_layout->add(m_buttons["Option"], .45f,  .45f);
         m_layout->add(m_buttons["Close"],  .45f,  .55f);
@@ -80,6 +78,7 @@ void Ui::setState(Ui::State state) {
     case State::Option:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+
         m_layout->add(m_buttons["Apply"], .45f, .55f);
         m_layout->add(m_buttons["Moins"], .41f, .47f);
         m_layout->add(m_buttons["Plus"],  .52f, .47f);
@@ -90,6 +89,7 @@ void Ui::setState(Ui::State state) {
     case State::InGame:
         m_layout->opacity = 1.0f;
         m_layout->background_color = Widget::Transparent();
+
         m_layout->add(m_texts["Ig1"], .01f, .03f);
         m_layout->add(m_texts["Ig2"], .01f, .10f);
         break;
@@ -97,6 +97,7 @@ void Ui::setState(Ui::State state) {
     case State::Pause:
         m_layout->opacity = 0.90f;
         m_layout->background_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+
         m_layout->add(m_buttons["Resume"], .45f, .38f);
         m_layout->add(m_buttons["Option"], .45f, .45f);
         m_layout->add(m_buttons["Close"],  .45f, .70f);
