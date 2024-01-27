@@ -41,12 +41,12 @@ bool Widget::IsIn(const Widget& widget, int x, int y) {
 }
 
 void Widget::_applyStyle() {
-	if(_style.hint_x != Style::Unset()) x() = _style.hint_x;
-	if(_style.hint_y != Style::Unset()) y() = _style.hint_y;
-	if(_style.hint_w != Style::Unset()) w() = _style.hint_w;
-	if(_style.hint_h != Style::Unset()) h() = _style.hint_h;
+	if(_style.has_hint_x()) x() = _style.hint_x();
+	if(_style.has_hint_y()) y() = _style.hint_y();
+	if(_style.has_hint_w()) w() = _style.hint_w();
+	if(_style.has_hint_h()) h() = _style.hint_h();
 
-	_surface->material.diffuse_color = _style.background;
+	_surface->material.diffuse_color = _style.background();
 }
 
 // Callbacks

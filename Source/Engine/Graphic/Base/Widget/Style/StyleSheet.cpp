@@ -25,7 +25,8 @@ std::optional<Style> StyleSheet::getStyle(const Widget* pWidget)
 		styleTag = m_class_styles[pWidget->_className];
 	}
 	
-	return styleTag + styleClass + pWidget->style();
+	// Priorities: User defined (Widget::style()), then class, then tag.
+	return ((styleTag + styleClass) + pWidget->style());
 }
 
 void StyleSheet::applyStyle(Widget* widget) {

@@ -72,8 +72,8 @@ void Ui::setState(Ui::State state) {
 
     switch (m_state) {
     case State::Start:
-        m_layout->style().opacity = 0.90f;
-        m_layout->style().background = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+        m_layout->style().set_opacity(0.90f);
+        m_layout->style().set_background(glm::vec4(0.1f, 0.1f, 0.15f, 1.0f));
 
         m_layout->add(m_texts["Title"],    .45f, .31f);
 
@@ -83,8 +83,8 @@ void Ui::setState(Ui::State state) {
         break;
 
     case State::Option:
-        m_layout->style().opacity = 0.90f;
-        m_layout->style().background = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+        m_layout->style().set_opacity(0.90f);
+        m_layout->style().set_background(glm::vec4(0.1f, 0.1f, 0.15f, 1.0f));
 
         m_layout->add(m_texts["Option"],  .46f, .32f);
 
@@ -97,16 +97,16 @@ void Ui::setState(Ui::State state) {
         break;
 
     case State::InGame:
-        m_layout->style().opacity = 1.0f;
-        m_layout->style().background = Style::Transparent();
+        m_layout->style().set_opacity(1.0f);
+        m_layout->style().set_background(Style::Transparent());
 
         m_layout->add(m_texts["Ig1"], .01f, .03f);
         m_layout->add(m_texts["Ig2"], .01f, .10f);
         break;
 
     case State::Pause:
-        m_layout->style().opacity = 0.90f;
-        m_layout->style().background = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+        m_layout->style().set_opacity(0.90f);
+        m_layout->style().set_background(glm::vec4(0.1f, 0.1f, 0.15f, 1.0f));
 
         m_layout->add(m_buttons["Resume"], .45f, .38f);
         m_layout->add(m_buttons["Option"], .45f, .45f);
@@ -142,16 +142,6 @@ void Ui::_updateCount(int delta) {
         return;
 
     m_lights_count += delta;
-
-    const auto color_normal = glm::vec4(0.7f, 0.5f, 0.3f, 1.0f);
-    const auto color_danger = glm::vec4(1.0f, 0.3f, 0.3f, 1.0f);
-    const auto color_white  = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    const auto color_gray   = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-
-    m_buttons["Plus"]->style().background  = (m_lights_count >= 5) ? color_danger : color_normal;
-    m_buttons["Plus"]->style().foreground  = (m_lights_count >= 5) ? color_gray   : color_white;
-    m_buttons["Moins"]->style().background = (m_lights_count <= 0) ? color_danger : color_normal;
-    m_buttons["Moins"]->style().foreground = (m_lights_count <= 0) ? color_gray   : color_white;
 
     m_texts["Count"]->setText(std::to_string(m_lights_count));
 }

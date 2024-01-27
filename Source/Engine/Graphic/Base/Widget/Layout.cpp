@@ -68,7 +68,7 @@ void Layout::_on_draw(const SceneEvents::RenderFinished&) {
     m_frame.bind();
     {
         m_frame.texture().bind();
-        glClearColor(style().background.r, style().background.g, style().background.b, 1.0);
+        glClearColor(style().background().r, style().background().g, style().background().b, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         Event::Emit(LayoutEvents::Draw(), this);
@@ -80,6 +80,6 @@ void Layout::_on_draw(const SceneEvents::RenderFinished&) {
     m_frame.unbind();
 
     // Draw frame on screen
-    m_copyFilter.apply(m_scene.framebuffer_main(), m_frame, style().opacity, style().background);
+    m_copyFilter.apply(m_scene.framebuffer_main(), m_frame, style().opacity(), style().background());
     m_scene.drawFrame(m_copyFilter.result());
 }

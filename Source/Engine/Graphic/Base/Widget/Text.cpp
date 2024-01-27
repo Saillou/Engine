@@ -21,7 +21,7 @@ Text::Text(const Block& texts, float scale):
     _size(0,0)
 {
     if(scale > 0)
-        style().textSize = scale;
+        style().set_textSize(scale);
 
     _compute_size();
 }
@@ -32,10 +32,10 @@ void Text::draw(Scene& scene) {
     float y0 = y();
 
     for (const std::string& str : _texts) {
-        glm::vec2 size = TextEngine::Measure(str, style().textSize);
+        glm::vec2 size = TextEngine::Measure(str, style().textSize());
 
         scene.renderer().text(
-            str, scene.width() * x(), scene.height() * (1.0f - y0), style().textSize, style().foreground
+            str, scene.width() * x(), scene.height() * (1.0f - y0), style().textSize(), style().foreground()
         );
 
         y0 += size.y/ scene.height();
@@ -90,7 +90,7 @@ std::string& Text::operator[](size_t i) {
 
 void Text::_compute_size() {
     for (const std::string& str : _texts) {
-        glm::vec2 size = TextEngine::Measure(str, style().textSize);
+        glm::vec2 size = TextEngine::Measure(str, style().textSize());
         _size.x = glm::max(_size.x, size.x);
         _size.y += size.y;
     }

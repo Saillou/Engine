@@ -1,9 +1,16 @@
 #pragma once
 
+#include <optional>
 #include <glm/glm.hpp>
 
+// Note: If you wonder wtf with the optional and weird accessors:
+//  it's not really a troll, 
+// i'm trying to have a 'trace' (or 'clean/dirty') information before any modification happens on a member value
+// while also having a default value if asked;
+
 struct Style {
-    virtual ~Style() = default;
+    Style() = default;
+    static Style CreateBasic();
 
     // Categories
     enum class Tag {
@@ -13,39 +20,74 @@ struct Style {
     };
 
     // Constantes
-    static const float Unset();
     static const glm::vec4 Transparent();
 
     // Position 
-    enum class VerticalAlign {
+    enum class Align {
         Free = 0, 
-        Left, Right, Centered
+        Start, End, Centered
     };
-    enum class HorizontalAlign {
-        Free = 0, 
-        Top, Bottom, Centered
+    struct BoxAlign {
+        Align v;
+        Align h;
     };
 
     // Helper
-    Style operator+(const Style& styleNew);
+    Style operator+(const Style& styleNew) const;
+
+    // Accessors
+    float     hint_x()       const;
+    float     hint_y()       const;
+    float     hint_w()       const;
+    float     hint_h()       const;
+    float     opacity()      const;
+    float     textSize()     const;
+    glm::vec4 background()   const;
+    glm::vec4 foreground()   const;
+    glm::vec4 borders()      const;
+    BoxAlign  contentAlign() const;
+
+    bool has_hint_x()       const;
+    bool has_hint_y()       const;
+    bool has_hint_w()       const;
+    bool has_hint_h()       const;
+    bool has_opacity()      const;
+    bool has_textSize()     const;
+    bool has_background()   const;
+    bool has_foreground()   const;
+    bool has_borders()      const;
+    bool has_contentAlign() const;
+
+    void set_hint_x(float);
+    void set_hint_y(float);
+    void set_hint_w(float);
+    void set_hint_h(float);
+    void set_opacity(float);
+    void set_textSize(float);
+    void set_background(const glm::vec4&);
+    void set_foreground(const glm::vec4&);
+    void set_borders(const glm::vec4&);
+    void set_contentAlign(const BoxAlign&);
+
+private:
+    static Style _s_basic_style;
 
     // Members
-    float hint_x         = Unset();
-    float hint_y         = Unset();
-    float hint_w         = Unset();
-    float hint_h         = Unset();
+    std::optional<float> _hint_x;
+    std::optional<float> _hint_y;
+    std::optional<float> _hint_w;
+    std::optional<float> _hint_h;
+    std::optional<float> _opacity;
+    std::optional<float> _textSize;
+    std::optional<glm::vec4> _background;
+    std::optional<glm::vec4> _foreground;
+    std::optional<glm::vec4> _borders;
+    std::optional<BoxAlign>  _contentAlign;
 
-    float opacity        = 1.0f;
-    float textSize       = 0.5f;
-    glm::vec4 background = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    glm::vec4 foreground = glm::vec4(1.0f);
-    glm::vec4 borders    = Transparent();
-
-    struct Align {
-        VerticalAlign   v;   
-        HorizontalAlign h;
-    } contentAlign = { 
-        VerticalAlign::Free, 
-        HorizontalAlign::Free 
-    };
+    template<typename T>
+    static std::optional<T> _Select(std::optional<T> base, std::optional<T> ope) {
+        if (!ope)
+            return base;
+        return ope;
+    }
 };
