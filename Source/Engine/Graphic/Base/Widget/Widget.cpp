@@ -1,5 +1,5 @@
 #include "Widget.hpp"
-#include "Layout.hpp"
+#include "Layout/Layout.hpp"
 #include "../../../Utils/RayCaster.hpp"
 
 Widget::Widget(Style::Tag tag, int evt):

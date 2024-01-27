@@ -6,10 +6,10 @@
 #include <memory>
 #include <queue>
 
-#include "Style/StyleSheet.hpp"
-#include "Widget.hpp"
-#include "../Scene.hpp"
-#include "../../../Utils/Filter/CopyFilter.hpp"
+#include "../Style/StyleSheet.hpp"
+#include "../Widget.hpp"
+#include "../../Scene.hpp"
+#include "../../../../Utils/Filter/CopyFilter.hpp"
 
 struct Layout : 
     public Widget
@@ -19,8 +19,8 @@ struct Layout :
     virtual ~Layout() = default;
 
     // Methods
-    void add(std::shared_ptr<Widget>, const std::string& id = "");
-    void add(std::shared_ptr<Widget>, float x, float y, const std::string& id = "");
+    virtual void add(std::shared_ptr<Widget>, const std::string& id = "");
+    virtual void add(std::shared_ptr<Widget>, float x, float y, const std::string& id = "");
     void clean();
 
     template <typename WidgetTag>
