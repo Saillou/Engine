@@ -1,11 +1,7 @@
 #pragma once
 
 #include <Engine/Events/Events.hpp>
-#include <Engine/Graphic/Base/Scene.hpp>
-
-#include <Engine/Graphic/Base/Widget/Layout.hpp>
-#include <Engine/Graphic/Base/Widget/Button.hpp>
-#include <Engine/Graphic/Base/Widget/Text.hpp>
+#include <Engine/Graphic/Base/Widget/MainLayout.hpp>
 
 struct Ui : Event::Subscriber {
     Ui(Scene& scene);
@@ -32,13 +28,10 @@ protected:
 private:
     void _updateCount(int delta);
 
-    Scene& m_scene;
-
-    State m_state;
-    State m_prev_state;
-
-    std::shared_ptr<Layout> m_layout;
-    std::unordered_map<std::string, std::shared_ptr<Button>> m_buttons;
-    std::unordered_map<std::string, std::shared_ptr<Text>>   m_texts;
+    State m_state, 
+          m_prev_state;
     int m_lights_count = 2;
+
+    Scene& m_scene;
+    std::unordered_map<std::string, std::shared_ptr<Layout>> m_layouts;
 };

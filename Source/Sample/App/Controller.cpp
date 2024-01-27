@@ -49,7 +49,7 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         if (evt.action == InputAction::Pressed && evt.key == KeyCode::Escape) {
             m_ui.setState(Ui::State::InGame);
-            m_view.enable_interaction = false;
+            m_view.enable_interaction = m_enable_interaction;
         }
 
         return;
@@ -86,8 +86,8 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         switch (evt.key)
         {
-            case 'R': m_view.enable_filter      = !m_view.enable_filter;      break;
-            case 'T': m_view.enable_interaction = !m_view.enable_interaction; break;
+            case 'R': m_view.enable_filter      = (m_enable_filter       = !m_enable_filter);         break;
+            case 'T': m_view.enable_interaction = (m_enable_interaction  = !m_enable_interaction);    break;
 
             case KeyCode::Escape: m_ui.setState(Ui::State::Pause); break;
         }
@@ -108,6 +108,10 @@ void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
         case Ui::State::InGame:
             m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.getLightsCount());
             m_view.enable_interaction = m_enable_interaction;
+            break;
+
+        case Ui::State::Pause:
+            m_view.enable_interaction = false;
             break;
     }
 }

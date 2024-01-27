@@ -27,23 +27,23 @@ struct Widget :
     };
 
     // Constructors
+    template<class WidgetTag, typename ...Args>
+    static std::shared_ptr<WidgetTag> Create(Args&... args)
+    {
+        return std::make_shared<WidgetTag>(args...);
+    }
+
     template<const char* classname>
     struct WithClass
     {
         template<class WidgetTag, typename ...Args>
-        static std::shared_ptr<WidgetTag> Create(Args... args) {
+        static std::shared_ptr<WidgetTag> Create(Args&... args) {
             auto widget = std::make_shared<WidgetTag>(args...);
             widget->className = classname;
 
             return widget;
         }
     };
-
-    template<class WidgetTag, typename ...Args>
-    static std::shared_ptr<WidgetTag> Create(Args... args) 
-    {
-        return std::make_shared<WidgetTag>(args...);
-    }
 
     // Methods
     virtual ~Widget() = default;

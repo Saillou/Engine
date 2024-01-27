@@ -22,7 +22,7 @@ std::optional<Style> StyleSheet::getStyle(const Widget* pWidget)
 
 	Style styleClass;
 	if (m_class_styles.find(pWidget->className) != m_class_styles.cend()) {
-		styleTag = m_class_styles[pWidget->className];
+		styleClass = m_class_styles[pWidget->className];
 	}
 	
 	// Priorities: User defined (Widget::style()), then class, then tag.
