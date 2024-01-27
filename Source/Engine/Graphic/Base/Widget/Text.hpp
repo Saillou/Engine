@@ -3,10 +3,16 @@
 #include "Widget.hpp"
 
 struct Text : public Widget {
-    typedef std::vector<std::string> Block;
+    // Paragraph helper
+    struct Block : std::vector<std::string> {
+        Block() = default;
+        Block(const std::string& data);
+        Block(const char* data);
+        Block(const std::initializer_list<std::string>& data);
+    };
 
-    Text(const std::string& text, float scale = 0.5f);
-    Text(const Block& texts, float scale = 0.5f);
+    // Text widget
+    Text(const Block& texts, float textSize = -1.f);
 
     // Methods
     void draw(Scene&) override;
@@ -24,11 +30,7 @@ struct Text : public Widget {
     std::string& at(size_t i);
     std::string& operator[](size_t i);
 
-    // Member
-    glm::vec4 foregroundColor;
-
 private:
-    float _scale;
     Block _texts;
     glm::vec2 _size;
 

@@ -11,8 +11,6 @@ struct Button : public Widget {
 
     // Members
     Text content;
-    glm::vec4 backgroundColor;
-    glm::vec4 foregroundColor;
 
 private:
 };

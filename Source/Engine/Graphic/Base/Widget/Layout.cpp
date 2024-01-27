@@ -2,6 +2,7 @@
 
 
 Layout::Layout(Scene& scene) :
+    Widget(Style::Tag::Layout, EventListened::MouseMove | EventListened::MouseButton),
     m_scene(scene),
     m_frame(Framebuffer::Multisample, scene.width(), scene.height()),
     m_copyFilter(scene.width(), scene.height())
@@ -15,12 +16,6 @@ Layout::Layout(Scene& scene) :
 }
 
 // Methods
-void Layout::add(std::shared_ptr<Widget> widget) {
-    widget->_parent = this;
-
-    m_widgets.push_back(widget);
-}
-
 void Layout::add(std::shared_ptr<Widget> widget, float x, float y) {
     widget->_parent = this;
     widget->x() = x;
@@ -36,6 +31,7 @@ void Layout::clean() {
     m_widgets = {};
 }
 
+
 // Access
 Scene& Layout::scene() {
     return m_scene;
@@ -49,8 +45,13 @@ int Layout::height() const {
     return int(m_frame.height() * h());
 }
 
+StyleSheet& Layout::styleSheet() {
+    return m_stylesheet;
+}
+
 void Layout::draw(Scene& scene) {
     for (auto& widget : m_widgets) {
+        m_stylesheet.applyStyle(widget.get());
         widget->draw(m_scene);
     }
 }
@@ -61,10 +62,13 @@ void Layout::_on_draw(const SceneEvents::RenderFinished&) {
     if (_parent)
         return;
 
+    m_stylesheet.applyStyle(this);
+
+    // Draw on internal framebuffer
     m_frame.bind();
     {
         m_frame.texture().bind();
-        glClearColor(background_color.r, background_color.g, background_color.b, 1.0);
+        glClearColor(style().background.r, style().background.g, style().background.b, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         Event::Emit(LayoutEvents::Draw(), this);
@@ -75,7 +79,7 @@ void Layout::_on_draw(const SceneEvents::RenderFinished&) {
     }
     m_frame.unbind();
 
-    // Draw frame
-    m_copyFilter.apply(m_scene.framebuffer_main(), m_frame, opacity, background_color);
+    // Draw frame on screen
+    m_copyFilter.apply(m_scene.framebuffer_main(), m_frame, style().opacity, style().background);
     m_scene.drawFrame(m_copyFilter.result());
 }

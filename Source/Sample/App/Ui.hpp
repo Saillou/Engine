@@ -24,6 +24,7 @@ struct Ui : Event::Subscriber {
 
     State state() const;
     bool wantQuit = false;
+    int getLightsCount() const;
 
 protected:
     void draw(const LayoutEvents::Draw& msg);
@@ -39,5 +40,5 @@ private:
     std::shared_ptr<Layout> m_layout;
     std::unordered_map<std::string, std::shared_ptr<Button>> m_buttons;
     std::unordered_map<std::string, std::shared_ptr<Text>>   m_texts;
-    int m_count = 2;
+    int m_lights_count = 2;
 };

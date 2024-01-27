@@ -27,7 +27,7 @@ Controller::Controller(Ui& ui, View& view):
         Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 2);
+    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.getLightsCount());
 
     // States
     m_view.enable_filter      = m_enable_filter;
@@ -92,25 +92,6 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             case KeyCode::Escape: m_ui.setState(Ui::State::Pause); break;
         }
     }
-
-    // Lights
-    if (evt.action == InputAction::Pressed)
-    {
-        size_t nLightsEnabled = -1;
-        switch (evt.key)
-        {
-            case Numpad_0 + 0: nLightsEnabled = 0; break;
-            case Numpad_0 + 1: nLightsEnabled = 1; break;
-            case Numpad_0 + 2: nLightsEnabled = 2; break;
-            case Numpad_0 + 3: nLightsEnabled = 3; break;
-            case Numpad_0 + 4: nLightsEnabled = 4; break;
-            case Numpad_0 + 5: nLightsEnabled = 5; break;
-        }
-
-        if (nLightsEnabled != -1) {
-            m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + nLightsEnabled);
-        }
-    }
 }
 
 void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
@@ -125,6 +106,7 @@ void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
     switch (m_ui.state()) 
     {
         case Ui::State::InGame:
+            m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.getLightsCount());
             m_view.enable_interaction = m_enable_interaction;
             break;
     }

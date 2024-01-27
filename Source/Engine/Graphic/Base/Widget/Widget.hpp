@@ -4,7 +4,8 @@
 #include <vector>
 #include <memory>
 
-#include "WidgetEvents.hpp"
+#include "Events/WidgetEvents.hpp"
+#include "Style/Style.hpp"
 #include "../Scene.hpp"
 #include "../../Wrapper/Framebuffer.hpp"
 #include "../../../Events/CommonEvents.hpp"
@@ -15,6 +16,7 @@ struct Widget :
     protected Event::Subscriber
 {
     friend struct Layout;
+    friend struct StyleSheet;
 
     // Enums
     enum EventListened {
@@ -22,12 +24,6 @@ struct Widget :
         MouseMove       = (1 << 0),
         MouseButton     = (1 << 1),
         KeyboardButton  = (1 << 2)
-    };
-
-    enum class Tag {
-        None = 0, 
-        Layout, Button, Text, 
-        Custom = 400
     };
 
     // Methods
@@ -39,15 +35,15 @@ struct Widget :
 
     // Helper
     static bool IsIn(const Widget&, int x, int y);
-    static glm::vec4 Transparent();
 
     // Access
     bool isMouseOver() const;
     const Layout* parent() const;
 
-    // Members
-    float opacity = 1.0f;
+    Style& style();
+    const Style& style() const;
 
+    // Members
     Quad& surface();
     float& x();
     float& y();
@@ -60,7 +56,7 @@ struct Widget :
     float h() const;
 
 protected:
-    Widget(Tag = Tag::None, int eventListened = EventListened::None);
+    Widget(Style::Tag = Style::Tag::None, int eventListened = EventListened::None);
 
     // Used to know draw reference
     Layout* _parent = nullptr;
@@ -69,8 +65,11 @@ protected:
     std::unique_ptr<Quad> _surface;
 
     // Used for styling only
-    const Tag   _tag;
-    std::string _idName;
+    void _applyStyle();
+
+    Style       _style;
+    Style::Tag  _tag;
+    std::string _className;
 
 private:
     void _on_mouse_button(const CommonEvents::MouseButton& evt);
