@@ -13,7 +13,7 @@ std::optional<Style> StyleSheet::getStyle(const Widget* pWidget)
 		return {};
 
 	const auto& tag		  = pWidget->_tag;
-	const auto& className = pWidget->_className;
+	const auto& className = pWidget->className;
 
 	Style styleTag;
 	if (m_tag_styles.find((int)pWidget->_tag) != m_tag_styles.cend()) {
@@ -21,8 +21,8 @@ std::optional<Style> StyleSheet::getStyle(const Widget* pWidget)
 	}
 
 	Style styleClass;
-	if (m_class_styles.find(pWidget->_className) != m_class_styles.cend()) {
-		styleTag = m_class_styles[pWidget->_className];
+	if (m_class_styles.find(pWidget->className) != m_class_styles.cend()) {
+		styleTag = m_class_styles[pWidget->className];
 	}
 	
 	// Priorities: User defined (Widget::style()), then class, then tag.
@@ -39,10 +39,12 @@ void StyleSheet::applyStyle(Widget* widget) {
 		widget->style() = widget_style.value();
 }
 
-void StyleSheet::addRule(int tag, const Style& style) {
-	m_tag_styles[tag] = style;
+StyleSheet& StyleSheet::addRule(Style::Tag tag, const Style& style) {
+	m_tag_styles[(int)tag] = style;
+	return *this;
 }
 
-void StyleSheet::addRule(const std::string& className, const Style& style) {
+StyleSheet& StyleSheet::addRule(const std::string& className, const Style& style) {
 	m_class_styles[className] = style;
+	return *this;
 }

@@ -66,13 +66,13 @@ bool Style::has_foreground()   const { return _foreground  .has_value(); }
 bool Style::has_borders()      const { return _borders     .has_value(); }
 bool Style::has_contentAlign() const { return _contentAlign.has_value(); }
 
-void Style::set_hint_x(float v)                 { _hint_x = v;       }
-void Style::set_hint_y(float v)                 { _hint_y = v;       }
-void Style::set_hint_w(float v)                 { _hint_x = v;       }
-void Style::set_hint_h(float v)                 { _hint_h = v;       }
-void Style::set_opacity(float v)                { _opacity = v;      }
-void Style::set_textSize(float v)               { _textSize = v;     }
-void Style::set_background(const glm::vec4& v)  { _background = v;   }
-void Style::set_foreground(const glm::vec4& v)  { _foreground = v;   }
-void Style::set_borders(const glm::vec4& v)     { _borders = v;      }
-void Style::set_contentAlign(const BoxAlign& v) { _contentAlign = v; }
+Style& Style::set_hint_x(float v)                 { _hint_x = v;       return *this; }
+Style& Style::set_hint_y(float v)                 { _hint_y = v;       return *this; }
+Style& Style::set_hint_w(float v)                 { _hint_w = v;       return *this; }
+Style& Style::set_hint_h(float v)                 { _hint_h = v;       return *this; }
+Style& Style::set_opacity(float v)                { _opacity = v;      return *this; }
+Style& Style::set_textSize(float v)               { _textSize = v;     return *this; }
+Style& Style::set_background(const glm::vec4& v)  { _background = v;   return *this; }
+Style& Style::set_foreground(const glm::vec4& v)  { _foreground = v;   return *this; }
+Style& Style::set_borders(const glm::vec4& v)     { _borders = v;      return *this; }
+Style& Style::set_contentAlign(const BoxAlign& v) { _contentAlign = v; return *this; }

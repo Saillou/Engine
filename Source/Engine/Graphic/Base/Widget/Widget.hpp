@@ -26,10 +26,26 @@ struct Widget :
         KeyboardButton  = (1 << 2)
     };
 
-    // Methods
-    template <class WidgetTag, typename ...Args>
-        static std::shared_ptr<WidgetTag> Create(Args... args);
+    // Constructors
+    template<const char* classname>
+    struct WithClass
+    {
+        template<class WidgetTag, typename ...Args>
+        static std::shared_ptr<WidgetTag> Create(Args... args) {
+            auto widget = std::make_shared<WidgetTag>(args...);
+            widget->className = classname;
 
+            return widget;
+        }
+    };
+
+    template<class WidgetTag, typename ...Args>
+    static std::shared_ptr<WidgetTag> Create(Args... args) 
+    {
+        return std::make_shared<WidgetTag>(args...);
+    }
+
+    // Methods
     virtual ~Widget() = default;
     virtual void draw(Scene&) = 0;
 
@@ -55,6 +71,8 @@ struct Widget :
     float w() const;
     float h() const;
 
+    std::string className = "";
+
 protected:
     Widget(Style::Tag = Style::Tag::None, int eventListened = EventListened::None);
 
@@ -69,7 +87,6 @@ protected:
 
     Style       _style;
     Style::Tag  _tag;
-    std::string _className;
 
 private:
     void _on_mouse_button(const CommonEvents::MouseButton& evt);
@@ -77,12 +94,3 @@ private:
 
     bool _mouse_over = false;
 };
-
-// -- Template --
-template<class WidgetTag, typename ...Args>
-inline std::shared_ptr<WidgetTag> Widget::Create(Args ...args)
-{
-    static_assert(std::is_base_of<Widget, WidgetTag>(), "Can't create non inherited BaseWidget.");
-
-    return std::make_shared<WidgetTag>(args...);
-}

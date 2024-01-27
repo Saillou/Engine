@@ -5,8 +5,11 @@
 
 // Note: If you wonder wtf with the optional and weird accessors:
 //  it's not really a troll, 
-// i'm trying to have a 'trace' (or 'clean/dirty') information before any modification happens on a member value
-// while also having a default value if asked;
+// i'm trying to:
+//  - have a 'trace' (or 'clean/dirty') information before any modification happens on a member value..
+//  - ..while also having a default value if asked..
+//  - ..and chaining the set.
+
 
 struct Style {
     Style() = default;
@@ -58,16 +61,16 @@ struct Style {
     bool has_borders()      const;
     bool has_contentAlign() const;
 
-    void set_hint_x(float);
-    void set_hint_y(float);
-    void set_hint_w(float);
-    void set_hint_h(float);
-    void set_opacity(float);
-    void set_textSize(float);
-    void set_background(const glm::vec4&);
-    void set_foreground(const glm::vec4&);
-    void set_borders(const glm::vec4&);
-    void set_contentAlign(const BoxAlign&);
+    Style& set_hint_x(float);
+    Style& set_hint_y(float);
+    Style& set_hint_w(float);
+    Style& set_hint_h(float);
+    Style& set_opacity(float);
+    Style& set_textSize(float);
+    Style& set_background(const glm::vec4&);
+    Style& set_foreground(const glm::vec4&);
+    Style& set_borders(const glm::vec4&);
+    Style& set_contentAlign(const BoxAlign&);
 
 private:
     static Style _s_basic_style;

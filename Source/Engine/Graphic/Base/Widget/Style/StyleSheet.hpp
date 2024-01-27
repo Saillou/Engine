@@ -15,8 +15,8 @@ struct StyleSheet
     std::optional<Style> getStyle(const Widget*);
     void applyStyle(Widget*);
 
-    void addRule(int, const Style& style);
-    void addRule(const std::string&, const Style& style);
+    StyleSheet& addRule(Style::Tag, const Style& style);
+    StyleSheet& addRule(const std::string&, const Style& style);
 
 protected:
     std::unordered_map<std::string, Style> m_class_styles;
