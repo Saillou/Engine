@@ -33,7 +33,7 @@ Ui::Ui(Scene& scene) :
     _subscribe(btns.at("Close"),  [=](const CommonEvents::MouseButton&) { m_wantQuit = true;       });
 
     // Let's start
-    setState(Ui::State::Option);
+    setState(Ui::State::Start);
 }
 
 void Ui::setState(Ui::State state) {
@@ -111,6 +111,9 @@ StyleSheet Ui::_create_style() const
         .addRule(Style::Tag::Button, Style{ }
             .set_background(glm::vec4(0.15f, 0.15f, 0.17f, 1.0f))
             .set_foreground(glm::vec4(0.66f, 0.66f, 0.70f, 1.0f))
+            .set_contentAlign({ 
+                Style::Align::Centered, 
+                Style::Align::Centered })
         )
         .addRule(Style::Tag::Text, Style{ }
             .set_foreground(glm::vec4(0.90f, 0.90f, 0.93f, 1.0f))
@@ -123,7 +126,7 @@ StyleSheet Ui::_create_style() const
             .set_hint_h(0.035f)
         )
         .addRule(Title, Style{ }
-            .set_textSize(0.8f)
+            .set_textSize(1.0f)
         )
     ;
 }

@@ -11,22 +11,16 @@ void HorizontalLayout::draw(Scene& scene) {
     float w0 = _parent ? _parent->w() : 1.0f;
     float h0 = _parent ? _parent->h() : 1.0f;
 
-    printf("-- horizontal layout draw -- \n");
-    printf("w0:%lf h0:%lf \n", w0, h0);
-    printf("w:%lf h:%lf \n", w(), h());
-
     // Position
     float xi = x() + (w0 - w()) / 2.0f;
 
     for (auto& widget : m_widgets) {
-        widget->x() = x() + xi;
+        widget->x() = xi;
         widget->y() = y() + (h0 - widget->h()) / 2.0f;
         widget->draw(m_scene);
 
         xi += widget->w();
-        printf(" - x:%lf y:%lf \n", widget->x(), widget->y());
     }
-    printf("---- \n");
 }
 
 glm::vec2 HorizontalLayout::_compute_hull_size() {

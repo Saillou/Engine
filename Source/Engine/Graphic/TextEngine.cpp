@@ -57,7 +57,7 @@ TextEngine::TextEngine():
             .add_var("uniform", "mat4", "projection")
             .add_func("void", "main", "", R"_main_(
                 TexCoords   = vertex.zw;
-                gl_Position = projection * vec4(vertex.xy, 0.5f, 1.0);
+                gl_Position = projection * vec4(vertex.xy, 0.01f, 1.0);
             )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
@@ -67,7 +67,7 @@ TextEngine::TextEngine():
             .add_var("uniform", "vec4", "textColor")
             .add_func("void", "main", "", R"_main_(
                 vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
-                FragColor    = vec4(textColor) * sampled;
+                FragColor    = vec4(textColor) * sampled * 1 +  0 * vec4(1,0,0,1);
             )_main_")
         )
         .link();
@@ -78,7 +78,7 @@ TextEngine::TextEngine():
 
     FT_Face face;
     FT_New_Face(ft, "C:/Windows/Fonts/Calibri.ttf", 0, &face);
-    FT_Set_Pixel_Sizes(face, 0, 48);
+    FT_Set_Pixel_Sizes(face, 0, (unsigned)NOMINAL_HEIGHT);
 
     // load first 128 characters of ASCII set and put them in gl_textures
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -98,9 +98,10 @@ TextEngine::TextEngine():
                 GL_UNSIGNED_BYTE,
                 face->glyph->bitmap.buffer
             ),
-            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            glm::ivec2(face->glyph->bitmap_left,  face->glyph->bitmap_top),
-            (unsigned int)face->glyph->advance.x
+            glm::ivec2(face->glyph->bitmap.width,  face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left,   face->glyph->bitmap_top),
+            glm::ivec2(face->glyph->advance.x,     face->glyph->advance.y),
+            glm::ivec2(face->glyph->metrics.width, face->glyph->metrics.height + face->glyph->metrics.vertBearingY)
         });
     }
     Texture::unbind(GL_TEXTURE_2D);
@@ -122,13 +123,13 @@ TextEngine::TextEngine():
 
 glm::vec2 TextEngine::_measure(const std::string& text, float scale)
 {
-    glm::vec2 size = { 0.f, 0.f };
+    glm::vec2 size = { 0.f, NOMINAL_HEIGHT * scale };
 
     // iterate through all characters
     for (const char c : text) {
         const _Character& ch = m_char_map.at(c);
-        size.x += (ch.advance >> 6) * scale;
-        size.y = std::max(size.y, ch.size.y* scale);
+        size.x += (ch.advance.x >> 6) * scale;
+        //size.y = std::max(size.y, ch.metrics.y * scale);
     }
 
     return size;
@@ -146,8 +147,8 @@ void TextEngine:: _render(const std::string& text, float x, float y, float scale
     for (const char c : text) {
         const _Character& ch = m_char_map.at(c);
 
-        float xpos = x + ch.bearing.x * scale;
-        float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+        float xpos = x + (ch.bearing.x) * scale;
+        float ypos = y + (ch.bearing.y - ch.size.y) * scale - NOMINAL_HEIGHT * scale / 2.0f;
 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
@@ -171,7 +172,7 @@ void TextEngine:: _render(const std::string& text, float x, float y, float scale
         // render quad
         glDrawArrays(GL_TRIANGLES, 0, 6);
         // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+        x += (ch.advance.x >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
     }
     m_vao.unbind();
     Texture::unbind(GL_TEXTURE_2D);

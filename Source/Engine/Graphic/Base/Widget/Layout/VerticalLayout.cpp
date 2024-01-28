@@ -11,10 +11,6 @@ void VerticalLayout::draw(Scene& scene) {
     float w0 = _parent ? _parent->w() : 1.0f;
     float h0 = _parent ? _parent->h() : 1.0f;
 
-    printf("-- vertical layout draw -- \n");
-    printf("w0:%lf h0:%lf \n", w0, h0);
-    printf("w:%lf h:%lf \n", w(), h());
-
     // Position
     float yi = y() + (h0 - h()) / 2.0f;
 
@@ -24,9 +20,7 @@ void VerticalLayout::draw(Scene& scene) {
         widget->draw(m_scene);
 
         yi += widget->h();
-        printf(" - x:%lf y:%lf \n", widget->x(), widget->y());
     }
-    printf("---- \n");
 }
 
 glm::vec2 VerticalLayout::_compute_hull_size() {

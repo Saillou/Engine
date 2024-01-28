@@ -28,6 +28,8 @@ struct Text : public Widget {
     std::string& at(size_t i);
     std::string& operator[](size_t i);
 
+    float padding = 0.02f; // todo:  be put in style
+
 private:
     Block _texts;
     glm::vec2 _size;

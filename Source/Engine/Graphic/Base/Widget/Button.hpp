@@ -12,5 +12,5 @@ struct Button : public Widget {
     // Members
     Text content;
 
-private:
+    float padding = 0.05f; // todo:  be put in style
 };

@@ -20,15 +20,18 @@ struct TextEngine {
     static glm::vec2 Measure(const std::string& text, float scale);
     static glm::vec2 MeasureRel(const std::string& text, float scale);
 
+    static const int NOMINAL_HEIGHT = 64;
+
 private:
     static TextEngine& _getInstance();
 
     // Sub
     struct _Character {
         std::unique_ptr<Texture> pTexture;
-        glm::ivec2   size;      // size of glyph
-        glm::ivec2   bearing;   // offset from baseline to left/top of glyph
-        unsigned int advance;   // horizontal offset to advance to next glyph
+        glm::ivec2 size;    // size of glyph
+        glm::ivec2 bearing; // offset from baseline to left/top of glyph
+        glm::ivec2 advance; // offset to advance to next glyph
+        glm::ivec2 metrics;
     };
 
     // Instance
@@ -41,6 +44,7 @@ private:
     Buffer m_vbo;
     Shader m_text_shader;
     std::unordered_map<GLchar, _Character> m_char_map;
+
     int m_x = 0;
     int m_y = 0;
     int m_w = 1;

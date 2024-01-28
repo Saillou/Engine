@@ -20,6 +20,8 @@ Text::Text(const Block& texts, float scale):
     _texts(texts),
     _size(0,0)
 {
+    style().set_background(glm::vec4(0));
+
     if(scale > 0)
         style().set_textSize(scale);
 
@@ -29,8 +31,22 @@ Text::Text(const Block& texts, float scale):
 void Text::draw(Scene& scene) {
     Widget::_applyStyle();
 
-    float y0 = y();
+    // Background
+    if (style().background().a > 0) 
+    {
+        _surface->material.diffuse_color = style().background();
+        scene.renderer().quad(*_surface);
+    }
 
+    // Centered
+    if (style().contentAlign().h == Style::Align::Centered)
+        x() += (w() - _size.x) / 2.0f;
+
+    if (style().contentAlign().v == Style::Align::Centered)
+        y() += (h() - _size.y) / 2.0f;
+
+    // Draw text
+    float y0 = y();
     for (const std::string& str : _texts) {
         glm::vec2 size = TextEngine::Measure(str, style().textSize());
 
@@ -38,7 +54,7 @@ void Text::draw(Scene& scene) {
             str, scene.width() * x(), scene.height() * (1.0f - y0), style().textSize(), style().foreground()
         );
 
-        y0 += size.y/ scene.height();
+        y0 += size.y / scene.height();
     }
 }
 
