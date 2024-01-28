@@ -5,12 +5,13 @@
 struct HorizontalLayout : 
     public Layout
 {
-    HorizontalLayout(Scene& scene);
+    HorizontalLayout(Scene& scene, Layout::ContainerType extType = Layout::ContainerType::Free);
     virtual ~HorizontalLayout() = default;
 
-    // Methods
-    void add(std::shared_ptr<Widget>, const std::string& id = "") override;
+protected:
+    void draw(Scene&) override;
+    Layout::ContainerType m_extType;
 
 private:
-
+    void _computeWidgetPose();
 };

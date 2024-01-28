@@ -1,14 +1,17 @@
 #include "VerticalLayout.hpp"
 
-VerticalLayout::VerticalLayout(Scene& scene) :
-    Layout(scene)
+VerticalLayout::VerticalLayout(Scene& scene, Layout::ContainerType extType) :
+    Layout(scene),
+    m_extType(extType)
 {
     // ...
 }
 
-void VerticalLayout::add(std::shared_ptr<Widget> widget, const std::string& id) {
-    widget->x() = 0.0f;
-    widget->y() = 0.0f;
+void VerticalLayout::draw(Scene& scene) {
+    _computeWidgetPose();
+    Layout::draw(scene);
+}
 
-    Layout::add(widget, id);
+void VerticalLayout::_computeWidgetPose() {
+    // good luck
 }

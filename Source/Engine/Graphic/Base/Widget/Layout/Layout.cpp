@@ -9,12 +9,16 @@ Layout::Layout(Scene& scene) :
 
 // Methods
 void Layout::add(std::shared_ptr<Widget> widget, const std::string& id) {
-    if (m_widgets_id.find(id) != m_widgets_id.cend())
-        std::cerr << "[Warning] Overriding currend widget id" << std::endl;
-    
     widget->_parent = this;
 
     m_widgets.push_back(widget);
+
+    if (id.empty())
+        return;
+
+    if (m_widgets_id.find(id) != m_widgets_id.cend())
+        std::cerr << "[Warning] Overriding currend widget id" << std::endl;
+    
     m_widgets_id[id] = widget;
 }
 void Layout::add(std::shared_ptr<Widget> widget, float x, float y, const std::string& id) {

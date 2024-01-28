@@ -27,7 +27,7 @@ Controller::Controller(Ui& ui, View& view):
         Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.getLightsCount());
+    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
 
     // States
     m_view.enable_filter      = m_enable_filter;
@@ -106,7 +106,7 @@ void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
     switch (m_ui.state()) 
     {
         case Ui::State::InGame:
-            m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.getLightsCount());
+            m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
             m_view.enable_interaction = m_enable_interaction;
             break;
 

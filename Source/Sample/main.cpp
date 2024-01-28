@@ -15,7 +15,7 @@ int main() {
     // Loop
     do {
         // Check stuff
-        if (ui.wantQuit)
+        if (ui.wantQuit())
             window.close();
 
         // States, Physics ..

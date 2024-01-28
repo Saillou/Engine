@@ -14,6 +14,10 @@
 struct Layout : 
     public Widget
 {
+    enum ContainerType {
+        Free, Extend, Fit
+    };
+
     // -- Layout --
     Layout(Scene& scene);
     virtual ~Layout() = default;
@@ -32,7 +36,6 @@ struct Layout :
 
     int width() const;
     int height() const;
-
 
 protected:
     virtual void draw(Scene&) override;
