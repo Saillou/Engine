@@ -15,6 +15,21 @@ Widget::Widget(Style::Tag tag, int evt):
 	_surface = std::make_unique<Quad>();
 }
 
+void Widget::_setParent(Widget* child, Layout* parent) {
+	if (!child)
+		return;
+
+	child->_parent = parent;
+}
+
+glm::vec2 Widget::getTL() const {
+	return glm::vec2(x(), y());
+}
+
+glm::vec2 Widget::getBR() const {
+	return glm::vec2(x() + w(), y() + h());
+}
+
 // Helpers
 bool Widget::isMouseOver() const {
 	return _mouse_over;
@@ -24,17 +39,24 @@ const Layout* Widget::parent() const {
 	return _parent;
 }
 
+Style::Tag Widget::tag() const {
+	return _tag;
+}
+
 bool Widget::IsIn(const Widget& widget, int x, int y) {
 	if (!widget.parent())
 		return false;
 
-	if (widget.parent()->width() <= 0 || widget.parent()->height() <= 0)
+	const int W0 = widget.parent()->OriginalWidth();
+	const int H0 = widget.parent()->OriginalHeight();
+
+	if (W0 <= 0 || H0 <= 0)
 		return false;
 
 	// Get relative mouse pose
 	glm::vec2 mouse_rel = {
-		float(x) / widget.parent()->width(),
-		float(y) / widget.parent()->height()
+		float(x) / W0,
+		float(y) / H0
 	};
 
 	return RayCaster::PointInRect(mouse_rel, *widget._surface);

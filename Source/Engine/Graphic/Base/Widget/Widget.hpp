@@ -11,11 +11,12 @@
 #include "../../../Events/CommonEvents.hpp"
 #include "../../../Utils/Timer.hpp"
 
+struct Layout;
+
 // -- Widget --
 struct Widget : 
     protected Event::Subscriber
 {
-    friend struct Layout;
     friend struct StyleSheet;
 
     // Enums
@@ -56,6 +57,7 @@ struct Widget :
     bool isMouseOver() const;
     const Layout* parent() const;
 
+    Style::Tag tag() const;
     Style& style();
     const Style& style() const;
 
@@ -71,6 +73,9 @@ struct Widget :
     float w() const;
     float h() const;
 
+   glm::vec2 getTL() const;
+   glm::vec2 getBR() const;
+
     std::string className = "";
 
 protected:
@@ -78,6 +83,7 @@ protected:
 
     // Used to know draw reference
     Layout* _parent = nullptr;
+    static void _setParent(Widget* child, Layout* parent);
 
     // Used for draw and mouse hitbox
     std::unique_ptr<Quad> _surface;
@@ -85,8 +91,8 @@ protected:
     // Used for styling only
     void _applyStyle();
 
-    Style       _style;
-    Style::Tag  _tag;
+    Style      _style;
+    Style::Tag _tag;
 
 private:
     void _on_mouse_button(const CommonEvents::MouseButton& evt);

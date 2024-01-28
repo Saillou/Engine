@@ -54,16 +54,6 @@ const glm::vec2& Text::getSize() const {
     return _size;
 }
 
-const glm::vec2 Text::getSizeRel() const {
-    int x, y, w, h;
-    TextEngine::GetViewport(x, y, w, h);
-
-    if (h == 0 || w == 0)
-        return { 0,0 };
-
-    return { _size.x / (float)w , _size.y /(float)h };
-}
-
 void Text::setText(const std::string& txt) {
     _texts[0] = txt;
     _compute_size();
@@ -90,7 +80,7 @@ std::string& Text::operator[](size_t i) {
 
 void Text::_compute_size() {
     for (const std::string& str : _texts) {
-        glm::vec2 size = TextEngine::Measure(str, style().textSize());
+        glm::vec2 size = TextEngine::MeasureRel(str, style().textSize());
         _size.x = glm::max(_size.x, size.x);
         _size.y += size.y;
     }
@@ -98,5 +88,3 @@ void Text::_compute_size() {
     w() = _size.x;
     h() = _size.y;
 }
-
-

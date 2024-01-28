@@ -3,9 +3,9 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include <Engine/Events/Events.hpp>
+#include <Engine/Graphic/Base/SceneFrame.hpp>
 #include <Engine/Graphic/Base/Widget/Text.hpp>
 #include <Engine/Graphic/Base/Widget/Button.hpp>
-#include <Engine/Graphic/Base/Widget/Layout/MainLayout.hpp>
 #include <Engine/Graphic/Base/Widget/Layout/VerticalLayout.hpp>
 #include <Engine/Graphic/Base/Widget/Layout/HorizontalLayout.hpp>
 
@@ -40,6 +40,7 @@ private:
     bool  m_wantQuit = false;
 
     Scene& m_scene;
+    SceneFrame m_main_frame;
     std::unordered_map<std::string, std::shared_ptr<Layout>> m_layouts;
 
     // - Helpers -
@@ -51,4 +52,5 @@ private:
         std::unordered_map<std::string, std::shared_ptr<Button>>& btns,
         std::unordered_map<std::string, std::shared_ptr<Text>>& txts
     );
+    StyleSheet _create_style() const;
 };

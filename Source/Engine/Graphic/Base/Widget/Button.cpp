@@ -9,7 +9,7 @@ Button::Button(const std::string& text_):
     style().contentAlign() = {Style::Align::Centered, Style::Align::Centered};
 
     // Dimensions
-    glm::vec2 sizeMini = content.getSizeRel();
+    glm::vec2 sizeMini = content.getSize();
     float padding = 0.05f;
 
     w() = sizeMini.x + padding;
@@ -20,19 +20,18 @@ void Button::draw(Scene& scene) {
     // Get style
     Widget::_applyStyle();
 
-    _surface->material.diffuse_color =  isMouseOver() ? style().foreground() : style().background();
-    content.style().set_foreground(     isMouseOver() ? style().background() : style().foreground());
+    _surface->material.diffuse_color = isMouseOver() ? style().foreground() : style().background();
+    content.style().set_foreground(    isMouseOver() ? style().background() : style().foreground());
     
     // Centered text
-    glm::vec2 s = content.getSizeRel();
     content.x() = x();
     content.y() = y();
 
     if(style().contentAlign().h == Style::Align::Centered)
-        content.x() += (w() - s.x) / 2.0f;
+        content.x() += (w() - content.w()) / 2.0f;
     
     if (style().contentAlign().v == Style::Align::Centered)
-        content.y() += (h() + s.y) / 2.0f;
+        content.y() += (h() + content.h()) / 2.0f;
 
     // Draw
     scene.renderer().quad(*_surface);

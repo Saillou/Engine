@@ -14,6 +14,8 @@
 struct Layout : 
     public Widget
 {
+    friend struct SceneFrame;
+
     enum ContainerType {
         Free, Extend, Fit
     };
@@ -23,8 +25,8 @@ struct Layout :
     virtual ~Layout() = default;
 
     // Methods
-    virtual void add(std::shared_ptr<Widget>, const std::string& id = "");
-    virtual void add(std::shared_ptr<Widget>, float x, float y, const std::string& id = "");
+    void add(std::shared_ptr<Widget>, const std::string& id = "");
+    void add(std::shared_ptr<Widget>, float x, float y, const std::string& id = "");
     void clean();
 
     template <typename WidgetTag>
@@ -34,17 +36,25 @@ struct Layout :
     Scene& scene();
     StyleSheet& styleSheet();
 
+    void refreshSize();
     int width() const;
     int height() const;
 
+    int OriginalWidth() const;
+    int OriginalHeight() const;
+
 protected:
     virtual void draw(Scene&) override;
+    virtual void _apply_styleSheet();
+    virtual glm::vec2 _compute_hull_size();
 
-private:
     Scene& m_scene;
     StyleSheet m_stylesheet;
-
     std::vector<std::shared_ptr<Widget>> m_widgets;
+
+    float padding = 0.01f; // todo:  be put in style
+
+private:
     std::unordered_map<std::string, std::shared_ptr<Widget>> m_widgets_id;
 };
 

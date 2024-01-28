@@ -10,8 +10,7 @@ struct VerticalLayout :
 
 protected:
     void draw(Scene&) override;
-    Layout::ContainerType m_extType;
+    glm::vec2 _compute_hull_size() override;
 
-private:
-    void _computeWidgetPose();
+    Layout::ContainerType m_extType;
 };

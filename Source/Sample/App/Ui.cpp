@@ -1,65 +1,39 @@
 #include "Ui.hpp"
 
 // Classnames
-static constexpr char Title[] = ".Title";
-static constexpr char SmallButton[] = ".SmallButton";
+static constexpr char Title[]         = ".Title";
+static constexpr char SmallButton[]   = ".SmallButton";
 static constexpr char DefaultButton[] = ".DefaultButton";
 
 // -- Ui --
 Ui::Ui(Scene& scene) : 
     m_scene(scene),
     m_prev_state(Ui::State::Idle),
-    m_state(Ui::State::Idle)
+    m_state(Ui::State::Idle),
+    m_main_frame(scene)
 {
     // Temporary container for gui elements
     std::unordered_map<std::string, std::shared_ptr<Button>> btns;
     std::unordered_map<std::string, std::shared_ptr<Text>>   txts;
 
     // Create layouts
-    m_layouts["Main"] = Widget::Create<MainLayout>(scene);
-    {
-        _create_widgets(btns, txts);
-        _create_layouts(btns, txts);
-    }
-
+    m_main_frame.layout().styleSheet() = _create_style();
+    _create_widgets(btns, txts);
+    _create_layouts(btns, txts);
+    
     // Define events
-    _subscribe(m_layouts.at("Main"), &Ui::draw);
+    _subscribe(&m_main_frame, &Ui::draw);
 
-    _subscribe(btns.at("Option"), [=](const CommonEvents::MouseButton&) { setState(State::Option); });
     _subscribe(btns.at("Start"),  [=](const CommonEvents::MouseButton&) { setState(State::InGame); });
     _subscribe(btns.at("Resume"), [=](const CommonEvents::MouseButton&) { setState(State::InGame); });
+    _subscribe(btns.at("Option"), [=](const CommonEvents::MouseButton&) { setState(State::Option); });
     _subscribe(btns.at("Apply"),  [=](const CommonEvents::MouseButton&) { setState(m_prev_state);  });
     _subscribe(btns.at("Moins"),  [=](const CommonEvents::MouseButton&) { _updateCount(-1);        });
     _subscribe(btns.at("Plus"),   [=](const CommonEvents::MouseButton&) { _updateCount(+1);        });
     _subscribe(btns.at("Close"),  [=](const CommonEvents::MouseButton&) { m_wantQuit = true;       });
 
-    // Create a custom style
-    m_layouts["Main"]->styleSheet() = StyleSheet::CreateDefault()
-        .addRule(Style::Tag::Layout, Style{ }
-            .set_opacity(0.90f)
-            .set_background(glm::vec4(0.1f, 0.1f, 0.15f, 1.0f))
-        )
-        .addRule(Style::Tag::Button, Style{ }
-            .set_background(glm::vec4(0.15f, 0.15f, 0.17f, 1.0f))
-            .set_foreground(glm::vec4(0.66f, 0.66f, 0.70f, 1.0f))
-        )
-        .addRule(Style::Tag::Text, Style{ }
-            .set_foreground(glm::vec4(0.90f, 0.90f, 0.93f, 1.0f))
-        )
-        .addRule(DefaultButton, Style{ }
-            .set_hint_w(0.1f)
-        )
-        .addRule(SmallButton, Style{ }
-            .set_hint_w(0.020f)
-            .set_hint_h(0.035f)
-        )
-        .addRule(Title, Style{ }
-            .set_textSize(0.8f)
-        )
-    ;
-
     // Let's start
-    setState(Ui::State::Start);
+    setState(Ui::State::Option);
 }
 
 void Ui::setState(Ui::State state) {
@@ -70,27 +44,26 @@ void Ui::setState(Ui::State state) {
     m_state = state;
 
     // Change ui
-    m_layouts["Main"]->clean();
+    m_main_frame.layout().clean();
 
     switch (m_state) {
     case State::Start:
-        m_layouts["Main"]->add(m_layouts["Start"], "Start");
+        m_main_frame.layout().add(m_layouts["Start"]);
         break;
 
     case State::Option:
-        m_layouts["Main"]->add(m_layouts["Option"], "Option");
+        m_main_frame.layout().add(m_layouts["Option"]);
         break;
 
     case State::InGame:
-        // Note: it will override previous style
-        m_layouts["Main"]->style().set_opacity(1.0f);
-        m_layouts["Main"]->style().set_background(Style::Transparent());
+        m_main_frame.layout().style().set_opacity(1.0f);
+        m_main_frame.layout().style().set_background(Style::Transparent());
 
-        m_layouts["Main"]->add(m_layouts["InGame"], "InGame");
+        m_main_frame.layout().add(m_layouts["InGame"]);
         break;
 
     case State::Pause:
-        m_layouts["Main"]->add(m_layouts["Pause"], "Pause");
+        m_main_frame.layout().add(m_layouts["Pause"]);
         break;
     }
 
@@ -127,7 +100,34 @@ void Ui::_updateCount(int delta) {
     m_layouts["LLight"]->find<Text>("#Count")->setText(std::to_string(m_lights_count));
 }
 
-// - Helpers -
+// ---------- Helpers ----------
+StyleSheet Ui::_create_style() const
+{
+    return StyleSheet::CreateDefault()
+        .addRule(Style::Tag::Layout, Style{ }
+            .set_opacity(0.90f)
+            .set_background(glm::vec4(0.1f, 0.1f, 0.15f, 1.0f))
+        )
+        .addRule(Style::Tag::Button, Style{ }
+            .set_background(glm::vec4(0.15f, 0.15f, 0.17f, 1.0f))
+            .set_foreground(glm::vec4(0.66f, 0.66f, 0.70f, 1.0f))
+        )
+        .addRule(Style::Tag::Text, Style{ }
+            .set_foreground(glm::vec4(0.90f, 0.90f, 0.93f, 1.0f))
+        )
+        .addRule(DefaultButton, Style{ }
+            .set_hint_w(0.1f)
+        )
+        .addRule(SmallButton, Style{ }
+            .set_hint_w(0.020f)
+            .set_hint_h(0.035f)
+        )
+        .addRule(Title, Style{ }
+            .set_textSize(0.8f)
+        )
+    ;
+}
+
 void Ui::_create_widgets(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
@@ -141,7 +141,7 @@ void Ui::_create_widgets(
     btns["Plus"]   = Widget::WithClass<SmallButton>::Create<Button>("+");
     btns["Apply"]  = Widget::Create<Button>("Apply");
 
-    // Texts
+     //Texts
     txts["Title"]  = Widget::WithClass<Title>::Create<Text>("The Game");
     txts["Pause"]  = Widget::WithClass<Title>::Create<Text>("Game paused");
     txts["Option"] = Widget::WithClass<Title>::Create<Text>("Options");
@@ -175,7 +175,7 @@ void Ui::_create_layouts(
         {
             m_layouts["LLight"]->add(txts["Lights"]);
             m_layouts["LLight"]->add(btns["Moins"]);
-            m_layouts["LLight"]->add(txts["Count"], "#Count");
+            m_layouts["LLight"]->add(txts["Count"], "#Count");  // Set an Id to retrieve it later
             m_layouts["LLight"]->add(btns["Plus"]);
         }
 
@@ -187,8 +187,8 @@ void Ui::_create_layouts(
     // In game
     m_layouts["InGame"] = Widget::Create<Layout>(m_scene);
     {
-        m_layouts["InGame"]->add(txts["Ig1"], "#Ig1");
-        m_layouts["InGame"]->add(txts["Ig2"], "#Ig2");
+        m_layouts["InGame"]->add(txts["Ig1"], "#Ig1");          // Set an Id to retrieve it later
+        m_layouts["InGame"]->add(txts["Ig2"]);
     }
 
     // Pause
@@ -200,3 +200,4 @@ void Ui::_create_layouts(
         m_layouts["Pause"]->add(btns["Close"]);
     }
 }
+

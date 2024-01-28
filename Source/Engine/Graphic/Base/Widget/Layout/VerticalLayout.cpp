@@ -8,10 +8,49 @@ VerticalLayout::VerticalLayout(Scene& scene, Layout::ContainerType extType) :
 }
 
 void VerticalLayout::draw(Scene& scene) {
-    _computeWidgetPose();
-    Layout::draw(scene);
+    float w0 = _parent ? _parent->w() : 1.0f;
+    float h0 = _parent ? _parent->h() : 1.0f;
+
+    printf("-- vertical layout draw -- \n");
+    printf("w0:%lf h0:%lf \n", w0, h0);
+    printf("w:%lf h:%lf \n", w(), h());
+
+    // Position
+    float yi = y() + (h0 - h()) / 2.0f;
+
+    for (auto& widget : m_widgets) {
+        widget->x() = x() + (w0 - widget->w())/2.0f;
+        widget->y() = yi;
+        widget->draw(m_scene);
+
+        yi += widget->h();
+        printf(" - x:%lf y:%lf \n", widget->x(), widget->y());
+    }
+    printf("---- \n");
 }
 
-void VerticalLayout::_computeWidgetPose() {
-    // good luck
+glm::vec2 VerticalLayout::_compute_hull_size() {
+    if (m_widgets.empty())
+        return glm::vec2(0, 0);
+
+    // It's a vertical layout, hull: [w:max(w); h:(sum h)]
+    float hull_w = 0.0f;
+    float hull_h = 0.0f;
+
+    // Now can compute layout overall size with current style
+    for (auto& widget : m_widgets) {
+        if (widget->tag() == Style::Tag::Layout) {
+            auto layout = std::dynamic_pointer_cast<Layout>(widget);
+            if (!layout)
+                continue;
+
+            layout->refreshSize();
+        }
+
+        // Get the centroid
+        hull_w = std::max(widget->w(), hull_w);
+        hull_h += widget->h();
+    }
+
+    return glm::vec2(hull_w, hull_h);
 }

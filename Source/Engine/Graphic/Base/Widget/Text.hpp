@@ -18,11 +18,9 @@ struct Text : public Widget {
     void draw(Scene&) override;
 
     // Accessors
-    const std::string& getText() const;
-    const Block& getTexts() const;
-
-    const glm::vec2& getSize() const;
-    const glm::vec2 getSizeRel() const;
+    const std::string&  getText()  const;
+    const Block&        getTexts() const;
+    const glm::vec2&    getSize()  const;
 
     void setText(const std::string& txt);
     void setTexts(const Block& txt);
