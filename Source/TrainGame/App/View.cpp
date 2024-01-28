@@ -14,8 +14,9 @@
 
 #include <Engine/Utils/RayCaster.hpp>
 
-namespace Thomas
-{
+#include "TrainGame/Engine/Core/ECS.h"
+#include "TrainGame/Engine/Components/Transform2.h"
+#include "TrainGame/Engine/Components/RenderComponent.h"
 
     // Random engine
     static std::default_random_engine gen;
@@ -32,6 +33,16 @@ namespace Thomas
         _subscribe(&View::_on_resize);
         _subscribe(&View::_post_process);
         _subscribe(&View::_on_mouse_moved);
+
+        m_renderSystem = Thomas::ECS::registerSystem<RenderSystem>();
+        {
+            Thomas::Signature signature;
+            signature.set(Thomas::ECS::getComponentType<Thomas::Transform2>());
+            signature.set(Thomas::ECS::getComponentType<Thomas::RenderComponent>());
+
+            Thomas::ECS::setSystemSignature<RenderSystem>(signature);
+            m_renderSystem->init();
+        }
 
         // Camera
         scene.camera().position = glm::vec3(0.f, -3.5f, 8.0f);
@@ -69,7 +80,11 @@ namespace Thomas
     void View::_draw(const SceneEvents::Draw& evt) {
         float dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
         m_timer.tic();
+
         auto& renderer = scene.renderer();
+
+        if (m_renderSystem)
+            m_renderSystem->update(renderer);
         // Main scene
         {
             // Lights
@@ -83,7 +98,7 @@ namespace Thomas
             // Draw game objects
             for (auto& model : m_modelsToDraw)
             {
-                const GameModel& gameModel = GameModelTable::getModelById(model.first);
+                const Thomas::GameModel& gameModel = Thomas::GameModelTable::getModelById(model.first);
 
                 for (auto& t : model.second)
                 {
@@ -100,7 +115,7 @@ namespace Thomas
                     worldTransform = glm::rotate(worldTransform, t.rotation.z, glm::vec3(0, 0, 1));
                     worldTransform = glm::scale(worldTransform, t.scale);
 
-                    if (model.first != ModelId::CubeGeometry && model.first != ModelId::CubeBasic)
+                    if (model.first != Thomas::ModelId::CubeGeometry && model.first != Thomas::ModelId::CubeBasic)
                     {
                         m_gameModels[model.first]->poses() = { worldTransform * localTransform };
                         renderer.draw(Render::DrawType::Shadows, *m_gameModels[model.first]);
@@ -109,7 +124,7 @@ namespace Thomas
                     }
                     else
                     {
-                        if (model.first == ModelId::CubeGeometry)
+                        if (model.first == Thomas::ModelId::CubeGeometry)
                         {
                             m_gameModels[model.first]->localMaterial().diffuse_color = {1,1,1,1};
                             m_gameModels[model.first]->poses() = { worldTransform * localTransform };
@@ -149,17 +164,8 @@ namespace Thomas
             drawGrid();
         }
 
-        // Some static texts
-        std::ostringstream ss;
-        ss << "x: " << scene.lights()[0].position.x << ", z: " << scene.lights()[0].position.z;
-        std::string s(ss.str());
-
-        renderer.text(s, 50, 50, 1.0f);
-        //TextEngine::Write(, glm::vec3(1, 1, 1));
-
         m_modelsToDraw.clear();
 
-      
         // Prepare next
             m_timer.tic();
         }
@@ -175,24 +181,24 @@ namespace Thomas
         // Misha: can this part be async at some point ?
         m_timer.tic();
         {
-            m_gameModels[ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive.glb");
-            m_gameModels[ModelId::Wagon] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
-            m_gameModels[ModelId::Track] = std::make_unique<Entity>("Resources/objects/train/track_forward.glb");
-            m_gameModels[ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
-            m_gameModels[ModelId::TrackRight] = std::make_unique<Entity>("Resources/objects/train/track_right.glb");
-            m_gameModels[ModelId::Building1] = std::make_unique<Entity>("Resources/objects/train/building_1.glb");
-            m_gameModels[ModelId::CubeBasic] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
-            m_gameModels[ModelId::CubeGeometry] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+            m_gameModels[Thomas::ModelId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive.glb");
+            m_gameModels[Thomas::ModelId::Wagon] = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
+            m_gameModels[Thomas::ModelId::Track] = std::make_unique<Entity>("Resources/objects/train/track_forward.glb");
+            m_gameModels[Thomas::ModelId::TrackLeft] = std::make_unique<Entity>("Resources/objects/train/track_left.glb");
+            m_gameModels[Thomas::ModelId::TrackRight] = std::make_unique<Entity>("Resources/objects/train/track_right.glb");
+            m_gameModels[Thomas::ModelId::Building1] = std::make_unique<Entity>("Resources/objects/train/building_1.glb");
+            m_gameModels[Thomas::ModelId::CubeBasic] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
+            m_gameModels[Thomas::ModelId::CubeGeometry] = std::make_unique<Entity>(Entity::SimpleShape::Cube);
         }
         std::cout << "Game models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
     }
 
-    void View::draw(ModelId id, const Transform& transform)
+    void View::draw(Thomas::ModelId id, const Thomas::Transform& transform)
     {
         m_modelsToDraw[id].push_back(transform);
     }
 
-    void View::drawGrid(const std::map<std::pair<int, int>, GridCell>& cells)
+    void View::drawGrid(const std::map<std::pair<int, int>, Thomas::GridCell>& cells)
     {
         // TODO: optimize this part please (veri bad performance)
         // TODO: add Geometry as a second batch
@@ -213,13 +219,13 @@ namespace Thomas
             Material color = { {0,0,0,0}, false  };
             switch (c.second.type)
             {
-            case GridCell::CellType::Visible:
+            case Thomas::GridCell::CellType::Visible:
                 color.diffuse_color = {0.7f,0.6f,0.3f,0.5f};
                 break;
-            case GridCell::CellType::ConstructOk:
+            case Thomas::GridCell::CellType::ConstructOk:
                 color.diffuse_color = { 0.3f,0.6f,0.3f,0.5f };
                 break;
-            case GridCell::CellType::ConstructBad:
+            case Thomas::GridCell::CellType::ConstructBad:
                 color.diffuse_color = { 0.7f,0.3f,0.3f,0.5f };
                 break;
             }
@@ -270,8 +276,7 @@ namespace Thomas
         m_model = std::make_unique<Entity>("Resources/objects/train/wagon_no_wheels.glb");
 
         // GameObjects:
-        m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Locomotive, { 0,0,0 }));
-        m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Locomotive, { 1,1,1 }));
-        m_gameObjects.push_back(std::make_pair<ModelId, glm::vec3>(ModelId::Wagon, { 2,2,2 }));
+        m_gameObjects.push_back(std::make_pair<Thomas::ModelId, glm::vec3>(Thomas::ModelId::Locomotive, { 0,0,0 }));
+        m_gameObjects.push_back(std::make_pair<Thomas::ModelId, glm::vec3>(Thomas::ModelId::Locomotive, { 1,1,1 }));
+        m_gameObjects.push_back(std::make_pair<Thomas::ModelId, glm::vec3>(Thomas::ModelId::Wagon, { 2,2,2 }));
     }
-} // namespace Thomas

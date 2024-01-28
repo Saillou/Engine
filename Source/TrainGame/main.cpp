@@ -10,10 +10,10 @@ void initGameModels();
 
 // -- Entry point --
 int main() {
+    initGameModels();
+
     Thomas::Game game;
     game.createScene();
-
-    initGameModels();
 
     // Loop
     do {

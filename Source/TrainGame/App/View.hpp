@@ -21,16 +21,15 @@
 #include <Engine/Events/CommonEvents.hpp>
 
 #include "TrainGame/App/Objects/Transform.h"
+#include "TrainGame/Engine/Systems/RenderSystem.h"
 
-namespace Thomas
-{
     struct View : private Event::Subscriber {
         View(Scene& scene);
 
         void loadModels(size_t size);
 
-        void draw(ModelId id, const Transform& transform);
-        void drawGrid(const std::map<std::pair<int,int>, GridCell>& cells);
+        void draw(Thomas::ModelId id, const Thomas::Transform& transform);
+        void drawGrid(const std::map<std::pair<int,int>, Thomas::GridCell>& cells);
 
         Scene& scene;
 
@@ -51,21 +50,21 @@ namespace Thomas
 
         struct _GridCells {
             std::unique_ptr<Entity> entity;
-            std::map<std::pair<int, int>, GridCell> cells;
+            std::map<std::pair<int, int>, Thomas::GridCell> cells;
         };
 
         struct _EntityModel {
-            Transform transform;
+            Thomas::Transform transform;
             std::unique_ptr<Entity> entity;
         };
 
         void _initObjects();
 
         // Object models (vertices, textures..)
-        std::unordered_map<ModelId,  std::unique_ptr<Entity>> m_gameModels;
-        std::unordered_map<ModelId,  std::vector<Transform>>  m_modelsToDraw;
+        std::unordered_map<Thomas::ModelId,  std::unique_ptr<Entity>> m_gameModels;
+        std::unordered_map<Thomas::ModelId,  std::vector<Thomas::Transform>>  m_modelsToDraw;
 
-        std::map<std::pair<int, int>, GridCell> m_gridCells;
+        std::map<std::pair<int, int>, Thomas::GridCell> m_gridCells;
 
         std::unique_ptr<Entity> m_model_sphere;
         
@@ -78,7 +77,7 @@ namespace Thomas
         _GridCells m_entityGridCells;
 
         // Scene objects
-        std::vector<std::pair<ModelId, glm::vec3>> m_gameObjects;
+        std::vector<std::pair<Thomas::ModelId, glm::vec3>> m_gameObjects;
         std::unique_ptr<_Grid>  m_grid;
         std::unique_ptr<Skybox> m_skybox;
 
@@ -86,5 +85,6 @@ namespace Thomas
         Timer::Chronometre m_timer;
 
         glm::vec2 m_mousePos;
+
+        std::shared_ptr<RenderSystem> m_renderSystem;
     };
-} // namespace Thomas

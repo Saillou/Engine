@@ -47,6 +47,7 @@ namespace Thomas
         GameModel model;
         model.modelId = id;
         model.transform = transform;
+        model.transform.calculateMat4();
 
         table.m_data[id] = model;
         return true;

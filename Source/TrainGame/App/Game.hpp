@@ -9,6 +9,8 @@
 
 #include "UI/MainUI.hpp"
 
+#include "TrainGame/Engine/Systems/TrainControllerSystem.h"
+
 namespace Thomas
 {
     class Game : private Event::Subscriber
@@ -32,5 +34,7 @@ namespace Thomas
         std::unique_ptr<MainUI> m_ui;
 
         std::unordered_map<uint64_t, GameObject*> m_objects;
+
+        std::shared_ptr<TrainControllerSystem> m_trainControllerSystem;
     };
 } // namespace Thomas

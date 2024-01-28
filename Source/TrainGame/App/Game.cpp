@@ -11,6 +11,12 @@
 
 #include "TrainGame/App/Objects/Item.h"
 
+#include "TrainGame/Engine/Core/ECS.h"
+#include "TrainGame/Engine/Components/Transform2.h"
+#include "TrainGame/Engine/Components/TrainController2.h"
+#include "TrainGame/Engine/Components/Grid2.h"
+#include "TrainGame/Engine/Components/RenderComponent.h"
+
 namespace Thomas
 {
     static uint64_t gs_id = 0;
@@ -21,6 +27,20 @@ namespace Thomas
         _subscribe(&Game::onKeyPressed);
         _subscribe(&Game::onMouseMoved);
         _subscribe(&Game::onSceneFinishedRender);
+
+        ECS::registerComponent<Transform2>();
+        ECS::registerComponent<TrainController2>();
+        ECS::registerComponent<Grid2>();
+        ECS::registerComponent<RenderComponent>();
+
+        m_trainControllerSystem = ECS::registerSystem<TrainControllerSystem>();
+        {
+            Signature signature;
+            signature.set(ECS::getComponentType<Transform2>());
+            signature.set(ECS::getComponentType<TrainController2>());
+
+            ECS::setSystemSignature<TrainControllerSystem>(signature);
+        }
 
         m_window = std::make_unique<Window>(1600, 900, "Train game");
         m_view = std::make_shared<View>(m_window->scene());
@@ -41,36 +61,89 @@ namespace Thomas
         Grid::initAtPosition({ 0.f,0.f,0.05f }, { 0.1f,0.1f });
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Locomotive, {{Grid::getPosition(x,y).x,Grid::getPosition(x,y).y,z}, {1.f, 1.f, 1.f}, {0,0,0} } });
-            TrainController* trainController = new TrainController(&obj->transform);
-            obj->components.push_back(trainController);
+            Entity ent = ECS::createEntity();
 
-            InventoryComponent* inventory = new InventoryComponent(&obj->transform);
-            inventory->setLimit(3);
-            obj->components.push_back(inventory);
+            Transform2 transform;
+            transform.position  = { 0.f, 0.f,1.f };
+            transform.scale     = { 1.f,1.f,1.f };
+            transform.rotation  = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
 
-            m_objects[obj->id] = obj;
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Locomotive;
+            renderComponent.mobility = RenderComponent::Mobility::Dynamic;
+            ECS::addComponent(ent, renderComponent);
 
-            trainController->addPoint({ Grid::getPosition(x, y).x, Grid::getPosition(x, y).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x + 4, y - 1).x, Grid::getPosition(x + 4, y - 2).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x + 7, y - 2).x, Grid::getPosition(x + 7, y - 2).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 31, y - 2).x, Grid::getPosition(x + 31, y - 2).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 35, y - 1).x, Grid::getPosition(x + 35, y - 2).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x + 38, y).x, Grid::getPosition(x + 38, y).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x + 39, y + 4).x, Grid::getPosition(x + 40, y + 4).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x + 40, y + 7).x, Grid::getPosition(x + 40, y + 7).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 40, y + 23).x, Grid::getPosition(x + 40, y + 23).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 39, y + 27).x, Grid::getPosition(x + 40, y + 27).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x + 38, y + 30).x, Grid::getPosition(x + 38, y + 30).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x + 35, y + 31).x, Grid::getPosition(x + 35, y + 32).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x + 31, y + 32).x, Grid::getPosition(x + 31, y + 32).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 7, y + 32).x, Grid::getPosition(x + 7, y + 32).y, z });
-            trainController->addPoint({ Grid::getPosition(x + 4, y + 31).x, Grid::getPosition(x + 4, y + 32).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x, y + 30).x, Grid::getPosition(x, y + 30).y, z }); // turn
-            trainController->addPoint({ Grid::getPosition(x - 1, y + 27).x, Grid::getPosition(x - 2, y + 27).y, z }); // turn helper
-            trainController->addPoint({ Grid::getPosition(x - 2, y + 23).x, Grid::getPosition(x - 2, y + 23).y, z });
-            trainController->addPoint({ Grid::getPosition(x - 2, y + 7).x, Grid::getPosition(x - 2, y + 7).y, z });
-            trainController->addPoint({ Grid::getPosition(x - 2, y + 4).x, Grid::getPosition(x - 2, y + 4).y, z }); // turn helper
+            TrainController2 trainController2;
+            trainController2.m_points.push_back({ Grid::getPosition(x + 0, y + 0).x, Grid::getPosition(x + 0, y + 0).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x + 4, y - 1).x, Grid::getPosition(x + 4, y - 2).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 7, y - 2).x, Grid::getPosition(x + 7, y - 2).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 31, y - 2).x, Grid::getPosition(x + 31, y - 2).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 35, y - 1).x, Grid::getPosition(x + 35, y - 2).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 38, y + 0).x, Grid::getPosition(x + 38, y + 0).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x + 39, y + 4).x, Grid::getPosition(x + 40, y + 4).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 40, y + 7).x, Grid::getPosition(x + 40, y + 7).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 40, y + 23).x, Grid::getPosition(x + 40, y + 23).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 39, y + 27).x, Grid::getPosition(x + 40, y + 27).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 38, y + 30).x, Grid::getPosition(x + 38, y + 30).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x + 35, y + 31).x, Grid::getPosition(x + 35, y + 32).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 31, y + 32).x, Grid::getPosition(x + 31, y + 32).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 7, y + 32).x, Grid::getPosition(x + 7, y + 32).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 4, y + 31).x, Grid::getPosition(x + 4, y + 32).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 0, y + 30).x, Grid::getPosition(x + 0, y + 30).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x - 1, y + 27).x, Grid::getPosition(x - 2, y + 27).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x - 2, y + 23).x, Grid::getPosition(x - 2, y + 23).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x - 2, y + 7).x, Grid::getPosition(x - 2, y + 7).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x - 2, y + 4).x, Grid::getPosition(x - 2, y + 4).y, z }); // turn helper
+
+            trainController2.m_minDistance = 0.03f;
+            trainController2.m_speed = 0.7f;
+            trainController2.m_rotationSpeed = 2.5f;
+
+            ECS::addComponent(ent, trainController2);
+        }
+
+        for(size_t i = 0; i < 6; i++)
+        {
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = { 0.5f * i, 0.5f * i,1.f };
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Locomotive;
+            ECS::addComponent(ent, renderComponent);
+
+            TrainController2 trainController2;
+            trainController2.m_points.push_back({ Grid::getPosition(x + 0, y + 0).x, Grid::getPosition(x + 0, y + 0).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x + 4, y - 1).x, Grid::getPosition(x + 4, y - 2).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 7, y - 2).x, Grid::getPosition(x + 7, y - 2).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 31, y - 2).x, Grid::getPosition(x + 31, y - 2).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 35, y - 1).x, Grid::getPosition(x + 35, y - 2).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 38, y + 0).x, Grid::getPosition(x + 38, y + 0).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x + 39, y + 4).x, Grid::getPosition(x + 40, y + 4).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 40, y + 7).x, Grid::getPosition(x + 40, y + 7).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 40, y + 23).x, Grid::getPosition(x + 40, y + 23).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 39, y + 27).x, Grid::getPosition(x + 40, y + 27).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 38, y + 30).x, Grid::getPosition(x + 38, y + 30).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x + 35, y + 31).x, Grid::getPosition(x + 35, y + 32).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 31, y + 32).x, Grid::getPosition(x + 31, y + 32).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 7, y + 32).x, Grid::getPosition(x + 7, y + 32).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x + 4, y + 31).x, Grid::getPosition(x + 4, y + 32).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x + 0, y + 30).x, Grid::getPosition(x + 0, y + 30).y, z }); // turn
+            trainController2.m_points.push_back({ Grid::getPosition(x - 1, y + 27).x, Grid::getPosition(x - 2, y + 27).y, z }); // turn helper
+            trainController2.m_points.push_back({ Grid::getPosition(x - 2, y + 23).x, Grid::getPosition(x - 2, y + 23).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x - 2, y + 7).x, Grid::getPosition(x - 2, y + 7).y, z });
+            trainController2.m_points.push_back({ Grid::getPosition(x - 2, y + 4).x, Grid::getPosition(x - 2, y + 4).y, z }); // turn helper
+
+            trainController2.m_minDistance = 0.01f;
+            trainController2.m_speed = 0.7f;
+            trainController2.m_rotationSpeed = 2.5f;
+
+            ECS::addComponent(ent, trainController2);
         }
 
         // tracks
@@ -79,253 +152,404 @@ namespace Thomas
         // l1.loadFromFile();
 
         
-
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 5,6 }, { -4,-1 });
-            gridComponent1->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent1);
+            Entity ent = ECS::createEntity();
 
-            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 6,5 }, { -1,-4 });
-            gridComponent2->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent2);
-            m_objects[obj->id] = obj;
+            Transform2 transform;
+            transform.position = Grid::getPosition(x, y);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::TrackRight;
+            ECS::addComponent(ent, renderComponent);
         }
 
         // bottom horizontal tracks
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 7,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 7, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 11,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 11, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 15,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 15, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 19,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 19, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 23,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 23, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 27,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 27, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 31,y - 2), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 31, y - 2);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         // left vertical tracks
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 7), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x - 2, y + 7);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 11), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x - 2, y + 11);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 15), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x - 2, y + 15);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 19), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x - 2, y + 19);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x - 2,y + 23), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x - 2, y + 23);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackRight, {Grid::getPosition(x,y + 30), {1.f, 1.f, 1.f}, {0,0,-1.57f} } });
-            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 6,5 }, { -1,0 });
-            gridComponent1->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent1);
+            Entity ent = ECS::createEntity();
 
-            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 5,6 }, { -4,-4 });
-            gridComponent2->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent2);
-            m_objects[obj->id] = obj;
+            Transform2 transform;
+            transform.position = Grid::getPosition(x, y + 30);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, -1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::TrackRight;
+            ECS::addComponent(ent, renderComponent);
         }
 
         // top horizontal tracks
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 7,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 7, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 11,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 11, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 15,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 15, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 19,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 19, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 23,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 23, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 27,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 27, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 31,y + 32), {1.f, 1.f, 1.f}, {0,0,1.57f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 5,3 }, { -2,-1 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 31, y + 32);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {Grid::getPosition(x + 38,y + 30), {1.f, 1.f, 1.f}, {0,0,0} } });
-            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 6,5 }, { -4,0 });
-            gridComponent1->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent1);
+            Entity ent = ECS::createEntity();
 
-            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 5,6 }, { 0,-4 });
-            gridComponent2->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent2);
-            m_objects[obj->id] = obj;
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 38, y + 30);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::TrackLeft;
+            ECS::addComponent(ent, renderComponent);
         }
 
         // right vertical tracks
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 23), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 40, y + 23);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 19), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 40, y + 19);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 15), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 40, y + 15);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 11), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 40, y + 11);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::Track, {Grid::getPosition(x + 40,y + 7), {1.f, 1.f, 1.f}, {0,0,0.f} } });
-            GridComponent* gridComponent = new GridComponent(&obj->transform, { 3,5 }, { -1,-2 });
-            gridComponent->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent);
-            m_objects[obj->id] = obj;
+            Entity ent = ECS::createEntity();
+
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 40, y + 7);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, 0.f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::Track;
+            ECS::addComponent(ent, renderComponent);
         }
 
         {
-            GameObject* obj = new GameObject({ gs_id++, ModelId::TrackLeft, {Grid::getPosition(x + 38,y), {1.f, 1.f, 1.f}, {0,0,-1.57f} } });
-            GridComponent* gridComponent1 = new GridComponent(&obj->transform, { 6,5 }, { -4,-4 });
-            gridComponent1->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent1);
+            Entity ent = ECS::createEntity();
 
-            GridComponent* gridComponent2 = new GridComponent(&obj->transform, { 5,6 }, { 0,0 });
-            gridComponent2->setState(GridComponent::GridComponentState::Visible);
-            obj->components.push_back(gridComponent2);
-            m_objects[obj->id] = obj;
+            Transform2 transform;
+            transform.position = Grid::getPosition(x + 38, y);
+            transform.scale = { 1.f,1.f,1.f };
+            transform.rotation = { 0.f, 0.f, -1.57f };
+            ECS::addComponent(ent, transform);
+
+            RenderComponent renderComponent;
+            renderComponent.modelId = ModelId::TrackLeft;
+            ECS::addComponent(ent, renderComponent);
         }
 
     }
@@ -335,6 +559,7 @@ namespace Thomas
         float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f / 1000.f;
 
         // game loop
+        /*
         for (auto& obj : m_objects)
         {
             // TODO: delete properly
@@ -359,9 +584,12 @@ namespace Thomas
 
             m_view->draw(obj.second->modelId, obj.second->transform);
         }
+        */
 
-        m_view->drawGrid(Grid::getCells());
-        Grid::clearCells();
+        m_trainControllerSystem->update(dt_ms);
+
+        //m_view->drawGrid(Grid::getCells());
+        //Grid::clearCells();
 
         m_ui->Prepare();
 
@@ -440,9 +668,10 @@ namespace Thomas
         case 'X':             scale = +1.f; break;
         }
 
-        m_objects[0]->transform.position += 0.05f * dir;
-        m_objects[0]->transform.rotation.z += 0.05f * rot;
-        m_objects[0]->transform.scale += 0.05f * scale;
+        Transform2& transform = ECS::getComponent<Transform2>(0);
+        transform.position += 0.05f * dir;
+        transform.rotation.z += 0.05f * rot;
+        transform.scale += 0.05f * scale;
     }
 
     void Game::onMouseMoved(const CommonEvents::MouseMoved& evt)
