@@ -19,6 +19,7 @@ void Layout::add(std::shared_ptr<Widget> widget, const std::string& id) {
     if (m_widgets_id.find(id) != m_widgets_id.cend())
         std::cerr << "[Warning] Overriding currend widget id" << std::endl;
     
+    widget->idName = id;
     m_widgets_id[id] = widget;
 }
 void Layout::add(std::shared_ptr<Widget> widget, float x, float y, const std::string& id) {
@@ -29,8 +30,10 @@ void Layout::add(std::shared_ptr<Widget> widget, float x, float y, const std::st
 }
 
 void Layout::clean() {
-    for (auto& widget : m_widgets)
+    for (auto& widget : m_widgets) {
+        widget->idName.clear();
         _setParent(widget.get(), nullptr);
+    }
 
     m_widgets = {};
     m_widgets_id = {};

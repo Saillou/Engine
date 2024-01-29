@@ -140,6 +140,9 @@ StyleSheet Ui::_create_style() const
         .addRule(Info, Style{ }
             .set_textSize(0.35f)
         )
+        .addRule("#Count", Style{}
+            .set_foreground(foreground_color)
+        )
     ;
 }
 

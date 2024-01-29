@@ -71,10 +71,11 @@ struct Widget :
     float w() const;
     float h() const;
 
-   glm::vec2 getTL() const;
-   glm::vec2 getBR() const;
+    glm::vec2 getTL() const;
+    glm::vec2 getBR() const;
 
     std::string className = "";
+    std::string idName = "";
 
 protected:
     Widget(Style::Tag = Style::Tag::None, int eventListened = EventListened::None);

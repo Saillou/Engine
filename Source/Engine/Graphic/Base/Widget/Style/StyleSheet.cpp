@@ -24,9 +24,14 @@ std::optional<Style> StyleSheet::getStyle(const Widget* pWidget)
 	if (m_class_styles.find(pWidget->className) != m_class_styles.cend()) {
 		styleClass = m_class_styles[pWidget->className];
 	}
+
+	Style styleId;
+	if (m_class_styles.find(pWidget->idName) != m_class_styles.cend()) {
+		styleId = m_class_styles[pWidget->idName];
+	}
 	
-	// Priorities: User defined (Widget::style()), then class, then tag.
-	return ((styleTag + styleClass) + pWidget->style());
+	// Priorities: User defined (Widget::style()), then id, then class, then tag.
+	return (((styleTag + styleClass) + styleId) + pWidget->style());
 }
 
 void StyleSheet::applyStyle(Widget* widget) {
