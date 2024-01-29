@@ -30,7 +30,7 @@ struct Layout :
     void clean();
 
     template <typename WidgetTag>
-    std::shared_ptr<WidgetTag> find(const std::string& id);
+        std::shared_ptr<WidgetTag> find(const std::string& id);
 
     // Accessors
     Scene& scene();

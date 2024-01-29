@@ -8,15 +8,17 @@ HorizontalLayout::HorizontalLayout(Scene& scene, Layout::ContainerType extType) 
 }
 
 void HorizontalLayout::draw(Scene& scene) {
+    float x0 = _parent ? _parent->x() : 0.0f;
+    float y0 = _parent ? _parent->y() : 0.0f;
     float w0 = _parent ? _parent->w() : 1.0f;
     float h0 = _parent ? _parent->h() : 1.0f;
 
     // Position
-    float xi = x() + (w0 - w()) / 2.0f;
+    float xi = (x0 + x()) + (w0 - w()) / 2.0f;
 
     for (auto& widget : m_widgets) {
         widget->x() = xi;
-        widget->y() = y() + (h0 - widget->h()) / 2.0f;
+        widget->y() = y0 + y();
         widget->draw(m_scene);
 
         xi += widget->w() + padding;

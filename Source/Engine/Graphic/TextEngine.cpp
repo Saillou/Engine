@@ -67,7 +67,7 @@ TextEngine::TextEngine():
             .add_var("uniform", "vec4", "textColor")
             .add_func("void", "main", "", R"_main_(
                 vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
-                FragColor    = vec4(textColor) * sampled * 1 +  0 * vec4(1,0,0,1);
+                FragColor    = vec4(textColor) * sampled;
             )_main_")
         )
         .link();
@@ -123,16 +123,33 @@ TextEngine::TextEngine():
 
 glm::vec2 TextEngine::_measure(const std::string& text, float scale)
 {
-    glm::vec2 size = { 0.f, NOMINAL_HEIGHT * scale };
+    float x = 0.0f;
+    float y = 0.0f;
+
+    // Get the centroid
+    float left   = std::numeric_limits<float>::max();
+    float right  = std::numeric_limits<float>::min();
+    float top    = std::numeric_limits<float>::max();
+    float bottom = std::numeric_limits<float>::min();
 
     // iterate through all characters
     for (const char c : text) {
         const _Character& ch = m_char_map.at(c);
-        size.x += (ch.advance.x >> 6) * scale;
-        //size.y = std::max(size.y, ch.metrics.y * scale);
+        float xpos = x + (ch.bearing.x) * scale;
+        float ypos = y + (ch.bearing.y - ch.size.y) * scale;
+
+        float w = ch.size.x * scale;
+        float h = ch.size.y * scale;
+
+        left   = std::min(left,   xpos);
+        right  = std::max(right,  xpos + ch.size.x * scale);
+        top    = std::min(top,    ypos);
+        bottom = std::max(bottom, ypos + ch.size.y * scale);
+
+        x += (ch.advance.x >> 6) * scale;
     }
 
-    return size;
+    return glm::vec2(right - left, bottom - top);
 }
 
 // Methods
@@ -147,8 +164,8 @@ void TextEngine:: _render(const std::string& text, float x, float y, float scale
     for (const char c : text) {
         const _Character& ch = m_char_map.at(c);
 
-        float xpos = x + (ch.bearing.x) * scale;
-        float ypos = y + (ch.bearing.y - ch.size.y) * scale - NOMINAL_HEIGHT * scale / 2.0f;
+        float xpos = x + scale * (ch.bearing.x);
+        float ypos = y + scale * (ch.bearing.y - ch.size.y - NOMINAL_HEIGHT * 0.50f);
 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;

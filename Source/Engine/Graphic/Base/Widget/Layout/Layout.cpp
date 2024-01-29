@@ -75,9 +75,6 @@ StyleSheet& Layout::styleSheet() {
 }
 
 void Layout::draw(Scene& scene) {
-    float w0 = _parent ? _parent->w() : 1.0f;
-    float h0 = _parent ? _parent->h() : 1.0f;
-
     for (auto& widget : m_widgets) {
         widget->draw(m_scene);
     }

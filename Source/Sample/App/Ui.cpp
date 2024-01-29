@@ -2,10 +2,9 @@
 
 // Classnames
 static constexpr char Title[]         = ".Title";
+static constexpr char Info[]          = ".Information";
 static constexpr char SmallButton[]   = ".SmallButton";
 static constexpr char DefaultButton[] = ".DefaultButton";
-
-#define DRAW_REAL
 
 // -- Ui --
 Ui::Ui(Scene& scene) : 
@@ -14,14 +13,6 @@ Ui::Ui(Scene& scene) :
     m_state(Ui::State::Idle),
     m_main_frame(scene)
 {
-#ifndef DRAW_REAL
-    m_main_frame.layout().add(Text::WithClass<Title>::Create("Start"), "#Start");
-    m_main_frame.layout().find<Text>("#Start")->style()
-        .set_background(glm::vec4(1, 0, 0, 1))
-        .set_hint_x(0.5f)
-        .set_hint_y(0.5f);
-
-#else
     // Temporary container for gui elements
     std::unordered_map<std::string, std::shared_ptr<Button>> btns;
     std::unordered_map<std::string, std::shared_ptr<Text>>   txts;
@@ -44,11 +35,9 @@ Ui::Ui(Scene& scene) :
 
     // Let's start
     setState(Ui::State::Start);
-#endif
 }
 
 void Ui::setState(Ui::State state) {
-#ifdef DRAW_REAL
     if (m_state == state)
         return;
 
@@ -75,13 +64,15 @@ void Ui::setState(Ui::State state) {
         break;
 
     case State::Pause:
+        m_main_frame.layout().style().set_opacity(0.9f);
+        m_main_frame.layout().style().set_background(glm::vec4(0.1f, 0.1f, 0.15f, 0.5f));
+
         m_main_frame.layout().add(m_layouts["Pause"]);
         break;
     }
 
     // Notify it changed
     Event::Emit(CommonEvents::StateUpdated(), this);
-#endif
 }
 
 Ui::State Ui::state() const {
@@ -97,43 +88,44 @@ bool Ui::wantQuit() const {
 }
 
 void Ui::draw(const LayoutEvents::Draw& msg) {
-#ifdef DRAW_REAL
     switch (m_state) {
     case State::InGame:
         m_layouts["InGame"]->find<Text>("#Ig1")->at(0) = "Cam pos: " + glm::to_string(m_scene.camera().position);
         m_layouts["InGame"]->find<Text>("#Ig1")->at(1) = "Cam dir: " + glm::to_string(m_scene.camera().direction);
         break;
     }
-#endif
 }
 
 void Ui::_updateCount(int delta) {
-#ifdef DRAW_REAL
     if (m_lights_count + delta < 0 || m_lights_count + delta > 5)
         return;
 
     m_lights_count += delta;
     m_layouts["LLight"]->find<Text>("#Count")->setText(std::to_string(m_lights_count));
-#endif
 }
 
 // ---------- Helpers ----------
 StyleSheet Ui::_create_style() const
 {
+    const glm::vec4 primary_color    = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+    const glm::vec4 secondary_color  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+    const glm::vec4 main_text_color  = glm::vec4(0.90f, 0.90f, 0.93f, 1.0f);
+    const glm::vec4 foreground_color = glm::vec4(0.66f, 0.66f, 0.70f, 1.0f);
+
     return StyleSheet::CreateDefault()
         .addRule(Style::Tag::Layout, Style{ }
             .set_opacity(0.90f)
-            .set_background(glm::vec4(0.1f, 0.1f, 0.15f, 1.0f))
+            .set_background(primary_color)
         )
         .addRule(Style::Tag::Button, Style{ }
-            .set_background(glm::vec4(0.15f, 0.15f, 0.17f, 1.0f))
-            .set_foreground(glm::vec4(0.66f, 0.66f, 0.70f, 1.0f))
+            .set_background(secondary_color)
+            .set_foreground(foreground_color)
             .set_contentAlign({ 
                 Style::Align::Centered, 
                 Style::Align::Centered })
         )
         .addRule(Style::Tag::Text, Style{ }
-            .set_foreground(glm::vec4(0.90f, 0.90f, 0.93f, 1.0f))
+            .set_foreground(main_text_color)
         )
         .addRule(DefaultButton, Style{ }
             .set_hint_w(0.1f)
@@ -145,6 +137,9 @@ StyleSheet Ui::_create_style() const
         .addRule(Title, Style{ }
             .set_textSize(1.0f)
         )
+        .addRule(Info, Style{ }
+            .set_textSize(0.35f)
+        )
     ;
 }
 
@@ -152,7 +147,6 @@ void Ui::_create_widgets(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
-#ifdef DRAW_REAL
     // Buttons
     btns["Start"]  = Button::WithClass<DefaultButton>::Create("Start");
     btns["Option"] = Button::WithClass<DefaultButton>::Create("Option");
@@ -168,20 +162,18 @@ void Ui::_create_widgets(
     txts["Option"] = Text::WithClass<Title>::Create("Options");
     txts["Lights"] = Text::Create("Lights");
     txts["Count"]  = Text::Create(std::to_string(m_lights_count));
-    txts["Ig1"]    = Text::Create("");
-    txts["Ig2"]    = Text::Create(Text::Block{
+    txts["Ig1"]    = Text::WithClass<Info>::Create("");
+    txts["Ig2"]    = Text::WithClass<Info>::Create(Text::Block{
         "Press [space] to pause",
         "Press [R] to dis/enable filters",
         "Press [T] to dis/enable casters"
     });
-#endif
 }
 
 void Ui::_create_layouts(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
-#ifdef DRAW_REAL
     // Start
     m_layouts["Start"] = Layout::Create<VerticalLayout>(m_scene);
     {
@@ -210,18 +202,17 @@ void Ui::_create_layouts(
     // In game
     m_layouts["InGame"] = Layout::Create<Layout>(m_scene);
     {
-        m_layouts["InGame"]->add(txts["Ig1"], "#Ig1");          // Set an Id to retrieve it later
-        m_layouts["InGame"]->add(txts["Ig2"]);
+        m_layouts["InGame"]->add(txts["Ig1"], 0.01f, 0.02f, "#Ig1"); // Set an Id to retrieve it later
+        m_layouts["InGame"]->add(txts["Ig2"], 0.01f, 0.10f);
     }
 
     // Pause
     m_layouts["Pause"] = Layout::Create<VerticalLayout>(m_scene);
     {
+        m_layouts["Pause"]->add(txts["Pause"]);
         m_layouts["Pause"]->add(btns["Resume"]);
         m_layouts["Pause"]->add(btns["Option"]);
-        m_layouts["Pause"]->add(txts["Pause"]);
         m_layouts["Pause"]->add(btns["Close"]);
     }
-#endif
 }
 

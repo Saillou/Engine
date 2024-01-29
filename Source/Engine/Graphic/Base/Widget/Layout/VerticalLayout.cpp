@@ -8,14 +8,16 @@ VerticalLayout::VerticalLayout(Scene& scene, Layout::ContainerType extType) :
 }
 
 void VerticalLayout::draw(Scene& scene) {
+    float x0 = _parent ? _parent->x() : 0.0f;
+    float y0 = _parent ? _parent->y() : 0.0f;
     float w0 = _parent ? _parent->w() : 1.0f;
     float h0 = _parent ? _parent->h() : 1.0f;
 
     // Position
-    float yi = y() + (h0 - h()) / 2.0f;
+    float yi = (y0 + y()) + (h0 - h()) / 2.0f;
 
     for (auto& widget : m_widgets) {
-        widget->x() = x() + (w0 - widget->w())/2.0f;
+        widget->x() = (x0 + x()) + (w0 - widget->w())/2.0f;
         widget->y() = yi;
         widget->draw(m_scene);
 
