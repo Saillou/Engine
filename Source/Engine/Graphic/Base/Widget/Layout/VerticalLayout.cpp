@@ -19,7 +19,7 @@ void VerticalLayout::draw(Scene& scene) {
         widget->y() = yi;
         widget->draw(m_scene);
 
-        yi += widget->h();
+        yi += widget->h() + padding;
     }
 }
 
@@ -43,7 +43,7 @@ glm::vec2 VerticalLayout::_compute_hull_size() {
 
         // Get the centroid
         hull_w = std::max(widget->w(), hull_w);
-        hull_h += widget->h();
+        hull_h += widget->h() + padding;
     }
 
     return glm::vec2(hull_w, hull_h);

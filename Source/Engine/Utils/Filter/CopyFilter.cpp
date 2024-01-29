@@ -31,9 +31,9 @@ CopyFilter::CopyFilter(int width, int height):
                 vec4 color_copy = texture(texture_1, TexCoords);
 
                 // Remove background color
-                if(color_copy.rgb == background.rgb) {
-                    ratio *= background.a;
-                }
+                float distance_color = length(color_copy.rgb - background.rgb);
+                if(distance_color < 2.0/256.0)
+                    ratio *= (1.0 - distance_color) * background.a;
                     
                 FragColor = (1-ratio) * color_source + ratio * color_copy;
             )_main_")

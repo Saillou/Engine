@@ -52,9 +52,9 @@ TextEngine::TextEngine():
     // Setup text shader
     m_text_shader
         .attachSource(GL_VERTEX_SHADER, ShaderSource{}
-            .add_var("out",     "vec2", "TexCoords")
-            .add_var("in",      "vec4", "vertex")
+            .add_var("layout (location = 0) in", "vec4", "vertex")
             .add_var("uniform", "mat4", "projection")
+            .add_var("out",     "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(
                 TexCoords   = vertex.zw;
                 gl_Position = projection * vec4(vertex.xy, 0.01f, 1.0);

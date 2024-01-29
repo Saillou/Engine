@@ -101,6 +101,6 @@ void Text::_compute_size() {
         _size.y += size.y;
     }
 
-    w() = _size.x;
-    h() = _size.y;
+    w() = _size.x + padding;
+    h() = _size.y + padding;
 }

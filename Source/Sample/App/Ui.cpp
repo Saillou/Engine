@@ -5,6 +5,8 @@ static constexpr char Title[]         = ".Title";
 static constexpr char SmallButton[]   = ".SmallButton";
 static constexpr char DefaultButton[] = ".DefaultButton";
 
+#define DRAW_REAL
+
 // -- Ui --
 Ui::Ui(Scene& scene) : 
     m_scene(scene),
@@ -12,6 +14,14 @@ Ui::Ui(Scene& scene) :
     m_state(Ui::State::Idle),
     m_main_frame(scene)
 {
+#ifndef DRAW_REAL
+    m_main_frame.layout().add(Text::WithClass<Title>::Create("Start"), "#Start");
+    m_main_frame.layout().find<Text>("#Start")->style()
+        .set_background(glm::vec4(1, 0, 0, 1))
+        .set_hint_x(0.5f)
+        .set_hint_y(0.5f);
+
+#else
     // Temporary container for gui elements
     std::unordered_map<std::string, std::shared_ptr<Button>> btns;
     std::unordered_map<std::string, std::shared_ptr<Text>>   txts;
@@ -34,9 +44,11 @@ Ui::Ui(Scene& scene) :
 
     // Let's start
     setState(Ui::State::Start);
+#endif
 }
 
 void Ui::setState(Ui::State state) {
+#ifdef DRAW_REAL
     if (m_state == state)
         return;
 
@@ -69,6 +81,7 @@ void Ui::setState(Ui::State state) {
 
     // Notify it changed
     Event::Emit(CommonEvents::StateUpdated(), this);
+#endif
 }
 
 Ui::State Ui::state() const {
@@ -84,20 +97,24 @@ bool Ui::wantQuit() const {
 }
 
 void Ui::draw(const LayoutEvents::Draw& msg) {
+#ifdef DRAW_REAL
     switch (m_state) {
     case State::InGame:
         m_layouts["InGame"]->find<Text>("#Ig1")->at(0) = "Cam pos: " + glm::to_string(m_scene.camera().position);
         m_layouts["InGame"]->find<Text>("#Ig1")->at(1) = "Cam dir: " + glm::to_string(m_scene.camera().direction);
         break;
     }
+#endif
 }
 
 void Ui::_updateCount(int delta) {
+#ifdef DRAW_REAL
     if (m_lights_count + delta < 0 || m_lights_count + delta > 5)
         return;
 
     m_lights_count += delta;
     m_layouts["LLight"]->find<Text>("#Count")->setText(std::to_string(m_lights_count));
+#endif
 }
 
 // ---------- Helpers ----------
@@ -135,35 +152,38 @@ void Ui::_create_widgets(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
+#ifdef DRAW_REAL
     // Buttons
-    btns["Start"]  = Widget::WithClass<DefaultButton>::Create<Button>("Start");
-    btns["Option"] = Widget::WithClass<DefaultButton>::Create<Button>("Option");
-    btns["Resume"] = Widget::WithClass<DefaultButton>::Create<Button>("Resume");
-    btns["Close"]  = Widget::WithClass<DefaultButton>::Create<Button>("Quit");
-    btns["Moins"]  = Widget::WithClass<SmallButton>::Create<Button>("-");
-    btns["Plus"]   = Widget::WithClass<SmallButton>::Create<Button>("+");
-    btns["Apply"]  = Widget::Create<Button>("Apply");
+    btns["Start"]  = Button::WithClass<DefaultButton>::Create("Start");
+    btns["Option"] = Button::WithClass<DefaultButton>::Create("Option");
+    btns["Resume"] = Button::WithClass<DefaultButton>::Create("Resume");
+    btns["Close"]  = Button::WithClass<DefaultButton>::Create("Quit");
+    btns["Moins"]  = Button::WithClass<SmallButton>::Create("-");
+    btns["Plus"]   = Button::WithClass<SmallButton>::Create("+");
+    btns["Apply"]  = Button::Create("Apply");
 
      //Texts
-    txts["Title"]  = Widget::WithClass<Title>::Create<Text>("The Game");
-    txts["Pause"]  = Widget::WithClass<Title>::Create<Text>("Game paused");
-    txts["Option"] = Widget::WithClass<Title>::Create<Text>("Options");
-    txts["Lights"] = Widget::Create<Text>("Lights");
-    txts["Count"]  = Widget::Create<Text>(std::to_string(m_lights_count));
-    txts["Ig1"]    = Widget::Create<Text>("");
-    txts["Ig2"]    = Widget::Create<Text>(Text::Block{
+    txts["Title"]  = Text::WithClass<Title>::Create("The Game");
+    txts["Pause"]  = Text::WithClass<Title>::Create("Game paused");
+    txts["Option"] = Text::WithClass<Title>::Create("Options");
+    txts["Lights"] = Text::Create("Lights");
+    txts["Count"]  = Text::Create(std::to_string(m_lights_count));
+    txts["Ig1"]    = Text::Create("");
+    txts["Ig2"]    = Text::Create(Text::Block{
         "Press [space] to pause",
         "Press [R] to dis/enable filters",
         "Press [T] to dis/enable casters"
     });
+#endif
 }
 
 void Ui::_create_layouts(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
+#ifdef DRAW_REAL
     // Start
-    m_layouts["Start"] = Widget::Create<VerticalLayout>(m_scene);
+    m_layouts["Start"] = Layout::Create<VerticalLayout>(m_scene);
     {
         m_layouts["Start"]->add(txts["Title"]);
         m_layouts["Start"]->add(btns["Start"]);
@@ -172,9 +192,9 @@ void Ui::_create_layouts(
     }
 
     // Options
-    m_layouts["Option"] = Widget::Create<VerticalLayout>(m_scene);
+    m_layouts["Option"] = Layout::Create<VerticalLayout>(m_scene);
     {
-        m_layouts["LLight"] = Widget::Create<HorizontalLayout>(m_scene);
+        m_layouts["LLight"] = Layout::Create<HorizontalLayout>(m_scene);
         {
             m_layouts["LLight"]->add(txts["Lights"]);
             m_layouts["LLight"]->add(btns["Moins"]);
@@ -188,19 +208,20 @@ void Ui::_create_layouts(
     }
 
     // In game
-    m_layouts["InGame"] = Widget::Create<Layout>(m_scene);
+    m_layouts["InGame"] = Layout::Create<Layout>(m_scene);
     {
         m_layouts["InGame"]->add(txts["Ig1"], "#Ig1");          // Set an Id to retrieve it later
         m_layouts["InGame"]->add(txts["Ig2"]);
     }
 
     // Pause
-    m_layouts["Pause"] = Widget::Create<VerticalLayout>(m_scene);
+    m_layouts["Pause"] = Layout::Create<VerticalLayout>(m_scene);
     {
         m_layouts["Pause"]->add(btns["Resume"]);
         m_layouts["Pause"]->add(btns["Option"]);
         m_layouts["Pause"]->add(txts["Pause"]);
         m_layouts["Pause"]->add(btns["Close"]);
     }
+#endif
 }
 

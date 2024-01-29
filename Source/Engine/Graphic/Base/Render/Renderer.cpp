@@ -203,7 +203,16 @@ void Renderer::_drawQuadSync(const Quad& surface) {
     addRecipe(Cookable::CookType::Shape);
 
     Shader& sh = get(Cookable::CookType::Shape)->use()
-        .set("LocalModel",       surface.pose())
+        .set("LocalModel",       surface.absolute_dimmensions ? 
+            glm::translate(glm::scale(glm::mat4(1.0f), 
+                glm::vec3(surface.w()/2.0f, surface.h()/2.0f, 0.0f)),
+                glm::vec3(
+                    +1.0f + surface.x()/(surface.w() / 2.0f), 
+                    -1.0f + (_camera.screenSize.y - surface.y())/(surface.h() / 2.0f),
+                0)) : surface.pose())
+        .set("projection",       surface.absolute_dimmensions ?
+            glm::ortho(0.0f, _camera.screenSize.x, 0.0f, _camera.screenSize.y):
+            glm::mat4(1.0f))
         .set("quadTexture",      surface.texture_location)
         .set("background_color", surface.material.diffuse_color);
 

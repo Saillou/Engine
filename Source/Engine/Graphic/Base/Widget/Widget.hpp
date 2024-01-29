@@ -29,14 +29,12 @@ struct Widget :
 
     // Constructors
     template<class WidgetTag, typename ...Args>
-    static std::shared_ptr<WidgetTag> Create(Args&... args)
-    {
+    static std::shared_ptr<WidgetTag> Create(Args&... args) {
         return std::make_shared<WidgetTag>(args...);
     }
 
     template<const char* classname>
-    struct WithClass
-    {
+    struct WithClass {
         template<class WidgetTag, typename ...Args>
         static std::shared_ptr<WidgetTag> Create(Args&... args) {
             auto widget = std::make_shared<WidgetTag>(args...);
@@ -48,7 +46,7 @@ struct Widget :
 
     // Methods
     virtual ~Widget() = default;
-    virtual void draw(Scene&) = 0;
+    virtual void draw(Scene&) {};
 
     // Helper
     static bool IsIn(const Widget&, int x, int y);

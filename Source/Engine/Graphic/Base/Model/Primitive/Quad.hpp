@@ -25,6 +25,7 @@ struct Quad :
     float& h();
 
     // Draw instructions
+    bool absolute_dimmensions = false;
     int texture_location = 0;
     Material material    = {};
     Pose pose() const;

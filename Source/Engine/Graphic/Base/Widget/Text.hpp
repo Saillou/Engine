@@ -14,6 +14,22 @@ struct Text : public Widget {
     // Text widget
     Text(const Block& texts, float textSize = -1.f);
 
+    template<typename ...Args>
+    static std::shared_ptr<Text> Create(Args&... args) {
+        return std::make_shared<Text>(args...);
+    }
+
+    template<const char* classname>
+    struct WithClass {
+        template<typename ...Args>
+        static std::shared_ptr<Text> Create(Args&... args) {
+            auto widget = std::make_shared<Text>(args...);
+            widget->className = classname;
+
+            return widget;
+        }
+    };
+
     // Methods
     void draw(Scene&) override;
 
