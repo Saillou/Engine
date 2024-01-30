@@ -18,10 +18,10 @@ int main() {
         if (ui.wantQuit())
             window.close();
 
-        // States, Physics ..
-        {
-            Event::Emit(CommonEvents::StateUpdated());
-        }
+        //// States, Physics ..
+        //{
+        //    Event::Emit(CommonEvents::StateUpdated());
+        //}
     } while (window.update());
 
     // Cleanup
