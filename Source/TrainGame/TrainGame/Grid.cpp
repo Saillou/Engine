@@ -2,31 +2,31 @@
 
 namespace Thomas
 {
-    Grid& Grid::get()
+    OldGrid& OldGrid::get()
     {
-        static Grid grid;
+        static OldGrid grid;
         return grid;
     }
 
-    void Grid::initAtPosition(const glm::vec3& pos, const glm::vec2& size)
+    void OldGrid::initAtPosition(const glm::vec3& pos, const glm::vec2& size)
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         grid.m_initialised = true;
         grid.m_position = pos;
         grid.m_size = size;
     }
-    glm::vec3 Grid::getCellSize()
+    glm::vec3 OldGrid::getCellSize()
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialized.");
 
         return glm::vec3(grid.m_size, 0.1f);
     }
-    glm::vec3 Grid::getPosition(int x, int y)
+    glm::vec3 OldGrid::getPosition(int x, int y)
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialized.");
 
@@ -36,9 +36,9 @@ namespace Thomas
             grid.m_position.z 
         };
     }
-    std::pair<int64_t, int64_t> Grid::getPosition(const glm::vec3& pos)
+    std::pair<int64_t, int64_t> OldGrid::getPosition(const glm::vec3& pos)
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialized.");
 
@@ -48,9 +48,9 @@ namespace Thomas
         return {x,y};
     }
 
-    glm::vec3 Grid::alignPosition(const glm::vec3& pos)
+    glm::vec3 OldGrid::alignPosition(const glm::vec3& pos)
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialized.");
 
@@ -59,26 +59,26 @@ namespace Thomas
         return getPosition(pair.first, pair.second);
     }
 
-    void Grid::clearCells()
+    void OldGrid::clearCells()
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialised.");
 
         grid.m_cells.clear();
     }
 
-    void Grid::setCellAtPosition(int x, int y, GridCell::CellType type)
+    void OldGrid::setCellAtPosition(int x, int y, GridCell::CellType type)
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialized.");
 
         GridCell cell;
         cell.type = type;
-        cell.transform.position = Grid::getPosition(x, y);
-        cell.transform.scale = 0.15f * glm::vec3{ 0.3f,0.3f, 0.01f };
-        cell.transform.rotation = { 0,0,0 };
+        //cell.transform.position = OldGrid::getPosition(x, y);
+        //cell.transform.scale = 0.15f * glm::vec3{ 0.3f,0.3f, 0.01f };
+        //cell.transform.rotation = { 0,0,0 };
 
         auto it = grid.m_cells.find({ x,y });
 
@@ -96,9 +96,9 @@ namespace Thomas
         grid.m_cells[{x, y}] = cell;
     }
 
-    const std::map<std::pair<int, int>, GridCell>& Grid::getCells()
+    const std::map<std::pair<int, int>, GridCell>& OldGrid::getCells()
     {
-        Grid& grid = get();
+        OldGrid& grid = get();
 
         assert(grid.m_initialised && "Grid is not initialized.");
 

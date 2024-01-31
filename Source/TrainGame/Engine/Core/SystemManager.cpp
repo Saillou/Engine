@@ -16,6 +16,7 @@ namespace Thomas
         {
             auto const& system = pair.second;
 
+            system->onEntityDeleted(entity);
             system->m_entities.erase(entity);
         }
     }

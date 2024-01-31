@@ -15,5 +15,6 @@ namespace Thomas
         bool        shouldRender    = true;
         ModelId     modelId         = ModelId::None;
         Mobility    mobility        = Mobility::Static;
+        Material    material        = { {1.f, 1.f, 1.f, 1.f}, true };
     };
 } // namespace Thomas

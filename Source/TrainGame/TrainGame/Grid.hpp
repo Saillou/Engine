@@ -8,10 +8,10 @@
 
 namespace Thomas
 {
-    class Grid
+    class OldGrid
     {
     public:
-        static Grid& get();
+        static OldGrid& get();
 
         static void initAtPosition(const glm::vec3& pos, const glm::vec2& size);
 
@@ -26,9 +26,9 @@ namespace Thomas
         static const std::map<std::pair<int, int>, GridCell>& getCells();
 
     private:
-        Grid() {};
-        Grid(const Grid& other) = delete;
-        Grid(const Grid&& other) = delete;
+        OldGrid() {};
+        OldGrid(const OldGrid& other) = delete;
+        OldGrid(const OldGrid&& other) = delete;
 
         bool m_initialised      = false;
         glm::vec3 m_position    = { 0,0,0 };

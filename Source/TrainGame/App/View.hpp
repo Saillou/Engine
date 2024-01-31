@@ -20,38 +20,19 @@
 
 #include <Engine/Events/CommonEvents.hpp>
 
-#include "TrainGame/App/Objects/Transform.h"
 #include "TrainGame/Engine/Systems/RenderSystem.h"
 
     struct View : private Event::Subscriber {
         View(Scene& scene);
 
-        void loadModels(size_t size);
-
-        void draw(Thomas::ModelId id, const Thomas::Transform& transform);
-        void drawGrid(const std::map<std::pair<int,int>, Thomas::GridCell>& cells);
-
         Scene& scene;
 
     private:
-        void drawGrid();
-
         // Events
         void _draw(const SceneEvents::Draw&);
         void _post_process(const SceneEvents::PostDraw&);
         void _on_resize(const SceneEvents::Resized&);
         void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
-
-        struct _Grid {
-            float cell_size;
-            int n_side;
-            std::vector<glm::mat4> m_grid_cells;
-        };
-
-        struct _GridCells {
-            std::unique_ptr<Entity> entity;
-            std::map<std::pair<int, int>, Thomas::GridCell> cells;
-        };
 
         struct _EntityModel {
             Thomas::Transform transform;
@@ -60,31 +41,14 @@
 
         void _initObjects();
 
-        // Object models (vertices, textures..)
-        std::unordered_map<Thomas::ModelId,  std::unique_ptr<Entity>> m_gameModels;
-        std::unordered_map<Thomas::ModelId,  std::vector<Thomas::Transform>>  m_modelsToDraw;
-
-        std::map<std::pair<int, int>, Thomas::GridCell> m_gridCells;
-
         std::unique_ptr<Entity> m_model_sphere;
-        
-        std::unique_ptr<Entity> m_model;
         std::unique_ptr<Entity> m_target;
-
         _EntityModel m_groundEntity;
-
-        std::unique_ptr<Entity> m_entityGridLayout;
-        _GridCells m_entityGridCells;
-
-        // Scene objects
-        std::vector<std::pair<Thomas::ModelId, glm::vec3>> m_gameObjects;
-        std::unique_ptr<_Grid>  m_grid;
         std::unique_ptr<Skybox> m_skybox;
 
         // Other members
         Timer::Chronometre m_timer;
 
         glm::vec2 m_mousePos;
-
         std::shared_ptr<RenderSystem> m_renderSystem;
     };

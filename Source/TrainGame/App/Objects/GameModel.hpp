@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "TrainGame/App/Objects/Transform.h"
+#include "TrainGame/Engine/Components/Transform.h"
 #include <Engine/Graphic/Base/Model/Entity.hpp>
 
 namespace Thomas
@@ -18,7 +18,9 @@ namespace Thomas
         TrackRight,
         Building1,
         CubeBasic,
-        CubeGeometry
+        CubeGeometry,
+        SphereBasic,
+        SphereGeometry
     };
 
     struct GameModel
@@ -34,7 +36,7 @@ namespace Thomas
             transform = other.transform;
         }
 
-        ModelId     modelId;
+        ModelId      modelId;
         Transform   transform; // local transform of the Model
 
         // todo: add quat

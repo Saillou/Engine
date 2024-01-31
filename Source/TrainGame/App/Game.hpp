@@ -5,11 +5,11 @@
 #include <Engine/Utils/Timer.hpp>
 
 #include "TrainGame/App/View.hpp"
-#include "TrainGame/App/Objects/GameObject.hpp"
 
 #include "UI/MainUI.hpp"
 
 #include "TrainGame/Engine/Systems/TrainControllerSystem.h"
+#include "TrainGame/Engine/Systems/GridSystem.h"
 
 namespace Thomas
 {
@@ -33,8 +33,7 @@ namespace Thomas
         std::shared_ptr<View>   m_view;
         std::unique_ptr<MainUI> m_ui;
 
-        std::unordered_map<uint64_t, GameObject*> m_objects;
-
         std::shared_ptr<TrainControllerSystem> m_trainControllerSystem;
+        std::shared_ptr<GridSystem> m_gridSystem;
     };
 } // namespace Thomas

@@ -5,7 +5,7 @@
 
 namespace Thomas
 {
-    struct TrainController2
+    struct TrainController
     {
         float m_speed;
         float m_rotationSpeed;

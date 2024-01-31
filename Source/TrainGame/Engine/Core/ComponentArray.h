@@ -11,9 +11,7 @@ namespace Thomas
     /*
     *  The goal of ComponentArray is to always be a packed array, meaning it has no holes.
     *  This class stores the values of the Component for the all Entities, it allows to:
-    *  - add Component data to the Entity
-    *  - remove Component data from the Entity
-    *  - get Component data that is assigned to the Entity
+    *  - add/remove/get Component data to the Entity
     */
 
     class IComponentArray

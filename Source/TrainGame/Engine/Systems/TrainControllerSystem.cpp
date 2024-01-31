@@ -3,17 +3,26 @@
 #include "glm/gtx/vector_angle.hpp"
 
 #include "TrainGame/Engine/Core/ECS.h"
-#include "TrainGame/Engine/Components/Transform2.h"
-#include "TrainGame/Engine/Components/TrainController2.h"
+#include "TrainGame/Engine/Components/Transform.h"
+#include "TrainGame/Engine/Components/TrainController.h"
 
 namespace Thomas
 {
+    void TrainControllerSystem::init()
+    {
+        Signature signature;
+        signature.set(ECS::getComponentType<Transform>());
+        signature.set(ECS::getComponentType<TrainController>());
+
+        ECS::setSystemSignature<TrainControllerSystem>(signature);
+    }
+
     void TrainControllerSystem::update(float dt)
     {
         for (auto& entity : m_entities)
         {
-            Transform2& transform           = ECS::getComponent<Transform2>(entity);
-            TrainController2& controller    = ECS::getComponent<TrainController2>(entity);
+            Transform& transform           = ECS::getComponent<Transform>(entity);
+            TrainController& controller    = ECS::getComponent<TrainController>(entity);
 
             if (controller.m_points.empty())
                 continue;
@@ -69,10 +78,5 @@ namespace Thomas
             }
             
         }
-    }
-
-    bool TrainControllerSystem::goToPoint(const glm::vec3& pos, float dt)
-    {
-        return false;
     }
 } // namespace Thomas
