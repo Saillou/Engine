@@ -5,9 +5,10 @@
 #include <Engine/Utils/Timer.hpp>
 
 #include "View.hpp"
+#include "Ui.hpp"
 
 struct Controller: private Event::Subscriber {
-    Controller(View& view);
+    Controller(Ui& ui, View& view);
 
 protected:
     // Events
@@ -16,8 +17,16 @@ protected:
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
     void _on_mouse_button(const CommonEvents::MouseButton& evt);
 
+    void _on_ui_update(const CommonEvents::StateUpdated& evt);
+
 private:
+    Ui& m_ui;
     View& m_view;
     std::vector<Light> m_pontential_lights;
-    Timer::Chronometre m_timer;
+
+    float m_distance = 6.0f;
+    float m_theta    = 0.0f;
+
+    bool m_enable_filter      = false;
+    bool m_enable_interaction = false;
 };

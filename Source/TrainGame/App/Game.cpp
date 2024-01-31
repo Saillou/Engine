@@ -69,10 +69,10 @@ namespace Thomas
 
         switch (evt.key)
         {
-        case Key::ArrowRight: dir.x = +1.0f; break;
-        case Key::ArrowLeft:  dir.x = -1.0f; break;
-        case Key::ArrowUp:    dir.y = +1.0f; break;
-        case Key::ArrowDown:  dir.y = -1.0f; break;
+        case KeyCode::ArrowRight: dir.x = +1.0f; break;
+        case KeyCode::ArrowLeft:  dir.x = -1.0f; break;
+        case KeyCode::ArrowUp:    dir.y = +1.0f; break;
+        case KeyCode::ArrowDown:  dir.y = -1.0f; break;
         case 'Q':             dir.z = +1.0f; break;
         case 'W':             dir.z = -1.0f; break;
         case 'A':             rot = +1.f; break;

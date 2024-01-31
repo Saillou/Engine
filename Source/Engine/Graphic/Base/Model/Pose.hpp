@@ -7,6 +7,7 @@ struct Pose {
 	Pose(const glm::mat4&);
 	Pose(const glm::vec3& position);
 	Pose(const glm::vec3& position, float scale);
+	Pose(const glm::vec3& position, const glm::vec3& scale);
 
 	// Cast
 	operator glm::mat4() const;

@@ -1,8 +1,9 @@
 #pragma once
 
 // To avoid glfw include
-enum Key {
+enum KeyCode {
 	Space      = 32,
+	Escape	   = 256,
 
 	ArrowRight = 262,
 	ArrowLeft  = 263,
@@ -12,13 +13,13 @@ enum Key {
 	Numpad_0   = 320
 };
 
-enum Button {
+enum MouseButton {
 	Left   = 0,
 	Right  = 1,
 	Middle = 2,
 };
 
-enum Action {
+enum InputAction {
 	Released = 0,
 	Pressed,
 	Repeated

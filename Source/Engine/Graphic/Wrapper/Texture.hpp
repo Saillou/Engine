@@ -3,8 +3,34 @@
 #include <string>
 #include <glad/glad.h>
 #include <assimp/scene.h>
+#include <unordered_map>
 
 class Texture {
+// Static
+public:
+	static struct Cache {
+		~Cache();
+
+		struct Metadata {
+			std::string path;
+			int width;
+			int height;
+			int channels;
+			void* pixels;
+		};
+
+		static bool Has(const std::string& path);
+		static const Metadata& Get(const std::string& path);
+		static void Set(const std::string& path, const Metadata&);
+		static bool Create(const std::string& path);
+
+		static void Clean();
+
+	private:
+		std::unordered_map<std::string, Metadata> _data;
+	} s_cache;
+
+// Instance
 public:
 	Texture(GLuint texture_type = GL_TEXTURE_2D);
 	Texture(const std::string& image_path);
@@ -31,6 +57,7 @@ public:
 	void resize(unsigned int width, unsigned int height, void* data = nullptr, GLuint target = -1);
 
 	static void activate(GLuint target);
+	static void deactivate(GLuint texture_type, GLuint target);
 
 protected:
 	void _setParameters();

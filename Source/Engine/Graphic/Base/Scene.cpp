@@ -49,8 +49,6 @@ void Scene::run() {
         _framebuffer_main.unbind();
     
         // Apply filters
-        _framebuffer_main.texture().activate(GL_TEXTURE0);
-
         Event::Emit(SceneEvents::PostDraw());
         drawFrame(_framebuffer_main);
     }
@@ -60,6 +58,7 @@ void Scene::run() {
 
 void Scene::drawFrame(const Framebuffer& framebuffer) {
     glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+    Texture::activate(GL_TEXTURE0);
 
     // Need to blit multisample to mono
     if (framebuffer.type() == Framebuffer::Type::Multisample) {
@@ -73,12 +72,14 @@ void Scene::drawFrame(const Framebuffer& framebuffer) {
     else {
         framebuffer.texture().bind();
     }
+    
+    // Draw
+    _quad.texture_location = 0;
+    _renderer.quad(_quad);
 
-    _quad.draw();
-
-    Texture::unbind(GL_TEXTURE_2D);
-
-    glEnable(GL_DEPTH_TEST); // set back to original state.
+    // set back to original state.
+    Texture::deactivate(GL_TEXTURE_2D, GL_TEXTURE0);
+    glEnable(GL_DEPTH_TEST); 
 }
 
 void Scene::directDraw(bool b) {

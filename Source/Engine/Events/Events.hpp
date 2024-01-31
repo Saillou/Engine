@@ -1,21 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 #include <functional>
 
 #include "Common.hpp"
-
-/*
-	How to use:
-	 - Create an XXEvent struct inherited from Event::_Base (or use one defined in CommonEvents.hpp)
-	 - For the sender:
-		`Event::Emit(xx_event)` | xx_event: an instance of XXEvent
-	 - For the receiver, inherit the class `Event::Subscriber`, then, sub:
-		`_subscribe(method);` | method signature: void(const XXEvent& evt);
-*/
 
 class Event {
 protected:
@@ -33,9 +24,9 @@ protected:
 	};
 
 public:
-	// [Emitter]
-	template <typename T> inline
-		static void Emit(const T& event);
+	// [Static Emitter]
+	template <typename T>
+		static void Emit(const T& event, const void* _emitter = nullptr);
 
 	// [Receiver]
 	class Subscriber {
@@ -46,50 +37,125 @@ public:
 		virtual ~Subscriber();
 
 	protected:
-		template <class _subscriber, typename _message> inline
+		// Sub to any emitter
+		template <class _subscriber, typename _message>
 			void _subscribe(void(_subscriber::*callback)(const _message&));
+
+		// ... with a lambda
+		template <typename _lambda>
+			void _subscribe(_lambda);
+
+		// Sub to a specific emitter
+		template <class _emitter, class _subscriber, typename _message>
+			void _subscribe(const _emitter*, void(_subscriber::* callback)(const _message&));
+
+		// ... with a shared ptr
+		template <class _emitter, class _subscriber, typename _message>
+			void _subscribe(const std::shared_ptr<_emitter>, void(_subscriber::* callback)(const _message&));
+
+		// ... with a lambda
+		template <class _emitter, typename _lambda>
+			void _subscribe(const _emitter*, _lambda);
+
+		// ... with a lambda and shared_ptr
+		template <class _emitter, typename _lambda>
+			void _subscribe(const std::shared_ptr<_emitter>, _lambda);
 
 		void _unsubscribeAll();
 
 	private:
-		// Note: 
-		//	these are temporary callbacks used to crush the _message type to _Base (inherited) type,
-		//  the final callback provided by the subscriber is encapsulated in the crushy callback.
-		typedef std::function<void(const Event::_Base*)> _crushyCallback;
-		std::unordered_map<_Type, std::vector<_crushyCallback>> _callbacks;
+		struct _callback {
+			typedef std::function<void(const Event::_Base*)> crushy;
+			crushy	func;
+			void*	emitter = nullptr;
+		};
+
+		std::unordered_map<_Type, std::vector<_callback>> _callbacks;
 	};
 
 private:
 	static std::unordered_set<Subscriber*> _allSubscribers;
 };
 
-// Template Implementation
+// -- Type Helper --
+template<typename _lambda>
+struct GetFrom {
+	template<typename ReturnType, typename Message>
+	static Message TypeMessage(ReturnType(_lambda::*)(const Message&) const);
+
+	// required for mutable lambdas
+	template<typename ReturnType, typename Message>
+	static Message TypeMessage(ReturnType(_lambda::*)(const Message&));
+};
+
+// -- Emitter --
 template<typename T>
-inline void Event::Emit(const T& event)
+void Event::Emit(const T& event, const void* _emitter)
 {
 	static_assert(std::is_base_of<Event::_Base, T>(), "Can't emit non inherited BaseEvent.");
 
 	for (Subscriber* subscriber : _allSubscribers) {
-		for (const Subscriber::_crushyCallback& callback : subscriber->_callbacks[event.type()]) {
-			callback(static_cast<const Event::_Base*>(&event));
+		for (const auto& callback : subscriber->_callbacks[event.type()]) {
+			if (_emitter != callback.emitter)
+				continue;
+
+			callback.func(static_cast<const Event::_Base*>(&event));
 		}
 	}
 }
 
+// -- Receiver --
 template<class _subscriber, typename _message>
-inline void Event::Subscriber::_subscribe(void(_subscriber::*finalCallback)(const _message&))
+void Event::Subscriber::_subscribe(void(_subscriber::*callback)(const _message&))
+{
+	_subscribe((void*)nullptr, callback);
+}
+
+template<typename _lambda>
+void Event::Subscriber::_subscribe(_lambda func)
+{
+	_subscribe((void*)nullptr, func);
+}
+
+template<class _emitter, class _subscriber, typename _message>
+void Event::Subscriber::_subscribe(const _emitter* emitter, void(_subscriber::*callback)(const _message&))
 {
 	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
-
-	// Memorize type
 	static const _Type type = _message{}.type();
 
-	// Encapsulate the final callback
-	const _crushyCallback crushy = [=](const Event::_Base* msg) -> void 
-	{
-		std::invoke(finalCallback, static_cast<_subscriber*>(this), *static_cast<const _message*>(msg));
+	_callback cbk;
+	cbk.func = [=](const Event::_Base* msg) {
+		std::invoke(callback, static_cast<_subscriber*>(this), *static_cast<const _message*>(msg));
 	};
+	cbk.emitter = (void*)emitter;
 
-	// Add to callbacks
-	_callbacks[type].push_back(crushy);
+	_callbacks[type].push_back(cbk);
+}
+
+template<class _emitter, class _subscriber, typename _message>
+void Event::Subscriber::_subscribe(const std::shared_ptr<_emitter> shr_emitter, void(_subscriber::* callback)(const _message&))
+{
+	_subscribe(shr_emitter.get(), callback);
+}
+
+template<class _emitter, typename _lambda>
+void Event::Subscriber::_subscribe(const _emitter* emitter, _lambda func)
+{
+	using _message = decltype(GetFrom<_lambda>::TypeMessage(&_lambda::operator()));
+	static_assert(std::is_base_of<Event::_Base, _message>(), "Can't subscribe to non inherited BaseEvent.");
+	static const _Type type = _message{}.type();
+	
+	_callback cbk;
+	cbk.func = [=](const Event::_Base* msg) {
+		std::invoke(func, *static_cast<const _message*>(msg));
+	};
+	cbk.emitter = (void*)emitter;
+	
+	_callbacks[type].push_back(cbk);
+}
+
+template<class _emitter, typename _lambda>
+void Event::Subscriber::_subscribe(const std::shared_ptr<_emitter> shr_emitter, _lambda func)
+{
+	_subscribe(shr_emitter.get(), func);
 }

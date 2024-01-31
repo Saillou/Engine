@@ -9,14 +9,16 @@
 
 #include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
+#include <Engine/Graphic/Base/Model/Skybox.hpp>
 
 #include <Engine/Events/CommonEvents.hpp>
 
-struct View : private Event::Subscriber {
+struct View : Event::Subscriber {
     View(Scene& scene);
 
     Scene& scene();
     bool enable_filter = false;
+    bool enable_interaction = false;
 
 protected:
     // Events
@@ -28,8 +30,13 @@ protected:
 private:
     void _initFilters();
 
+    void _drawLights();
+    void _drawObjects();
+    void _drawTarget();
+
     std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
-    std::vector<std::shared_ptr<Entity>> m_scene_objects;
+    std::vector<std::shared_ptr<Entity>> m_interact_objects;
+    std::unique_ptr<Skybox> m_skybox;
 
     Scene& m_scene;
     BaseFilter m_filter;

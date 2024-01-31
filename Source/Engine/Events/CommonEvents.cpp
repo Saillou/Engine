@@ -17,10 +17,11 @@ CommonEvents::MouseMoved::MouseMoved(int x, int y) :
 {
 	// ..
 }
-CommonEvents::MouseButton::MouseButton(int button, int action) :
+CommonEvents::MouseButton::MouseButton(int button, int action, int x, int y) :
 	_Base(_Type::EventMouseButton),
 	button(button),
-	action(action)
+	action(action),
+	x(x), y(y)
 {
 	// ..
 }

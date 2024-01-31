@@ -42,16 +42,16 @@ bool Window::update() {
     if (glfwWindowShouldClose(m_window))
         return false;
 
-    // Inputs
-    glfwPollEvents();
-    _manage_inputs();
-
     // Render
     if (m_scene) {
         m_scene->run();
     }
 
     glfwSwapBuffers(m_window);
+
+    // Inputs
+    glfwPollEvents();
+    _manage_inputs();
 
     return true;
 }
@@ -145,11 +145,7 @@ void Window::_init(const char* title) {
     glfwSwapInterval(1);                                // Enable v-sync
 
     // Events
-    glfwSetWindowUserPointer(m_window, this); // store `this` in m_window's userdata
-
-    glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* this_window, int new_width, int new_height) {
-        ((Window*)(glfwGetWindowUserPointer(this_window)))->_resize(new_width, new_height);
-    });
+    _set_events();
 
     // Basic scene
     m_scene = std::make_shared<Scene>();
@@ -158,11 +154,12 @@ void Window::_init(const char* title) {
 
 // Private
 void Window::_resize(int width, int height) {
-    Scene::Viewport(width, height);
     TextEngine::SetViewport(0, 0, width, height);
 
-    if (m_scene)
+    if (m_scene) {
+        m_scene->camera().screenSize = glm::vec2(width, height);
         m_scene->resize(width, height);
+    }
 
     m_width  = width;
     m_height = height;
@@ -170,62 +167,75 @@ void Window::_resize(int width, int height) {
     update();
 }
 
-void Window::_manage_inputs() {
+void Window::_set_events() {
+    // store `this` in m_window's userdata
+    glfwSetWindowUserPointer(m_window, this);
+
+    // Resize
+    glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* this_window, int new_width, int new_height) {
+        ((Window*)(glfwGetWindowUserPointer(this_window)))->_resize(new_width, new_height);
+    });
+
     // Mouse position
-    {
-        double x, y;
-        glfwGetCursorPos(m_window, &x, &y);
+    glfwSetCursorPosCallback(m_window, [](GLFWwindow* this_window, double mouse_x, double mouse_y) {
+        Window& self = *((Window*)(glfwGetWindowUserPointer(this_window)));
+        self.m_mouse_pos.x = int(mouse_x);
+        self.m_mouse_pos.y = int(mouse_y);
 
-        if (int(x) != m_mouse_pos.x && int(y) != m_mouse_pos.y) {
-            m_mouse_pos.x = int(x);
-            m_mouse_pos.y = int(y);
+        Event::Emit(CommonEvents::MouseMoved(self.m_mouse_pos.x, self.m_mouse_pos.y));
+    });
 
-            Event::Emit(CommonEvents::MouseMoved(mousePos().x, mousePos().y));
-        }
-    }
+    // Mouse buttons
+    glfwSetMouseButtonCallback(m_window, [](GLFWwindow* this_window, int button_id, int action_id, int /*mods*/) {
+        Window& self = *((Window*)(glfwGetWindowUserPointer(this_window)));
+
+        // Case is handled in _manage_inputs
+        if (action_id == GLFW_REPEAT)
+            return;
+
+        InputAction action = action_id == GLFW_PRESS ? InputAction::Pressed : InputAction::Released;
+
+        self.m_buttons_pressed[button_id] = action_id != InputAction::Released;
+        Event::Emit(CommonEvents::MouseButton(button_id, action, self.m_mouse_pos.x, self.m_mouse_pos.y));
+    });
+
+    // Keyboard buttons
+    glfwSetKeyCallback(m_window, [](GLFWwindow* this_window, int key_code, int /*scancode*/, int action_id, int /*mods*/) {
+        Window& self = *((Window*)(glfwGetWindowUserPointer(this_window)));
+        
+        // Case is handled in _manage_inputs
+        if (action_id == GLFW_REPEAT)
+            return;
+
+        InputAction action = action_id == GLFW_PRESS ? InputAction::Pressed : InputAction::Released;
+
+        self.m_keys_pressed[key_code] = action_id != InputAction::Released;
+        Event::Emit(CommonEvents::KeyPressed(key_code, action));
+    });
+}
+
+void Window::_manage_inputs() {
+    // Point of this function is to avoid the delay between the events for "Pressed" and "Repeated"
 
     // Mouse buttons
     for (const auto& button : m_buttons_pressed) {
-        unsigned int button_id = button.first;
-        bool button_state      = button.second;
-
-        bool stateOn = glfwGetMouseButton(m_window, button_id) == GLFW_PRESS;
-
-        bool isPressed  = stateOn  && !button_state;
-        bool isRepeated = stateOn  &&  button_state;
-        bool isReleased = !stateOn &&  button_state;
-
-        if (!stateOn && !button_state)
+        if (!button.second)
             continue;
 
-        Action action = isPressed  ? Action::Pressed:
-                        isRepeated ? Action::Repeated:
-                                     Action::Released;
+        if (glfwGetMouseButton(m_window, button.first) == GLFW_RELEASE)
+            continue;
 
-        m_buttons_pressed[button_id] = stateOn;
-        Event::Emit(CommonEvents::MouseButton(button_id, action));
+        Event::Emit(CommonEvents::MouseButton(button.first, InputAction::Repeated, m_mouse_pos.x, m_mouse_pos.y));
     }
-
 
     // Keyboard keys
     for (const auto& key : m_keys_pressed) {
-        unsigned int key_id = key.first;
-        bool key_state      = key.second;
-
-        bool stateOn = glfwGetKey(m_window, key_id) == GLFW_PRESS;
-
-        bool isPressed  = stateOn  && !key_state;
-        bool isRepeated = stateOn  &&  key_state;
-        bool isReleased = !stateOn &&  key_state;
-
-        if (!stateOn && !key_state)
+        if (!key.second)
             continue;
 
-        Action action = isPressed  ? Action::Pressed:
-                        isRepeated ? Action::Repeated:
-                                     Action::Released;
+        if (glfwGetKey(m_window, key.first) == GLFW_RELEASE)
+            continue;
 
-        m_keys_pressed[key_id] = stateOn;
-        Event::Emit(CommonEvents::KeyPressed(key_id, action));
+        Event::Emit(CommonEvents::KeyPressed(key.first, InputAction::Repeated));
     }
 }

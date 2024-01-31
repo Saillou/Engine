@@ -3,6 +3,47 @@
 #include <iostream>
 #include <stb_image.h>
 
+// Statics
+Texture::Cache Texture::s_cache;
+
+Texture::Cache::~Cache() {
+	Clean();
+}
+
+bool  Texture::Cache::Has(const std::string& path) {
+	return s_cache._data.find(path) != s_cache._data.cend();
+}
+const Texture::Cache::Metadata& Texture::Cache::Get(const std::string& path) {
+	return s_cache._data.at(path);
+}
+void  Texture::Cache::Set(const std::string& path, const Metadata& data) {
+	s_cache._data[path] = data;
+}
+bool  Texture::Cache::Create(const std::string& path) {
+	if (Has(path))
+		return true;
+
+	Metadata metadata;
+
+	metadata.pixels = stbi_load(path.c_str(), &metadata.width, &metadata.height, &metadata.channels, 0);
+	if (!metadata.pixels) 	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+		stbi_image_free(metadata.pixels);
+
+		return false;
+	}
+
+	Set(path, metadata);
+	return true;
+}
+void Texture::Cache::Clean() {
+	for (auto& it : s_cache._data) {
+		stbi_image_free(it.second.pixels);
+	}
+	s_cache._data = {};
+}
+
+// Instance
 Texture::Texture(GLuint texture_type):
 	m_textureId(0),
 	m_width(0),
@@ -123,26 +164,17 @@ void Texture::unbind(GLuint texture_type) {
 }
 
 void Texture::load(GLuint target, const std::string& path, int* poutWidth, int* poutHeight, int* poutChans) {
-	int width; 
-	int height; 
-	int nrChannels;
+	if (!Cache::Create(path)) {
+		return;
+	}
 
-	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		resize(width, height, data, target);
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
-	}
+	const Cache::Metadata& metadata = Cache::Get(path);
+	resize(metadata.width, metadata.height, metadata.pixels, target);
 
 	// Out info
-	if (poutWidth)	*poutWidth	= width;
-	if (poutHeight) *poutHeight = height;
-	if (poutChans)	*poutChans	= nrChannels;
+	if (poutWidth)	*poutWidth	= metadata.width;
+	if (poutHeight) *poutHeight = metadata.height;
+	if (poutChans)	*poutChans	= metadata.channels;
 }
 
 void Texture::resize(unsigned int width, unsigned int height, void* data, GLuint target) {
@@ -163,6 +195,11 @@ void Texture::resize(unsigned int width, unsigned int height, void* data, GLuint
 
 void Texture::activate(GLuint target) {
 	glActiveTexture(target);
+}
+
+void Texture::deactivate(GLuint texture_type, GLuint target) {
+	glActiveTexture(target);
+	glBindTexture(texture_type, 0);
 }
 
 void Texture::_setParameters() {

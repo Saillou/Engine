@@ -35,6 +35,7 @@ private:
     void _init(const char* title);
     void _resize(int width, int height);
     void _manage_inputs();
+    void _set_events();
 
     // Members
     std::string m_title;

@@ -9,6 +9,7 @@ struct Camera {
     // Members
     glm::mat4 projection = {};
     glm::mat4 modelview  = {};
+    glm::vec2 screenSize = {};
 
     glm::vec3 position  = {};
     glm::vec3 direction = {};

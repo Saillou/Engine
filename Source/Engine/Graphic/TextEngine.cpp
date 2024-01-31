@@ -9,8 +9,34 @@ void TextEngine::Write(const std::string& text, float x, float y, float scale, c
     _getInstance()._render(text, x, y, scale, color);
 }
 
+glm::vec2 TextEngine::Measure(const std::string& text, float scale) {
+    return _getInstance()._measure(text, scale);
+}
+
+glm::vec2 TextEngine::MeasureRel(const std::string& text, float scale) {
+    if (_getInstance().m_w <= 0 || _getInstance().m_h <= 0)
+        return glm::vec2(1.0f, 1.0f);
+
+    glm::vec2 size = Measure(text, scale);
+    return glm::vec2(size.x / _getInstance().m_w, size.y / _getInstance().m_h);
+}
+
 void TextEngine::SetViewport(int x, int y, int width, int height) {
-    _getInstance().m_text_shader.set("projection", glm::ortho((float)x, (float)width, (float)y, (float)height));
+    _getInstance().m_text_shader
+        .use()
+        .set("projection", glm::ortho((float)x, (float)width, (float)y, (float)height));
+
+    _getInstance().m_x = x;
+    _getInstance().m_y = y;
+    _getInstance().m_w = width;
+    _getInstance().m_h = height;
+}
+
+void TextEngine::GetViewport(int& x, int& y, int& width, int& height) {
+    x      = _getInstance().m_x;
+    y      = _getInstance().m_y;
+    width  = _getInstance().m_w;
+    height = _getInstance().m_h;
 }
 
 // - Private
@@ -26,12 +52,12 @@ TextEngine::TextEngine():
     // Setup text shader
     m_text_shader
         .attachSource(GL_VERTEX_SHADER, ShaderSource{}
-            .add_var("out",     "vec2", "TexCoords")
-            .add_var("in",      "vec4", "vertex")
+            .add_var("layout (location = 0) in", "vec4", "vertex")
             .add_var("uniform", "mat4", "projection")
+            .add_var("out",     "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(
                 TexCoords   = vertex.zw;
-                gl_Position = projection * vec4(vertex.xy, 0.5f, 1.0);
+                gl_Position = projection * vec4(vertex.xy, 0.01f, 1.0);
             )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
@@ -44,16 +70,15 @@ TextEngine::TextEngine():
                 FragColor    = vec4(textColor) * sampled;
             )_main_")
         )
-        .link()
-        .use();
+        .link();
 
     // TODO: Font choice (here hardcoded)
     FT_Library ft;
     FT_Init_FreeType(&ft);
 
     FT_Face face;
-    FT_New_Face(ft, "C:/Windows/Fonts/Candara.ttf", 0, &face);
-    FT_Set_Pixel_Sizes(face, 0, 48);
+    FT_New_Face(ft, "C:/Windows/Fonts/Calibri.ttf", 0, &face);
+    FT_Set_Pixel_Sizes(face, 0, (unsigned)NOMINAL_HEIGHT);
 
     // load first 128 characters of ASCII set and put them in gl_textures
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -73,9 +98,10 @@ TextEngine::TextEngine():
                 GL_UNSIGNED_BYTE,
                 face->glyph->bitmap.buffer
             ),
-            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            glm::ivec2(face->glyph->bitmap_left,  face->glyph->bitmap_top),
-            (unsigned int)face->glyph->advance.x
+            glm::ivec2(face->glyph->bitmap.width,  face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left,   face->glyph->bitmap_top),
+            glm::ivec2(face->glyph->advance.x,     face->glyph->advance.y),
+            glm::ivec2(face->glyph->metrics.width, face->glyph->metrics.height + face->glyph->metrics.vertBearingY)
         });
     }
     Texture::unbind(GL_TEXTURE_2D);
@@ -95,11 +121,41 @@ TextEngine::TextEngine():
     m_vao.unbind();
 }
 
+glm::vec2 TextEngine::_measure(const std::string& text, float scale)
+{
+    float x = 0.0f;
+    float y = 0.0f;
+
+    // Get the centroid
+    float left   = std::numeric_limits<float>::max();
+    float right  = std::numeric_limits<float>::min();
+    float top    = std::numeric_limits<float>::max();
+    float bottom = std::numeric_limits<float>::min();
+
+    // iterate through all characters
+    for (const char c : text) {
+        const _Character& ch = m_char_map.at(c);
+        float xpos = x + (ch.bearing.x) * scale;
+        float ypos = y + (ch.bearing.y - ch.size.y) * scale;
+
+        float w = ch.size.x * scale;
+        float h = ch.size.y * scale;
+
+        left   = std::min(left,   xpos);
+        right  = std::max(right,  xpos + ch.size.x * scale);
+        top    = std::min(top,    ypos);
+        bottom = std::max(bottom, ypos + ch.size.y * scale);
+
+        x += (ch.advance.x >> 6) * scale;
+    }
+
+    return glm::vec2(right - left, bottom - top);
+}
+
 // Methods
 void TextEngine:: _render(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
     // activate corresponding render state	
-    m_text_shader.use();
-    m_text_shader.set("textColor", color);
+    m_text_shader.use().set("textColor", color);
 
     Texture::activate(GL_TEXTURE0);
     m_vao.bind();
@@ -108,8 +164,8 @@ void TextEngine:: _render(const std::string& text, float x, float y, float scale
     for (const char c : text) {
         const _Character& ch = m_char_map.at(c);
 
-        float xpos = x + ch.bearing.x * scale;
-        float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+        float xpos = x + scale * (ch.bearing.x);
+        float ypos = y + scale * (ch.bearing.y - ch.size.y - NOMINAL_HEIGHT * 0.50f);
 
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
@@ -133,7 +189,7 @@ void TextEngine:: _render(const std::string& text, float x, float y, float scale
         // render quad
         glDrawArrays(GL_TRIANGLES, 0, 6);
         // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+        x += (ch.advance.x >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
     }
     m_vao.unbind();
     Texture::unbind(GL_TEXTURE_2D);

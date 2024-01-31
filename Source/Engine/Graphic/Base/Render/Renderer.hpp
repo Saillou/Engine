@@ -4,7 +4,8 @@
 #include "../../Cookable.hpp"
 #include "../../Light.hpp"
 #include "../../TextEngine.hpp"
-#include "../../Utils/Framebuffer.hpp"
+#include "../../Wrapper/Framebuffer.hpp"
+#include "../Model/Primitive/Quad.hpp"
 #include "../Model/Entity.hpp"
 #include "../Render/RenderType.hpp"
 #include "ShadowRender.hpp"
@@ -17,6 +18,7 @@ struct Renderer : private Cookable {
 	friend struct Scene;
 
 	// Methods
+	void quad(const Quad& surface);
 	void draw(Render::DrawType, Entity& entity);
 	void text(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
 
@@ -34,7 +36,9 @@ private:
 	void _compute();
 	void _draw();
 
+	void _drawQuadSync(const Quad& surface);
 	void _drawEntitySync(Render::DrawType, Entity& entity, bool update_buffer = true);
+	void _drawTextSync(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
 
 	// Deferred rendering
 	struct _DrawEntity {

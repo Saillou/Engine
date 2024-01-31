@@ -3,51 +3,50 @@
 #include "../../../Cookable.hpp"
 
 // - Quad -
-Quad::Quad(float x, float y, float w, float h)
+Quad::Quad(float x, float y, float w, float h):
+    _x(x), _y(y), _w(w), _h(h)
 {
-    shader_quad
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
-            .add_var("layout (location = 0) in", "vec3", "aPos")
-            .add_var("out", "vec2", "TexCoords")
-            .add_func("void", "main", "", R"_main_(
-                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-                float tx = aPos.x > 0 ? 1.0 : 0.0;
-                float ty = aPos.y > 0 ? 1.0 : 0.0;
-                TexCoords = vec2(tx, ty);
-            )_main_")
-        )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
-            .add_var("in", "vec2", "TexCoords")
-            .add_var("uniform", "sampler2D", "quadTexture")
-            .add_var("out", "vec4", "FragColor")
-            .add_func("void", "main", "", R"_main_(
-                FragColor = texture(quadTexture, TexCoords);
-            )_main_")
-        )
-        .link();
-
-    float x1 = x*2.0f - 1.0f;
-    float y1 = y*2.0f - 1.0f;
-
-    float x2 = (x+w)*2.0f - 1.0f;
-    float y2 = (y+h)*2.0f - 1.0f;
-
     // Shape
     createQuad(quad_mesh,
-        glm::vec3(x1, y2, 0),
-        glm::vec3(x1, y1, 0),
-        glm::vec3(x2, y1, 0),
-        glm::vec3(x2, y2, 0)
+        glm::vec3(-1, +1, 0),
+        glm::vec3(-1, -1, 0),
+        glm::vec3(+1, -1, 0),
+        glm::vec3(+1, +1, 0)
     );
 
     setupGPU(quad_mesh);
 }
 
-void Quad::draw() {
-    shader_quad.use();
-    drawElements();
+void Quad::drawElements() const {
+    quad_mesh.drawElements();
 }
 
-void Quad::drawElements() {
-    quad_mesh.drawElements();
+float Quad::x() const {
+    return _x;
+}
+float Quad::y() const {
+    return _y;
+}
+float Quad::w() const {
+    return _w;
+}
+float Quad::h() const  {
+    return _h;
+}
+
+float& Quad::x() {
+    return _x;
+}
+float& Quad::y() {
+    return _y;
+}
+float& Quad::w() {
+    return _w;
+}
+float& Quad::h() {
+    return _h;
+}
+
+Pose Quad::pose() const {
+    return Pose(glm::vec3(2.0f*_x + (_w - 1.0f), -_y*2.0f + (1.0f - _h), 0.0f), glm::vec3(_w, _h, 0.0f));
 }

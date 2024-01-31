@@ -18,6 +18,10 @@ Pose::Pose(const glm::vec3& position, float scale) :
     _quat(glm::scale(glm::translate(glm::mat4(1.0f), position), glm::vec3(scale)))
 { }
 
+Pose::Pose(const glm::vec3& position, const glm::vec3& scale) :
+    _quat(glm::scale(glm::translate(glm::mat4(1.0f), position), scale))
+{ }
+
 Pose::operator glm::mat4() const {
     return _quat;
 }

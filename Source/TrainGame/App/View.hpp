@@ -5,20 +5,14 @@
 #include <unordered_map>
 #include <map>
 
-#include <Engine/Utils/Timer.hpp>
+
+#include <Engine/Events/CommonEvents.hpp>
 
 #include <Engine/Graphic/Base/Scene.hpp>
-
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 #include <Engine/Graphic/Base/Model/Entity.hpp>
 
-#include "TrainGame/TrainGame/TrainGameModels.hpp"
-#include <Engine/Graphic/Utils/Shader.hpp>
-#include <Engine/Graphic/Utils/Framebuffer.hpp>
-
-#include "TrainGame/TrainGame/GridCell.hpp"
-
-#include <Engine/Events/CommonEvents.hpp>
+#include <Engine/Utils/Timer.hpp>
 
 #include "TrainGame/Engine/Systems/RenderSystem.h"
 
