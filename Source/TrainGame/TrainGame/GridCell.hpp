@@ -2,7 +2,7 @@
 
 #include "glm/glm.hpp"
 
-#include "TrainGame/App/Objects/Transform.h"
+//#include "TrainGame/App/Objects/Transform.h"
 
 namespace Thomas
 {
@@ -16,7 +16,7 @@ namespace Thomas
             ConstructBad
         };
 
-        Transform transform;
+        //Transform transform;
         CellType type = CellType::None;
     };
 } // namespace Thomas

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "TrainGame/App/Objects/GameModel.hpp"
+#include "TrainGame/Engine/Components/Transform.h"
 
 /*
 *  Misha: I don't know if i want to keep it as a Singletone,
