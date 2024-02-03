@@ -20,6 +20,10 @@ Layout& SceneFrame::layout() {
     return *m_layout.get();
 }
 
+Scene& SceneFrame::scene() {
+    return m_scene;
+}
+
 // Callbacks
 void SceneFrame::_on_draw(const SceneEvents::RenderFinished&) {
     // Refresh style data

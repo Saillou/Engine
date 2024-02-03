@@ -13,6 +13,7 @@ struct SceneFrame :
 	virtual ~SceneFrame() = default;
 
 	Layout& layout();
+	Scene& scene();
 
 private:
 	void _on_draw(const SceneEvents::RenderFinished&);

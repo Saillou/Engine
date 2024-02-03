@@ -159,7 +159,7 @@ void Ui::_create_widgets(
     btns["Plus"]   = Button::WithClass<SmallButton>::Create("+");
     btns["Apply"]  = Button::Create("Apply");
 
-     //Texts
+     // Texts
     txts["Title"]  = Text::WithClass<Title>::Create("The Game");
     txts["Pause"]  = Text::WithClass<Title>::Create("Game paused");
     txts["Option"] = Text::WithClass<Title>::Create("Options");
