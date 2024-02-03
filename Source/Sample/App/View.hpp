@@ -14,9 +14,8 @@
 #include <Engine/Events/CommonEvents.hpp>
 
 struct View : Event::Subscriber {
-    View(Scene& scene);
+    View();
 
-    Scene& scene();
     bool enable_filter = false;
     bool enable_interaction = false;
 
@@ -38,7 +37,6 @@ private:
     std::vector<std::shared_ptr<Entity>> m_interact_objects;
     std::unique_ptr<Skybox> m_skybox;
 
-    Scene& m_scene;
     BaseFilter m_filter;
     glm::vec2 m_mousePos;
     Timer::Chronometre m_timer;

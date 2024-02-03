@@ -1,3 +1,4 @@
+#include <Engine/Utils/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
 
 #include "App/View.hpp"
@@ -7,23 +8,25 @@
 // -- Entry point --
 int main() {
     // Setup
-    Window     window(1600, 900, "Sample scene");
-    View       view(window.scene());
-    Ui         ui(window.scene());
+    Service<Window>::build(1600, 900, "Sample scene");
+
+    View       view;
+    Ui         ui;
     Controller controller(ui, view);
 
     // Loop
     do {
         // Check stuff
         if (ui.wantQuit())
-            window.close();
+            Service<Window>::get().close();
 
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());
         }
-    } while (window.update());
+    } while (Service<Window>::get().update());
 
     // Cleanup
+    Service<Window>::destroy();
     return 0;
 }

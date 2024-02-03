@@ -1,5 +1,8 @@
 #include "Ui.hpp"
 
+#include <Engine/Utils/Service.hpp>
+#include <Engine/Graphic/Window.hpp>
+
 // Classnames
 static constexpr char Title[]         = ".Title";
 static constexpr char Info[]          = ".Information";
@@ -7,11 +10,10 @@ static constexpr char SmallButton[]   = ".SmallButton";
 static constexpr char DefaultButton[] = ".DefaultButton";
 
 // -- Ui --
-Ui::Ui(Scene& scene) : 
-    m_scene(scene),
+Ui::Ui(): 
     m_prev_state(Ui::State::Idle),
     m_state(Ui::State::Idle),
-    m_main_frame(scene)
+    m_main_frame(Service<Window>::get().scene())
 {
     // Temporary container for gui elements
     std::unordered_map<std::string, std::shared_ptr<Button>> btns;
@@ -88,10 +90,12 @@ bool Ui::wantQuit() const {
 }
 
 void Ui::draw(const LayoutEvents::Draw& msg) {
+    Scene& scene = Service<Window>::get().scene();
+
     switch (m_state) {
     case State::InGame:
-        m_layouts["InGame"]->find<Text>("#Ig1")->at(0) = "Cam pos: " + glm::to_string(m_scene.camera().position);
-        m_layouts["InGame"]->find<Text>("#Ig1")->at(1) = "Cam dir: " + glm::to_string(m_scene.camera().direction);
+        m_layouts["InGame"]->find<Text>("#Ig1")->at(0) = "Cam pos: " + glm::to_string(scene.camera().position);
+        m_layouts["InGame"]->find<Text>("#Ig1")->at(1) = "Cam dir: " + glm::to_string(scene.camera().direction);
         break;
     }
 }
@@ -177,8 +181,10 @@ void Ui::_create_layouts(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
+    Scene& scene = Service<Window>::get().scene();
+
     // Start
-    m_layouts["Start"] = Layout::Create<VerticalLayout>(m_scene);
+    m_layouts["Start"] = Layout::Create<VerticalLayout>(scene);
     {
         m_layouts["Start"]->add(txts["Title"]);
         m_layouts["Start"]->add(btns["Start"]);
@@ -187,9 +193,9 @@ void Ui::_create_layouts(
     }
 
     // Options
-    m_layouts["Option"] = Layout::Create<VerticalLayout>(m_scene);
+    m_layouts["Option"] = Layout::Create<VerticalLayout>(scene);
     {
-        m_layouts["LLight"] = Layout::Create<HorizontalLayout>(m_scene);
+        m_layouts["LLight"] = Layout::Create<HorizontalLayout>(scene);
         {
             m_layouts["LLight"]->add(txts["Lights"]);
             m_layouts["LLight"]->add(btns["Moins"]);
@@ -203,14 +209,14 @@ void Ui::_create_layouts(
     }
 
     // In game
-    m_layouts["InGame"] = Layout::Create<Layout>(m_scene);
+    m_layouts["InGame"] = Layout::Create<Layout>(scene);
     {
         m_layouts["InGame"]->add(txts["Ig1"], 0.01f, 0.02f, "#Ig1"); // Set an Id to retrieve it later
         m_layouts["InGame"]->add(txts["Ig2"], 0.01f, 0.10f);
     }
 
     // Pause
-    m_layouts["Pause"] = Layout::Create<VerticalLayout>(m_scene);
+    m_layouts["Pause"] = Layout::Create<VerticalLayout>(scene);
     {
         m_layouts["Pause"]->add(txts["Pause"]);
         m_layouts["Pause"]->add(btns["Resume"]);

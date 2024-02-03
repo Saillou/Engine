@@ -3,10 +3,15 @@
 #include <memory>
 #include <iostream>
 
+#include <Engine/Utils/Service.hpp>
+#include <Engine/Graphic/Window.hpp>
+
 Controller::Controller(Ui& ui, View& view):
     m_ui(ui),
     m_view(view)
 {
+    Scene& scene = Service<Window>::get().scene();
+
     // Root events
     _subscribe(&Controller::_on_state_update);
     _subscribe(&Controller::_on_key_pressed);
@@ -16,8 +21,8 @@ Controller::Controller(Ui& ui, View& view):
     _subscribe(&ui, &Controller::_on_ui_update);
 
     // Camera
-    m_view.scene().camera().position  = glm::vec3(m_distance, 0, 1.25f);
-    m_view.scene().camera().direction = glm::vec3(0, 0, 0);
+    scene.camera().position  = glm::vec3(m_distance, 0, 1.25f);
+    scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Lights
     m_pontential_lights = {
@@ -27,7 +32,7 @@ Controller::Controller(Ui& ui, View& view):
         Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
+    scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
 
     // States
     m_view.enable_filter      = m_enable_filter;
@@ -40,6 +45,8 @@ void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
 }
 
 void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
+    Scene& scene = Service<Window>::get().scene();
+
     // Nothing until click on start
     if (m_ui.state() < Ui::State::InGame)
         return;
@@ -75,9 +82,9 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             m_theta    += 0.01f * dir.x;
             m_distance += 0.05f * dir.y;
 
-            m_view.scene().camera().position.x = m_distance * cos(m_theta);
-            m_view.scene().camera().position.y = m_distance * sin(m_theta);
-            m_view.scene().camera().position.z += 0.05f * dir.z;
+            scene.camera().position.x = m_distance * cos(m_theta);
+            scene.camera().position.y = m_distance * sin(m_theta);
+            scene.camera().position.z += 0.05f * dir.z;
         }
     }
 
@@ -103,10 +110,12 @@ void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
 }
 
 void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
+    Scene& scene = Service<Window>::get().scene();
+
     switch (m_ui.state()) 
     {
         case Ui::State::InGame:
-            m_view.scene().lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
+            scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
             m_view.enable_interaction = m_enable_interaction;
             break;
 
