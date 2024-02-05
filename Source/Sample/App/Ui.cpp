@@ -117,34 +117,35 @@ StyleSheet Ui::_create_style() const
     const glm::vec4 foreground_color = glm::vec4(0.66f, 0.66f, 0.70f, 1.0f);
 
     return StyleSheet::CreateDefault()
-        .addRule(Style::Tag::Layout, Style{ }
+        .addRule(Style::Tag::Layout, Style()
             .set_opacity(0.90f)
             .set_background(primary_color)
         )
-        .addRule(Style::Tag::Button, Style{ }
+        .addRule(Style::Tag::Button, Style()
             .set_background(secondary_color)
             .set_foreground(foreground_color)
             .set_contentAlign({ 
                 Style::Align::Centered, 
-                Style::Align::Centered })
+                Style::Align::Centered 
+            })
         )
-        .addRule(Style::Tag::Text, Style{ }
+        .addRule(Style::Tag::Text, Style()
             .set_foreground(main_text_color)
         )
-        .addRule(DefaultButton, Style{ }
+        .addRule(DefaultButton, Style()
             .set_hint_w(0.1f)
         )
-        .addRule(SmallButton, Style{ }
+        .addRule(SmallButton, Style()
             .set_hint_w(0.020f)
             .set_hint_h(0.035f)
         )
-        .addRule(Title, Style{ }
+        .addRule(Title, Style()
             .set_textSize(1.0f)
         )
-        .addRule(Info, Style{ }
+        .addRule(Info, Style()
             .set_textSize(0.35f)
         )
-        .addRule("#Count", Style{}
+        .addRule("#Count", Style()
             .set_foreground(foreground_color)
         )
     ;
@@ -163,7 +164,7 @@ void Ui::_create_widgets(
     btns["Plus"]   = Button::WithClass<SmallButton>::Create("+");
     btns["Apply"]  = Button::Create("Apply");
 
-     // Texts
+    // Texts
     txts["Title"]  = Text::WithClass<Title>::Create("The Game");
     txts["Pause"]  = Text::WithClass<Title>::Create("Game paused");
     txts["Option"] = Text::WithClass<Title>::Create("Options");

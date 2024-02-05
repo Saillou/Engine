@@ -68,10 +68,8 @@ void Widget::_applyStyle() {
 
 // Events propagated
 void Widget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
-	if (evt.button == MouseButton::Left && evt.action == InputAction::Released) {
-		if (_mouse_over) {
-			Event::Emit(WidgetEvents::MouseClick(), this);
-		}
+	if (_mouse_over && evt.button == MouseButton::Left && evt.action == InputAction::Released) {
+		Event::Emit(WidgetEvents::MouseClick(), this);
 	}
 }
 

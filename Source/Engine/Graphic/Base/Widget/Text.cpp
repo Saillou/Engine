@@ -27,8 +27,9 @@ Text::Text(const Block& texts, float scale):
 }
 
 void Text::draw(Scene& scene) {
-    Widget::_applyStyle();
     _compute_size();
+
+    Widget::_applyStyle();
 
     // Centered
     if (style().contentAlign().h == Style::Align::Centered)
@@ -97,5 +98,5 @@ void Text::_compute_size() {
     }
 
     w() = _size.x;
-    h() = _size.y;
+    h() = 2.0f * _size.y;
 }
