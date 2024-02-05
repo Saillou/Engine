@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 
-#include "Events/WidgetEvents.hpp"
 #include "Style/Style.hpp"
 #include "../Scene.hpp"
 #include "../../Wrapper/Framebuffer.hpp"
@@ -14,10 +13,10 @@
 struct Layout;
 
 // -- Widget --
-struct Widget : 
-    protected Event::Subscriber
+struct Widget
 {
     friend struct StyleSheet;
+    friend Layout;
 
     // Enums
     enum EventListened {
@@ -80,6 +79,9 @@ struct Widget :
 protected:
     Widget(Style::Tag = Style::Tag::None, int eventListened = EventListened::None);
 
+    virtual void _on_mouse_button(const CommonEvents::MouseButton& evt);
+    virtual void _on_mouse_move(const CommonEvents::MouseMoved& evt);
+
     // Used to know draw reference
     Layout* _parent = nullptr;
     static void _setParent(Widget* child, Layout* parent);
@@ -94,8 +96,6 @@ protected:
     Style::Tag _tag;
 
 private:
-    void _on_mouse_button(const CommonEvents::MouseButton& evt);
-    void _on_mouse_move(const CommonEvents::MouseMoved& evt);
-
     bool _mouse_over = false;
+    int _evt_accepted = 0;
 };

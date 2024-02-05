@@ -3,14 +3,9 @@
 #include "../../../Utils/RayCaster.hpp"
 
 Widget::Widget(Style::Tag tag, int evt):
-	_tag(tag)
+	_tag(tag),
+	_evt_accepted(evt)
 {
-	if(evt & EventListened::MouseButton)
-		_subscribe(&Widget::_on_mouse_button);
-
-	if (evt & EventListened::MouseMove)
-		_subscribe(&Widget::_on_mouse_move);
-
 	// All screen by default
 	_surface = std::make_unique<Quad>();
 }
@@ -71,7 +66,7 @@ void Widget::_applyStyle() {
 	_surface->material.diffuse_color = _style.background();
 }
 
-// Callbacks
+// Events propagated
 void Widget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
 	if (evt.button == MouseButton::Left && evt.action == InputAction::Released) {
 		if (IsIn(*this, evt.x, evt.y)) {
@@ -84,6 +79,7 @@ void Widget::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
 	_mouse_over = IsIn(*this, evt.x, evt.y);
 }
 
+//
 Style& Widget::style() {
 	return _style;
 }

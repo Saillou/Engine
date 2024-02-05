@@ -9,8 +9,14 @@ SceneFrame::SceneFrame(Scene& scene_, std::shared_ptr<Layout> layout_) :
 
     // Events
     _subscribe(&SceneFrame::_on_draw);
-    _subscribe([=](const SceneEvents::Resized& size)
-    {
+
+    _subscribe([=](const CommonEvents::MouseButton& evt) { 
+        m_layout->_on_mouse_button(evt); 
+    });
+    _subscribe([=](const CommonEvents::MouseMoved& evt) { 
+        m_layout->_on_mouse_move(evt);   
+    });
+    _subscribe([=](const SceneEvents::Resized& size) {
         m_frame.resize(size.width, size.height);
         m_copyFilter.resize(size.width, size.height);
     });
