@@ -27,7 +27,7 @@ struct Ui : Event::Subscriber {
     bool  wantQuit()    const;
 
 protected:
-    void draw(const LayoutEvents::Draw& msg);
+    void draw(const WidgetEvents::Draw& msg);
 
 private:
     // - Methods

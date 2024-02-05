@@ -27,13 +27,13 @@ Ui::Ui():
     // Define events
     _subscribe(&m_main_frame, &Ui::draw);
 
-    _subscribe(btns.at("Start"),  [=](const CommonEvents::MouseButton&) { setState(State::InGame); });
-    _subscribe(btns.at("Resume"), [=](const CommonEvents::MouseButton&) { setState(State::InGame); });
-    _subscribe(btns.at("Option"), [=](const CommonEvents::MouseButton&) { setState(State::Option); });
-    _subscribe(btns.at("Apply"),  [=](const CommonEvents::MouseButton&) { setState(m_prev_state);  });
-    _subscribe(btns.at("Moins"),  [=](const CommonEvents::MouseButton&) { _updateCount(-1);        });
-    _subscribe(btns.at("Plus"),   [=](const CommonEvents::MouseButton&) { _updateCount(+1);        });
-    _subscribe(btns.at("Close"),  [=](const CommonEvents::MouseButton&) { m_wantQuit = true;       });
+    _subscribe(btns.at("Start"),  [=](const WidgetEvents::MouseClick&) { setState(State::InGame); });
+    _subscribe(btns.at("Resume"), [=](const WidgetEvents::MouseClick&) { setState(State::InGame); });
+    _subscribe(btns.at("Option"), [=](const WidgetEvents::MouseClick&) { setState(State::Option); });
+    _subscribe(btns.at("Apply"),  [=](const WidgetEvents::MouseClick&) { setState(m_prev_state);  });
+    _subscribe(btns.at("Moins"),  [=](const WidgetEvents::MouseClick&) { _updateCount(-1);        });
+    _subscribe(btns.at("Plus"),   [=](const WidgetEvents::MouseClick&) { _updateCount(+1);        });
+    _subscribe(btns.at("Close"),  [=](const WidgetEvents::MouseClick&) { m_wantQuit = true;       });
 
     // Let's start
     setState(Ui::State::Start);
@@ -89,7 +89,7 @@ bool Ui::wantQuit() const {
     return m_wantQuit;
 }
 
-void Ui::draw(const LayoutEvents::Draw& msg) {
+void Ui::draw(const WidgetEvents::Draw& msg) {
     Scene& scene = Service<Window>::get().scene();
 
     switch (m_state) {

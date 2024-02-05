@@ -69,14 +69,23 @@ void Widget::_applyStyle() {
 // Events propagated
 void Widget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
 	if (evt.button == MouseButton::Left && evt.action == InputAction::Released) {
-		if (IsIn(*this, evt.x, evt.y)) {
-			Event::Emit(evt, this);
+		if (_mouse_over) {
+			Event::Emit(WidgetEvents::MouseClick(), this);
 		}
 	}
 }
 
 void Widget::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
+	bool previous_mouse_over = _mouse_over;
 	_mouse_over = IsIn(*this, evt.x, evt.y);
+
+	if (_mouse_over && !previous_mouse_over) {
+		Event::Emit(WidgetEvents::MouseOver(), this);
+	}
+
+	if (!_mouse_over && previous_mouse_over) {
+		Event::Emit(WidgetEvents::MouseOut(), this);
+	}
 }
 
 //
