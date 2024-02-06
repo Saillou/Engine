@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "../Editor.hpp"
 #include "WorldEditorMenu.hpp"
 
@@ -14,5 +16,9 @@ public:
     void onUpdate() override;
 
 private:
+    void _drawScene();
+    void _drawMenu();
+
     WorldEditorMenu m_menu;
+    std::unordered_map<std::string, Entity> m_entities;
 };
