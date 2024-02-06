@@ -13,7 +13,8 @@ struct Entity
     friend struct Renderer;
 
     enum SimpleShape {
-        Custom, Cube, Sphere
+        Custom, 
+        Quad, Cube, Sphere
     };
 
     Entity(SimpleShape shape = SimpleShape::Custom);

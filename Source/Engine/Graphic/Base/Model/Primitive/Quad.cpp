@@ -2,23 +2,34 @@
 
 #include "../../../Cookable.hpp"
 
-// - Quad -
-Quad::Quad(float x, float y, float w, float h):
-    _x(x), _y(y), _w(w), _h(h)
+std::unique_ptr<Mesh> Quad::CreateMesh(bool sendToGpu)
 {
+    std::unique_ptr<Mesh> quad_mesh = std::make_unique<Mesh>();
+
     // Shape
-    createQuad(quad_mesh,
+    createQuad(*quad_mesh,
         glm::vec3(-1, +1, 0),
         glm::vec3(-1, -1, 0),
         glm::vec3(+1, -1, 0),
         glm::vec3(+1, +1, 0)
     );
 
-    setupGPU(quad_mesh);
+    // Send to gpu
+    if (sendToGpu)
+        setupGPU(*quad_mesh);
+
+    return quad_mesh;
+}
+
+// - Quad -
+Quad::Quad(float x, float y, float w, float h):
+    _x(x), _y(y), _w(w), _h(h)
+{
+    _quad_mesh = CreateMesh();
 }
 
 void Quad::drawElements() const {
-    quad_mesh.drawElements();
+    _quad_mesh->drawElements();
 }
 
 float Quad::x() const {
@@ -48,5 +59,9 @@ float& Quad::h() {
 }
 
 Pose Quad::pose() const {
-    return Pose(glm::vec3(2.0f*_x + (_w - 1.0f), -_y*2.0f + (1.0f - _h), 0.0f), glm::vec3(_w, _h, 0.0f));
+    return Pose
+    (
+        glm::vec3(2.0f*_x + (_w - 1.0f), -_y*2.0f + (1.0f - _h), 0.0f), 
+        glm::vec3(_w, _h, 0.0f)
+    );
 }
