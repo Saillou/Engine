@@ -4,7 +4,8 @@ namespace Thomas
 {
     struct Level
     {
-        virtual void loadLevel()    = 0;
-        virtual void unloadLevel()  = 0;
+        virtual void load()             = 0;
+        virtual void unload()           = 0;
+        virtual void update(float dt)   = 0;
     };
 }

@@ -10,7 +10,7 @@
 
 namespace Thomas
 {
-    void Sandbox::loadLevel()
+    void Sandbox::load()
     {
         const int x = -14;
         const int y = -14;
@@ -529,7 +529,12 @@ namespace Thomas
         }
     }
 
-    void Sandbox::unloadLevel()
+    void Sandbox::unload()
     {
+    }
+
+    void Sandbox::update(float dt)
+    {
+
     }
 }

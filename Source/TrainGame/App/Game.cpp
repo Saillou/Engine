@@ -8,7 +8,7 @@
 #include "TrainGame/Engine/Components/Grid.h"
 #include "TrainGame/Engine/Components/RenderComponent.h"
 
-#include "TrainGame/App/Level/Sandbox.hpp"
+#include "TrainGame/App/Level/Sandbox/Sandbox.hpp"
 
 namespace Thomas
 {
@@ -44,7 +44,7 @@ namespace Thomas
     void Game::createScene()
     {
         Sandbox level;
-        level.loadLevel();
+        level.load();
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
