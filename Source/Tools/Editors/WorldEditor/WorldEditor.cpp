@@ -12,17 +12,18 @@ void WorldEditor::onEnter()
     m_menu.reset();
 
     // Set Scene
-    m_scene.lights() = {
-        { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
-    };
+    m_scene.lights() = {};
 
-    m_scene.camera().position  = glm::vec3(0.0f, -2.0f, 0.15f);
+    m_scene.camera().position  = glm::vec3(0.0f, -5.0f, 0.15f);
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
-    // Create entities
+    // Create quad with texture
     m_entities["quad"] = Entity(Entity::SimpleShape::Quad);
+    m_entities["quad"].model().root()->meshes.front()->textures().push_back(
+        TextureData{"texture_diffuse", std::make_unique<Texture>("Resources/textures/container.jpg")}
+    );
     m_entities["quad"].setPosesWithMaterials(
-        { glm::scale(glm::mat4(1.0f), glm::vec3(0.15f)) },
+        { glm::rotate(glm::mat4(1.0f), glm::pi<float>()/2.0f, glm::vec3(1, 0, 0))},
         { Material{glm::vec4(1, 0, 0, 1), false} }
     );
 }

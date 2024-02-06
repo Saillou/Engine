@@ -70,6 +70,10 @@ const Model& Entity::model() const {
     return *_model;
 }
 
+Model& Entity::model() {
+    return *_model;
+}
+
 // Methods
 void Entity::_update_model_buffer() {
     _model->_localPose = glm::mat4(_localPose);

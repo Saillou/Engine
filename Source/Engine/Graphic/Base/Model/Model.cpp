@@ -101,6 +101,10 @@ void Model::_setBatch(const std::vector<glm::mat4>& models, const std::vector<gl
     }
 }
 
+std::unique_ptr<Model::Node>& Model::root() {
+    return _root;
+}
+
 const std::unique_ptr<Model::Node>& Model::root() const {
     return _root;
 }

@@ -42,6 +42,8 @@ struct Model
     const std::unique_ptr<Node>& root() const;
     const glm::mat4& localPose() const;
 
+    std::unique_ptr<Node>& root();
+
 private:
     void _loadModel     (const std::string& path);
     void _processNode   (const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);

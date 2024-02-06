@@ -38,6 +38,7 @@ struct Entity
     const std::vector<Material>& materials() const;
 
     const Model& model() const;
+    Model& model();
 
 protected:
     void _update_model_buffer();
