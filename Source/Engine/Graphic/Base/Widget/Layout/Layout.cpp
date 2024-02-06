@@ -40,6 +40,26 @@ void Layout::clean() {
 }
 
 
+void Layout::_on_mouse_button(const CommonEvents::MouseButton& evt) {
+    Widget::_on_mouse_button(evt);
+
+    for (auto& widget : m_widgets) {
+        if (widget->_evt_accepted & EventListened::MouseButton) {
+            widget->_on_mouse_button(evt);
+        }
+    }
+}
+
+void Layout::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
+    Widget::_on_mouse_move(evt);
+
+    for (auto& widget : m_widgets) {
+        if (widget->_evt_accepted & EventListened::MouseMove) {
+            widget->_on_mouse_move(evt);
+        }
+    }
+}
+
 // Access
 Scene& Layout::scene() {
     return m_scene;

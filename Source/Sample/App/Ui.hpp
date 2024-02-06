@@ -11,7 +11,7 @@
 
 
 struct Ui : Event::Subscriber {
-    Ui(Scene& scene);
+    Ui();
     virtual ~Ui() = default;
 
     enum class State {
@@ -27,7 +27,7 @@ struct Ui : Event::Subscriber {
     bool  wantQuit()    const;
 
 protected:
-    void draw(const LayoutEvents::Draw& msg);
+    void draw(const WidgetEvents::Draw& msg);
 
 private:
     // - Methods
@@ -39,7 +39,6 @@ private:
     int   m_lights_count = 2;
     bool  m_wantQuit = false;
 
-    Scene& m_scene;
     SceneFrame m_main_frame;
     std::unordered_map<std::string, std::shared_ptr<Layout>> m_layouts;
 

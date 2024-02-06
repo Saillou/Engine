@@ -1,10 +1,9 @@
 #include <Engine/Graphic/Window.hpp>
 
 #include "App/View.hpp"
+#include "App/Game.hpp"
 
 #include "TrainGame/TrainGame/TrainGameModels.hpp"
-
-#include "App/Game.hpp"
 
 void initGameModels();
 

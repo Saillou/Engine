@@ -6,9 +6,11 @@
 #include <memory>
 #include <queue>
 
-#include "../Style/StyleSheet.hpp"
 #include "../Widget.hpp"
+#include "../Events/WidgetEvents.hpp"
+#include "../Style/StyleSheet.hpp"
 #include "../../Scene.hpp"
+#include "../../../../Events/CommonEvents.hpp"
 #include "../../../../Utils/Filter/CopyFilter.hpp"
 
 struct Layout : 
@@ -31,6 +33,10 @@ struct Layout :
 
     template <typename WidgetTag>
         std::shared_ptr<WidgetTag> find(const std::string& id);
+
+    // Events
+    virtual void _on_mouse_button(const CommonEvents::MouseButton& evt) override;
+    virtual void _on_mouse_move(const CommonEvents::MouseMoved& evt) override;
 
     // Accessors
     Scene& scene();

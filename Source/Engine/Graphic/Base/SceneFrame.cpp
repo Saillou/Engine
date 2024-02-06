@@ -7,10 +7,20 @@ SceneFrame::SceneFrame(Scene& scene_, std::shared_ptr<Layout> layout_) :
 {
     m_layout = layout_ ? layout_ : std::make_unique<Layout>(scene_);
 
-    // Events
+    // - Events -
     _subscribe(&SceneFrame::_on_draw);
-    _subscribe([=](const SceneEvents::Resized& size)
-    {
+
+    // Notes: Order has its importance
+    //   Mouse move will detect if the mouse is over the widget
+    //  then mouse button will trigger or not if inside of it.
+
+    _subscribe([=](const CommonEvents::MouseMoved& evt) { 
+        m_layout->_on_mouse_move(evt);   
+    });
+    _subscribe([=](const CommonEvents::MouseButton& evt) { 
+        m_layout->_on_mouse_button(evt); 
+    });
+    _subscribe([=](const SceneEvents::Resized& size) {
         m_frame.resize(size.width, size.height);
         m_copyFilter.resize(size.width, size.height);
     });
@@ -18,6 +28,10 @@ SceneFrame::SceneFrame(Scene& scene_, std::shared_ptr<Layout> layout_) :
 
 Layout& SceneFrame::layout() {
     return *m_layout.get();
+}
+
+Scene& SceneFrame::scene() {
+    return m_scene;
 }
 
 // Callbacks
@@ -33,7 +47,7 @@ void SceneFrame::_on_draw(const SceneEvents::RenderFinished&) {
         glClearColor(m_layout->style().background().r, m_layout->style().background().g, m_layout->style().background().b, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Event::Emit(LayoutEvents::Draw(), this);
+        Event::Emit(WidgetEvents::Draw(), this);
         {
             m_layout->draw(m_scene);
         }

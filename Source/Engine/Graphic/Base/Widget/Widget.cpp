@@ -3,14 +3,9 @@
 #include "../../../Utils/RayCaster.hpp"
 
 Widget::Widget(Style::Tag tag, int evt):
-	_tag(tag)
+	_tag(tag),
+	_evt_accepted(evt)
 {
-	if(evt & EventListened::MouseButton)
-		_subscribe(&Widget::_on_mouse_button);
-
-	if (evt & EventListened::MouseMove)
-		_subscribe(&Widget::_on_mouse_move);
-
 	// All screen by default
 	_surface = std::make_unique<Quad>();
 }
@@ -71,19 +66,27 @@ void Widget::_applyStyle() {
 	_surface->material.diffuse_color = _style.background();
 }
 
-// Callbacks
+// Events propagated
 void Widget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
-	if (evt.button == MouseButton::Left && evt.action == InputAction::Released) {
-		if (IsIn(*this, evt.x, evt.y)) {
-			Event::Emit(evt, this);
-		}
+	if (_mouse_over && evt.button == MouseButton::Left && evt.action == InputAction::Released) {
+		Event::Emit(WidgetEvents::MouseClick(), this);
 	}
 }
 
 void Widget::_on_mouse_move(const CommonEvents::MouseMoved& evt) {
+	bool previous_mouse_over = _mouse_over;
 	_mouse_over = IsIn(*this, evt.x, evt.y);
+
+	if (_mouse_over && !previous_mouse_over) {
+		Event::Emit(WidgetEvents::MouseOver(), this);
+	}
+
+	if (!_mouse_over && previous_mouse_over) {
+		Event::Emit(WidgetEvents::MouseOut(), this);
+	}
 }
 
+//
 Style& Widget::style() {
 	return _style;
 }

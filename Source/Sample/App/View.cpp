@@ -5,9 +5,10 @@
 #include <algorithm>
 
 #include <Engine/Utils/RayCaster.hpp>
+#include <Engine/Utils/Service.hpp>
+#include <Engine/Graphic/Window.hpp>
 
-View::View(Scene& scene) :
-    m_scene(scene),
+View::View():
     m_mousePos(0.0f, 0.0f)
 {
     // Root events
@@ -68,19 +69,18 @@ View::View(Scene& scene) :
     _initFilters();
 }
 
-// Accessors
-Scene& View::scene() {
-    return m_scene;
-}
-
 // Callbacks
 void View::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
-    m_mousePos.x = (float)evt.x / m_scene.width();
-    m_mousePos.y = (float)evt.y / m_scene.height();
+    Scene& scene = Service<Window>::get().scene();
+
+    m_mousePos.x = (float)evt.x / scene.width();
+    m_mousePos.y = (float)evt.y / scene.height();
 }
 
 void View::_on_resize(const SceneEvents::Resized& evt) {
-    m_filter.resize(m_scene.width(), m_scene.height());
+    Scene& scene = Service<Window>::get().scene();
+
+    m_filter.resize(scene.width(), scene.height());
 }
 
 void View::_draw(const SceneEvents::Draw&) {
@@ -94,54 +94,64 @@ void View::_draw(const SceneEvents::Draw&) {
 }
 
 void View::_drawLights() {
+    Scene& scene = Service<Window>::get().scene();
+
     {
         std::vector<Pose> Qs;
         std::vector<Material> Ms;
-        for (const Light& light : m_scene.lights()) {
+        for (const Light& light : scene.lights()) {
             Qs.push_back(glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
             Ms.push_back(Material{ light.color });
         }
         m_entities["Lantern"]->setPosesWithMaterials(Qs, Ms);
     }
-    m_scene.renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
+    scene.renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
 }
 
 void View::_drawObjects() {
-    m_scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
-    m_scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+    Scene& scene = Service<Window>::get().scene();
+
+    scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
+    scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
 }
 
 void View::_drawTarget() {
+    Scene& scene = Service<Window>::get().scene();
+
     for (auto& obj : m_interact_objects) {
         for (auto& pose : obj->poses()) {
-            auto intersect_result = RayCaster::Intersect(m_mousePos, m_scene.camera(), *obj, pose);
+            auto intersect_result = RayCaster::Intersect(m_mousePos, scene.camera(), *obj, pose);
             if (!intersect_result.has_value())
                 continue;
 
             const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
             m_entities["Target"]->poses() = { Q };
-            m_scene.renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
+            scene.renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
         }
     }
 }
 
 void View::_post_process(const SceneEvents::PostDraw&) {
+    Scene& scene = Service<Window>::get().scene();
+
     // Filters
     if (enable_filter) {
         m_filter.shader().use().set("quadTexture", 0);
-        m_filter.apply(m_scene.framebuffer_main(), 0);
+        m_filter.apply(scene.framebuffer_main(), 0);
     }
 
     // Draw decors
-    m_scene.framebuffer_main().bind();
+    scene.framebuffer_main().bind();
     {
-        m_skybox->draw(m_scene.camera());
+        m_skybox->draw(scene.camera());
     }
-    m_scene.framebuffer_main().unbind();
+    scene.framebuffer_main().unbind();
 }
 
 // Helpers
 void View::_initFilters() {
+    Scene& scene = Service<Window>::get().scene();
+
     m_filter.shader()
         .attachSource(GL_VERTEX_SHADER, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
@@ -168,5 +178,5 @@ void View::_initFilters() {
         )
         .link();
 
-    m_filter.resize(m_scene.width(), m_scene.height());
+    m_filter.resize(scene.width(), scene.height());
 }
