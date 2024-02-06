@@ -3,8 +3,6 @@
 #include <Engine/Graphic/Window.hpp>
 #include <memory>
 
-#include "imgui/imgui.h"
-
 enum class EditorId
 {
 	None = 0,

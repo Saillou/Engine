@@ -1,7 +1,7 @@
 #include <Engine/Utils/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
 
-#include "App.hpp"
+#include "App/App.hpp"
 
 // Entry point
 int main() {

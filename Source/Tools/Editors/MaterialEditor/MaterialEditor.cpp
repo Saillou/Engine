@@ -13,7 +13,7 @@ void MaterialEditor::onEnter()
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
 
-    m_menu.resetState();
+    m_menu.reset();
 }
 
 void MaterialEditor::onExit()
@@ -26,5 +26,5 @@ void MaterialEditor::onUpdate()
     m_entity->localMaterial().diffuse_color = glm::vec4(m_menu.state.color.x, m_menu.state.color.y, m_menu.state.color.z, m_menu.state.color.w);
     m_scene.renderer().draw(m_menu.state.lightEnabled ? Render::DrawType::Lights : Render::DrawType::Basic, *m_entity);
 
-    m_menu.ShowMovableOptions();
+    m_menu.show();
 }

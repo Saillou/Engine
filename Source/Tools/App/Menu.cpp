@@ -1,7 +1,8 @@
 #include "Menu.hpp"
 
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
+#include "../_imgui/imgui.h"
+#include "../_imgui/imgui_impl_glfw.h"
+#include "../_imgui/imgui_impl_opengl3.h"
 
 // Start ImGui
 Menu::Menu(GLFWwindow* backend) 
