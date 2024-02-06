@@ -1,26 +1,19 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
-#include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Graphic/Base/Model/Entity.hpp>
-
+#include "../Editor.hpp"
 #include "ModelEditorMenu.hpp"
 
-class ModelEditor
+class ModelEditor : public Editor
 {
 public:
     ModelEditor(Scene& scene);
-    ~ModelEditor();
+    ~ModelEditor() = default;
 
-    void onEnter();
-    void onExit();
-    void onUpdate();
+    void onEnter()  override;
+    void onExit()   override;
+    void onUpdate() override;
 
 private:
-    Scene& scene;
-
     std::unique_ptr<Entity>  m_center;
     std::unique_ptr<Entity>  m_model;
     ModelEditorMenu          m_menu;

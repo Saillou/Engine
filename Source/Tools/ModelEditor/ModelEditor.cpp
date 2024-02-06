@@ -1,13 +1,9 @@
 #include "ModelEditor.h"
 
 ModelEditor::ModelEditor(Scene& scene)
-    : scene(scene)
-{
-}
+    : Editor(scene)
+{ }
 
-ModelEditor::~ModelEditor()
-{
-}
 
 void ModelEditor::onEnter()
 {
@@ -16,7 +12,7 @@ void ModelEditor::onEnter()
 
     m_model = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
 
-    scene.lights() = {
+    m_scene.lights() = {
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
 
@@ -45,20 +41,20 @@ void ModelEditor::onUpdate()
         glPolygonMode(GL_BACK, GL_FILL);
     }
 
-    Camera& camera = scene.camera();
+    Camera& camera = m_scene.camera();
     switch (m_menu.state.cameraType)
     {
     case 0:
-        scene.camera().position = glm::vec3{ 0, -1, 0 };
-        scene.camera().lookAt(glm::vec3(0, 0, 1));
+        m_scene.camera().position = glm::vec3{ 0, -1, 0 };
+        m_scene.camera().lookAt(glm::vec3(0, 0, 1));
         break;
     case 1:
-        scene.camera().position = glm::vec3{ 0,0,1 };
-        scene.camera().lookAt(glm::vec3(0, 1, 0));
+        m_scene.camera().position = glm::vec3{ 0,0,1 };
+        m_scene.camera().lookAt(glm::vec3(0, 1, 0));
         break;
     case 2:
-        scene.camera().position = glm::vec3{ -1, 0, 0 };
-        scene.camera().lookAt(glm::vec3(0, 0, 1));
+        m_scene.camera().position = glm::vec3{ -1, 0, 0 };
+        m_scene.camera().lookAt(glm::vec3(0, 0, 1));
         break;
     }
 
@@ -68,7 +64,7 @@ void ModelEditor::onUpdate()
         m_model = std::make_unique<Entity>(m_menu.state.path);
     }
 
-    auto& renderer = scene.renderer();
+    auto& renderer = m_scene.renderer();
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
     model = glm::rotate(model, m_menu.state.roll, glm::vec3(1, 0, 0));

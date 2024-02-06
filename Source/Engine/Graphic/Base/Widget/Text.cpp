@@ -98,5 +98,5 @@ void Text::_compute_size() {
     }
 
     w() = _size.x;
-    h() = 2.0f * _size.y;
+    h() = _size.y;
 }
