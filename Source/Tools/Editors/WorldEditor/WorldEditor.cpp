@@ -20,12 +20,13 @@ void WorldEditor::onEnter()
     // Create quad with texture
     m_entities["quad"] = Entity(Entity::SimpleShape::Quad);
     m_entities["quad"].model().root()->meshes.front()->textures().push_back(
-        TextureData{"texture_diffuse", std::make_unique<Texture>("Resources/textures/container.jpg")}
+        TextureData{"texture_diffuse", std::make_unique<Texture>("Resources/textures/grass.png")}
     );
-    m_entities["quad"].setPosesWithMaterials(
-        { glm::rotate(glm::mat4(1.0f), glm::pi<float>()/2.0f, glm::vec3(1, 0, 0))},
-        { Material{glm::vec4(1, 0, 0, 1), false} }
-    );
+    m_entities["quad"].localPose()     = glm::rotate(glm::mat4(1.0f), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
+    m_entities["quad"].localMaterial() = Material{ glm::vec4(1, 0, 0, 1), false };
+    m_entities["quad"].poses() = {
+        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.0f)), glm::vec3(0.f, 0.f, 0.f)),
+    };
 }
 
 void WorldEditor::onExit()

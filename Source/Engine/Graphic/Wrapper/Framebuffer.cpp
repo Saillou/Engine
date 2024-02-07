@@ -4,7 +4,7 @@ Framebuffer::Framebuffer(Type type, unsigned int width, unsigned int height, GLu
 	m_type(type),
 	m_framebufferId(0),
 	m_renderbufferId(0),
-	m_texture_attached(width, height, 
+	m_texture_attached(width, height, GL_RGB,
 		type == Unique  ? GL_TEXTURE_2D:
 		type == Cubemap ? GL_TEXTURE_CUBE_MAP:
 		GL_TEXTURE_2D_MULTISAMPLE
