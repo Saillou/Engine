@@ -8,6 +8,9 @@ WorldEditor::WorldEditor(Scene& scene) :
 
 void WorldEditor::onEnter()
 {
+    // Change app draw style to be able to reorder entities and compute shadows
+    m_scene.directDraw(false);
+
     // Set menu
     m_menu.reset();
 
@@ -23,14 +26,18 @@ void WorldEditor::onEnter()
         TextureData{"texture_diffuse", std::make_unique<Texture>("Resources/textures/grass.png")}
     );
     m_entities["quad"].localPose()     = glm::rotate(glm::mat4(1.0f), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
-    m_entities["quad"].localMaterial() = Material{ glm::vec4(1, 0, 0, 1), false };
+    m_entities["quad"].localMaterial() = Material{ glm::vec4(1, 0, 0, 0.9f), false };
     m_entities["quad"].poses() = {
-        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.0f)), glm::vec3(0.f, 0.f, 0.f)),
+        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)), glm::vec3(-0.25f, 0.1f, 0.f)),
+        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)), glm::vec3(+0.25f, 0.2f, 0.f)),
     };
 }
 
 void WorldEditor::onExit()
-{ }
+{ 
+    // Put back original app state
+    m_scene.directDraw(true);
+}
 
 void WorldEditor::onUpdate()
 {
