@@ -16,7 +16,7 @@ void WorldEditor::onEnter() {
     m_menu.reset();
 
     // Set Scene
-    m_scene.lights() = { Light(glm::vec3{ 0,  -1.50f, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
+    m_scene.lights() = { Light(glm::vec3{ 0, 0, 5 }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
 
     m_scene.camera().position.z = 0.25f;
 
@@ -26,8 +26,8 @@ void WorldEditor::onEnter() {
     m_entities["earth"] = tile_with_rgba(glm::vec4(185, 122, 87, 255));
 
     // - Setup world -
-    const int world_size = 20;
-    const int n_grasses  = 50;
+    const int world_size = 200;
+    const int n_grasses  = 500;
 
     // Grid of earth
     for (float x = -world_size/2.0f; x < world_size/2.0f; x++) {
@@ -38,9 +38,9 @@ void WorldEditor::onEnter() {
 
     // Random grass
     for (int i = 0; i < n_grasses; i++) {
-        float x = (rand() % world_size) - world_size/2.0f;
-        float y = (rand() % world_size) - world_size/2.0f;
-        float s = (rand() % 1000) / 5000.0f + 0.2f;
+        float x = (rand() % (100*world_size))/100.0f - world_size/2.0f;
+        float y = (rand() % (100*world_size))/100.0f - world_size/2.0f;
+        float s = (rand() % 1000) / 3000.0f + 0.2f;
         m_entities["grass"].poses().push_back(pose_scale(glm::vec2(x, y), s));
     }
 
@@ -77,12 +77,15 @@ void WorldEditor::_compute_physics() {
     float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
     
     // integrate speed
-    m_player_data.position += m_player_data.speed       * dt_ms;
-    m_player_data.angle    += m_player_data.angle_speed * dt_ms;
+    m_player_data.angle  += m_player_data.angle_speed  * dt_ms;
+
+    // project to postion
+    m_player_data.position.x += m_player_data.linear_speed * cos(m_player_data.angle) * dt_ms;
+    m_player_data.position.y += m_player_data.linear_speed * sin(m_player_data.angle) * dt_ms;
 
     // friction
-    m_player_data.speed       *= 0.99f;
-    m_player_data.angle_speed *= 0.99f;
+    m_player_data.linear_speed *= 0.99f;
+    m_player_data.angle_speed  *= 0.99f;
 
     // Update model
     m_entities["train"].poses().front() = pose_rot(m_player_data.position, m_player_data.angle);
@@ -94,8 +97,8 @@ void WorldEditor::_drawScene() {
     // Set camera
     glm::vec3 train_pos = glm::vec3(pose(m_player_data.position)[3]);
     m_scene.camera().direction = train_pos;
-    m_scene.camera().position.x = train_pos.x + m_camera_data.distance * cos(m_camera_data.theta);
-    m_scene.camera().position.y = train_pos.y + m_camera_data.distance * sin(m_camera_data.theta);
+    m_scene.camera().position.x = train_pos.x + m_camera_data.distance * cos(m_player_data.angle);
+    m_scene.camera().position.y = train_pos.y + m_camera_data.distance * sin(m_player_data.angle);
 
     // Draw items
     Renderer& render = m_scene.renderer();
@@ -119,8 +122,8 @@ void WorldEditor::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
                 case KeyCode::ArrowDown: val = +1.0f; break;
             }
 
-            if (std::sqrt(glm::dot(m_player_data.speed, m_player_data.speed)) < 1e-2f) {
-                m_player_data.speed += 1e-5f * val;
+            if (m_player_data.linear_speed < 1e-2f) {
+                m_player_data.linear_speed += 1e-5f * val;
             }
         }
 
@@ -134,20 +137,14 @@ void WorldEditor::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
                 case KeyCode::ArrowRight: val = +1.0f; break;
             }
 
-            m_player_data.angle_speed += 1e-5f * val;
+            m_player_data.angle_speed += m_player_data.linear_speed * 0.01f * val;
         }
 
         // Camera
+        switch (evt.key)
         {
-            float val = 0.0f;
-
-            switch (evt.key)
-            {
-                case 'Q': val = +1.0f; break;
-                case 'W': val = -1.0f; break;
-            }
-
-            m_scene.camera().position.z += 0.001f * val;
+            case 'Q': m_scene.camera().position.z += 0.001f; break;
+            case 'W': m_scene.camera().position.z -= 0.001f; break;
         }
     }
 }

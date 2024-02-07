@@ -37,7 +37,7 @@ private:
     // Train variables
     struct {
         glm::vec2 position = { 0, 0 };
-        glm::vec2 speed    = { 0, 0 };
+        float linear_speed = 0.0f;
         float angle        = 0.0f;
         float angle_speed  = 0.0f;
     } m_player_data;
