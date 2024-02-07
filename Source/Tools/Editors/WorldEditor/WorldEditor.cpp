@@ -1,57 +1,14 @@
 #include "WorldEditor.h"
+#include "WorldEditorHelper.hpp"
 
-// -------- Utilities --------
-static const glm::mat4 s_identity = glm::mat4(1.0f);
-
-static Entity __create_tile_with_texture(const std::string& texturePath) {
-    Entity entity(Entity::SimpleShape::Quad);
-
-    // Transform:
-    //  - translate on z for having the ground level at 0
-    //  - rotate for having Y as depth (instead of Z because i prefer)
-    //  - scale in half because quads are 2x2 by default
-    entity.localPose() = glm::scale(glm::mat4(entity.localPose()), glm::vec3(0.5f));
-    entity.localPose() = glm::translate(glm::mat4(entity.localPose()), glm::vec3(0, 0, 1.0f));
-    entity.localPose() = glm::rotate(glm::mat4(entity.localPose()), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
-
-    // Define opacity < 1: trick renderer with reordering
-    entity.localMaterial() = Material{ glm::vec4(0, 0, 0, 0.9f), false }; 
-
-    // Set texture on the first (and only) mesh
-    entity.model().root()->meshes.front()->textures().push_back(
-        TextureData{ "texture_diffuse", std::make_unique<Texture>(texturePath) }
-    );
-
-    return entity;
-}
-
-static Entity __create_tile_with_rgba(const glm::vec4& colorRGBA) {
-    Entity entity(Entity::SimpleShape::Quad);
-
-    // Transform:
-    //  - scale in half because quads are 2x2 by default
-    entity.localPose() = glm::scale(s_identity, glm::vec3(0.5f));
-
-    // channel color 8-bits to float
-    entity.localMaterial() = Material{ colorRGBA / 255.0f, false };
-
-    return entity;
-}
-
-static glm::mat4 __pose(const glm::vec2& position, float scale = 1.0f) {
-    glm::mat4 model_translate = glm::translate(s_identity, glm::vec3(position, 0.0f));
-    glm::mat4 model_scale     = glm::scale(model_translate, glm::vec3(scale));
-
-    return model_scale;
-}
+using namespace WorldEditorHelper;
 
 // -------- Editor --------
 WorldEditor::WorldEditor(Scene& scene) : 
     Editor(scene)
 { }
 
-void WorldEditor::onEnter()
-{
+void WorldEditor::onEnter() {
     // Change app draw style to be able to reorder entities and compute shadows
     m_scene.directDraw(false);
 
@@ -59,60 +16,138 @@ void WorldEditor::onEnter()
     m_menu.reset();
 
     // Set Scene
-    m_scene.lights() = {};
+    m_scene.lights() = { Light(glm::vec3{ 0,  -1.50f, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
 
-    m_scene.camera().position  = glm::vec3(0.0f, -5.0f, 0.15f);
-    m_scene.camera().direction = glm::vec3(0, 0, 0);
+    m_scene.camera().position.z = 0.25f;
 
-    // Create tiles
-    m_entities["grass"] = __create_tile_with_texture("Resources/textures/grass.png");
-    m_entities["earth"] = __create_tile_with_rgba(glm::vec4(185, 122, 87, 255));
+    // Create entities
+    m_entities["train"] = train();
+    m_entities["grass"] = tile_with_texture("Resources/textures/grass.png");
+    m_entities["earth"] = tile_with_rgba(glm::vec4(185, 122, 87, 255));
 
-    // Create world
-    m_entities["grass"].poses() = {
-        __pose(glm::vec2(-0.25f, 0.1f), 0.5f),
-        __pose(glm::vec2(-0.25f, 0.1f), 1.5f)
+    // - Setup world -
+    const int world_size = 20;
+    const int n_grasses  = 50;
+
+    // Grid of earth
+    for (float x = -world_size/2.0f; x < world_size/2.0f; x++) {
+        for (float y = -world_size/2.0f; y < world_size/2.0f; y++) {
+            m_entities["earth"].poses().push_back(pose(glm::vec2(x, y)));
+        }
+    }
+
+    // Random grass
+    for (int i = 0; i < n_grasses; i++) {
+        float x = (rand() % world_size) - world_size/2.0f;
+        float y = (rand() % world_size) - world_size/2.0f;
+        float s = (rand() % 1000) / 5000.0f + 0.2f;
+        m_entities["grass"].poses().push_back(pose_scale(glm::vec2(x, y), s));
+    }
+
+
+    // Only one train
+    m_entities["train"].poses() = { 
+        pose(m_player_data.position)
     };
 
-    m_entities["earth"].poses() = {
-        __pose(glm::vec2(0, 0)),
-        __pose(glm::vec2(1.01f, 0))
-    };
+    // Enable events
+    _subscribe(&WorldEditor::_on_key_pressed);
+
+    // Start
+    m_timer.tic();
 }
 
-void WorldEditor::onExit()
-{ 
+void WorldEditor::onExit() { 
     // Put back original app state
     m_scene.directDraw(true);
+
+    m_entities.clear();
+    _unsubscribeAll();
 }
 
-void WorldEditor::onUpdate()
-{
+void WorldEditor::onUpdate() {
+    _compute_physics();
     _drawScene();
-    _drawMenu();
-}
 
-// - Private -
-void WorldEditor::_drawMenu() {
     m_menu.show();
 }
 
+// - Private -
+void WorldEditor::_compute_physics() {
+    float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
+    
+    // integrate speed
+    m_player_data.position += m_player_data.speed       * dt_ms;
+    m_player_data.angle    += m_player_data.angle_speed * dt_ms;
+
+    // friction
+    m_player_data.speed       *= 0.99f;
+    m_player_data.angle_speed *= 0.99f;
+
+    // Update model
+    m_entities["train"].poses().front() = pose_rot(m_player_data.position, m_player_data.angle);
+
+    m_timer.tic();
+}
+
 void WorldEditor::_drawScene() {
+    // Set camera
+    glm::vec3 train_pos = glm::vec3(pose(m_player_data.position)[3]);
+    m_scene.camera().direction = train_pos;
+    m_scene.camera().position.x = train_pos.x + m_camera_data.distance * cos(m_camera_data.theta);
+    m_scene.camera().position.y = train_pos.y + m_camera_data.distance * sin(m_camera_data.theta);
+
+    // Draw items
     Renderer& render = m_scene.renderer();
 
-    static float a = 0.f;
-    static float x = 0.03f;
-    a += x;
-
-    if (std::abs(a) > 3.14f)
-        x *= -1;
-
-    m_entities["quad"].setPosesWithMaterials(
-        { glm::rotate(glm::mat4(1.0f), a, glm::vec3(1, 0, 0)) },
-        { Material{glm::vec4(1, 0, 0, 1), false} }
-    );
-
     for (auto& entity : m_entities) {
-        render.draw(Render::DrawType::Lights, entity.second);
+        render.draw(Render::DrawType::Shadows, entity.second);
+    }
+}
+
+// Events
+void WorldEditor::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
+    if (evt.action == InputAction::Pressed || evt.action == InputAction::Repeated)
+    {
+        // Linear speed
+        {
+            float val = 0.0f;
+
+            switch (evt.key)
+            {
+                case KeyCode::ArrowUp:   val = -1.0f; break;
+                case KeyCode::ArrowDown: val = +1.0f; break;
+            }
+
+            if (std::sqrt(glm::dot(m_player_data.speed, m_player_data.speed)) < 1e-2f) {
+                m_player_data.speed += 1e-5f * val;
+            }
+        }
+
+        // Angular speed
+        {
+            float val = 0.0f;
+
+            switch (evt.key)
+            {
+                case KeyCode::ArrowLeft:  val = -1.0f; break;
+                case KeyCode::ArrowRight: val = +1.0f; break;
+            }
+
+            m_player_data.angle_speed += 1e-5f * val;
+        }
+
+        // Camera
+        {
+            float val = 0.0f;
+
+            switch (evt.key)
+            {
+                case 'Q': val = +1.0f; break;
+                case 'W': val = -1.0f; break;
+            }
+
+            m_scene.camera().position.z += 0.001f * val;
+        }
     }
 }

@@ -7,7 +7,7 @@
 #include "View.hpp"
 #include "Ui.hpp"
 
-struct Controller: private Event::Subscriber {
+struct Controller: Event::Subscriber {
     Controller(Ui& ui, View& view);
 
 protected:

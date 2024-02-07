@@ -13,6 +13,9 @@ void MaterialEditor::onEnter()
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
 
+    m_scene.camera().position = glm::vec3(0.0f, -1.0f, 0.15f);
+    m_scene.camera().direction = glm::vec3(0, 0, 0);
+
     m_menu.reset();
 }
 
