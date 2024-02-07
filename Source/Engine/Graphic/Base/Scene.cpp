@@ -116,7 +116,7 @@ void Scene::_update_camera() {
 
     float aspect = (float)m_width / m_height;
 
-    _renderer._camera.lookAt(glm::vec3(0, 0, 1));
+    _renderer._camera.lookAt();
     _renderer._camera.usePerspective(aspect);
 }
 

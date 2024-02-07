@@ -84,8 +84,8 @@ void WorldEditor::_compute_physics() {
     m_player_data.position.y += m_player_data.linear_speed * sin(m_player_data.angle) * dt_ms;
 
     // friction
-    m_player_data.linear_speed *= 0.99f;
-    m_player_data.angle_speed  *= 0.99f;
+    m_player_data.linear_speed *= 0.97f;
+    m_player_data.angle_speed  *= 0.95f;
 
     // Update model
     m_entities["train"].poses().front() = pose_rot(m_player_data.position, m_player_data.angle);
@@ -97,8 +97,12 @@ void WorldEditor::_drawScene() {
     // Set camera
     glm::vec3 train_pos = glm::vec3(pose(m_player_data.position)[3]);
     m_scene.camera().direction = train_pos;
+
+    m_camera_data.distance = 1.0f - 1e2f * m_player_data.linear_speed;
+
     m_scene.camera().position.x = train_pos.x + m_camera_data.distance * cos(m_player_data.angle);
     m_scene.camera().position.y = train_pos.y + m_camera_data.distance * sin(m_player_data.angle);
+    m_scene.camera().position.z = std::max(0.01f, 0.25f + 1e1f * m_player_data.linear_speed);
 
     // Draw items
     Renderer& render = m_scene.renderer();
@@ -122,8 +126,8 @@ void WorldEditor::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
                 case KeyCode::ArrowDown: val = +1.0f; break;
             }
 
-            if (m_player_data.linear_speed < 1e-2f) {
-                m_player_data.linear_speed += 1e-5f * val;
+            if (m_player_data.linear_speed < 1.0f) {
+                m_player_data.linear_speed += 1e-4f * val;
             }
         }
 
@@ -138,13 +142,6 @@ void WorldEditor::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             }
 
             m_player_data.angle_speed += m_player_data.linear_speed * 0.01f * val;
-        }
-
-        // Camera
-        switch (evt.key)
-        {
-            case 'Q': m_scene.camera().position.z += 0.001f; break;
-            case 'W': m_scene.camera().position.z -= 0.001f; break;
         }
     }
 }

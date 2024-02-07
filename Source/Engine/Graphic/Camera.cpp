@@ -4,13 +4,14 @@ Camera::Camera() :
     projection(glm::mat4()), 
     modelview(glm::mat4()),
     position(glm::vec3(0.0f, -1.0f, 0.0f)),
-    direction(glm::vec3(0.0f, 0.0, 0.0f))
+    direction(glm::vec3(0.0f, 0.0, 0.0f)),
+    up(glm::vec3(0,0,1))
 {
     // ..
 }
 
 // Helpers
-void Camera::lookAt(const glm::vec3& up) {
+void Camera::lookAt() {
     modelview = glm::lookAt(position, direction, up);
 }
 

@@ -46,15 +46,18 @@ void ModelEditor::onUpdate()
     {
     case 0:
         m_scene.camera().position = glm::vec3{ 0, -1, 0 };
-        m_scene.camera().lookAt(glm::vec3(0, 0, 1));
+        m_scene.camera().up = glm::vec3(0, 0, 1);
+        m_scene.camera().lookAt();
         break;
     case 1:
         m_scene.camera().position = glm::vec3{ 0,0,1 };
-        m_scene.camera().lookAt(glm::vec3(0, 1, 0));
+        m_scene.camera().up = glm::vec3(0, 1, 0);
+        m_scene.camera().lookAt();
         break;
     case 2:
         m_scene.camera().position = glm::vec3{ -1, 0, 0 };
-        m_scene.camera().lookAt(glm::vec3(0, 0, 1));
+        m_scene.camera().up = glm::vec3(0, 0, 1);
+        m_scene.camera().lookAt();
         break;
     }
 
