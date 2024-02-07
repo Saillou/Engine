@@ -32,10 +32,10 @@ public:
 
 // Instance
 public:
-	Texture(GLuint texture_type = GL_TEXTURE_2D);
+	Texture(GLenum m_texture_format = GL_RGB, GLuint texture_type = GL_TEXTURE_2D);
 	Texture(const std::string& image_path);
-	Texture(unsigned int width, unsigned int height, GLuint texture_type = GL_TEXTURE_2D);
-	Texture(GLenum texture_type, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
+	Texture(unsigned int width, unsigned int height, GLenum texture_format, GLuint texture_type);
+	Texture(GLenum texture_type, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum texture_format, GLenum type, const void* pixels);
 	Texture(const aiTexture* rawTextureData);
 
 	virtual ~Texture();
@@ -61,9 +61,11 @@ public:
 
 protected:
 	void _setParameters();
+	static GLenum _GetFormatFromChannel(int nChannels);
 
 	unsigned int m_textureId;
 	unsigned int m_width;
 	unsigned int m_height;
-	GLuint m_texture_type;
+	GLenum m_texture_format; 
+	GLuint m_texture_type; 
 };

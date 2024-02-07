@@ -44,10 +44,11 @@ void Texture::Cache::Clean() {
 }
 
 // Instance
-Texture::Texture(GLuint texture_type):
+Texture::Texture(GLenum m_texture_format, GLuint texture_type):
 	m_textureId(0),
 	m_width(0),
 	m_height(0),
+	m_texture_format(m_texture_format),
 	m_texture_type(texture_type)
 {
 	glGenTextures(1, &m_textureId);
@@ -59,6 +60,7 @@ Texture::Texture(const std::string& image_path):
 	m_textureId(0),
 	m_width(0),
 	m_height(0),
+	m_texture_format(0),
 	m_texture_type(GL_TEXTURE_2D)
 {
 	glGenTextures(1, &m_textureId);
@@ -67,15 +69,15 @@ Texture::Texture(const std::string& image_path):
 	_setParameters();
 }
 
-Texture::Texture(unsigned int width, unsigned int height, GLuint texture_type) :
+Texture::Texture(unsigned int width, unsigned int height, GLenum m_texture_format, GLuint texture_type) :
 	m_textureId(0),
 	m_width(width),
 	m_height(height),
+	m_texture_format(m_texture_format),
 	m_texture_type(texture_type)
 {
 	glGenTextures(1, &m_textureId);
 
-	bind();
 	resize(m_width, m_height);
 	_setParameters();
 }
@@ -84,6 +86,7 @@ Texture::Texture(GLenum texture_type, GLint level, GLint internalformat, GLsizei
 	m_textureId(0),
 	m_width(width),
 	m_height(height),
+	m_texture_format(format),
 	m_texture_type(texture_type)
 {
 	glGenTextures(1, &m_textureId);
@@ -102,6 +105,7 @@ Texture::Texture(const aiTexture* rawTexture):
 	m_textureId(0),
 	m_width(0),
 	m_height(0),
+	m_texture_format(0),
 	m_texture_type(GL_TEXTURE_2D)
 {
 	glGenTextures(1, &m_textureId);
@@ -121,10 +125,10 @@ Texture::Texture(const aiTexture* rawTexture):
 		return;
 	}
 
-	const GLenum format = nrComponents == 1 ? GL_RED : nrComponents == 4 ? GL_RGBA : GL_RGB;
+	m_texture_format = _GetFormatFromChannel(nrComponents);
 
 	bind();
-	glTexImage2D(m_texture_type, 0, format, (int)m_width, (int)m_height, 0, format, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(m_texture_type, 0, m_texture_format, (int)m_width, (int)m_height, 0, m_texture_format, GL_UNSIGNED_BYTE, data);
 	stbi_image_free(data);
 	
 	_setParameters();
@@ -169,6 +173,8 @@ void Texture::load(GLuint target, const std::string& path, int* poutWidth, int* 
 	}
 
 	const Cache::Metadata& metadata = Cache::Get(path);
+
+	m_texture_format = _GetFormatFromChannel(metadata.channels);
 	resize(metadata.width, metadata.height, metadata.pixels, target);
 
 	// Out info
@@ -184,11 +190,11 @@ void Texture::resize(unsigned int width, unsigned int height, void* data, GLuint
 	bind();
 	switch (m_texture_type) {
 	case GL_TEXTURE_2D_MULTISAMPLE:
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 8, GL_RGB, m_width, m_height, GL_TRUE);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 8, m_texture_format, m_width, m_height, GL_TRUE);
 		break;
 
 	default:
-		glTexImage2D(target == (GLuint)-1 ? m_texture_type : target, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(target == (GLuint)-1 ? m_texture_type : target, 0, m_texture_format, m_width, m_height, 0, m_texture_format, GL_UNSIGNED_BYTE, data);
 		break;
 	}
 }
@@ -210,4 +216,16 @@ void Texture::_setParameters() {
 	glTexParameteri(m_texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(m_texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(m_texture_type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
+
+GLenum Texture::_GetFormatFromChannel(int nChannels) {
+	switch (nChannels)
+	{
+		case 1: return GL_RED;
+		case 3: return GL_RGB;
+		case 4: return GL_RGBA;
+	}
+
+	std::cerr << "Warning texture: channels number incorrect, RGB taken as default | n = " << (nChannels) << std::endl;
+	return GL_RGB;
 }

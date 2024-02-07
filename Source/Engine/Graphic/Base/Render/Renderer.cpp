@@ -11,8 +11,7 @@ void Renderer::quad(const Quad& surface) {
     if (!_deferred)
         return _drawQuadSync(surface);
 
-    // TODO: deals with quad draw (maybe create entity)
-    std::cerr << "[Warning] Renderer: can't draw quad in deferred mode." << std::endl;
+    std::cerr << "[Warning] Renderer: can't draw quad in deferred mode. (Wrap these in an entity instead)" << std::endl;
 }
 
 void Renderer::draw(Render::DrawType type, Entity& entity) {
