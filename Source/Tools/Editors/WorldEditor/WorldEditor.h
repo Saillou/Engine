@@ -21,6 +21,7 @@ public:
 private:
     void _compute_physics();
     void _drawScene();
+    void _drawInfo();
 
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
