@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <glm/gtx/string_cast.hpp>
 
 #include <Engine/Events/Events.hpp>
@@ -10,47 +11,18 @@
 #include <Engine/Graphic/Base/Widget/Layout/HorizontalLayout.hpp>
 
 
-struct Ui : Event::Subscriber {
-    Ui(Scene& scene);
+class Ui : Event::Subscriber 
+{
+public:
+    Ui();
     virtual ~Ui() = default;
 
-    enum class State {
-        Idle, 
-        Start, Option, InGame, Pause
-    };
-    
-    // Accessors
-    void setState(Ui::State state);
-
-    State state()       const;
-    int   lightsCount() const;
-    bool  wantQuit()    const;
-
-protected:
-    void draw(const LayoutEvents::Draw& msg);
-
 private:
-    // - Methods
-    void _updateCount(int delta);
-
-    // - Members
-    State m_state, 
-          m_prev_state;
-    int   m_lights_count = 2;
-    bool  m_wantQuit = false;
-
-    Scene& m_scene;
-    SceneFrame m_main_frame;
-    std::unordered_map<std::string, std::shared_ptr<Layout>> m_layouts;
-
-    // - Helpers -
-    void _create_widgets(
-        std::unordered_map<std::string, std::shared_ptr<Button>>& btns,
-        std::unordered_map<std::string, std::shared_ptr<Text>>& txts
-    );
-    void _create_layouts(
-        std::unordered_map<std::string, std::shared_ptr<Button>>& btns,
-        std::unordered_map<std::string, std::shared_ptr<Text>>& txts
-    );
+    void createLayouts();
     StyleSheet _create_style() const;
+
+    SceneFrame m_frame;
+    std::shared_ptr<VerticalLayout> m_layoutMain;
+    std::shared_ptr<VerticalLayout> m_layoutOptions;
+    std::shared_ptr<VerticalLayout> m_layoutLevels;
 };

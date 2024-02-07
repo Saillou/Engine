@@ -10,6 +10,12 @@
 
 namespace Thomas
 {
+    Sandbox::Sandbox()
+    {
+        int x = 5;
+        (void)x;
+    }
+
     void Sandbox::load()
     {
         const int x = -14;

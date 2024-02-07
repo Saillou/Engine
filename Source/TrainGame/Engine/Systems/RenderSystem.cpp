@@ -31,6 +31,7 @@
         m_gameModels[Thomas::ModelId::CubeGeometry].drawType = Render::DrawType::Geometry;
         m_gameModels[Thomas::ModelId::SphereBasic].entity = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
         m_gameModels[Thomas::ModelId::SphereBasic].drawType = Render::DrawType::Basic;
+        m_gameModels[Thomas::ModelId::CubeBasic].entity->localMaterial().cast_shadow = false;
         m_gameModels[Thomas::ModelId::SphereGeometry].entity = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
         m_gameModels[Thomas::ModelId::SphereGeometry].drawType = Render::DrawType::Geometry;
     }

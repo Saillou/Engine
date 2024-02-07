@@ -1,5 +1,7 @@
 #include "Game.hpp"
 
+#include "Engine/Utils/Service.hpp"
+
 #include "TrainGame/TrainGame/Grid.hpp"
 
 #include "TrainGame/Engine/Core/ECS.h"
@@ -32,9 +34,9 @@ namespace Thomas
         m_gridSystem = ECS::registerSystem<GridSystem>();
         m_gridSystem->init({ 0.f,0.f,0.2f }, { 0.1f,0.1f });
 
-        m_window = std::make_unique<Window>(1600, 900, "Train game");
-        m_view = std::make_shared<View>(m_window->scene());
-        m_ui = std::make_unique<MainUI>(m_window->backend());
+        Service<Window>::build(1600, 900, "Train game");
+        m_view = std::make_shared<View>(Service<Window>::get().scene());
+        m_ui = std::make_unique<MainUI>(Service<Window>::get().backend());
     }
 
     Game::~Game()
@@ -43,8 +45,8 @@ namespace Thomas
 
     void Game::createScene()
     {
-        Sandbox level;
-        level.load();
+        Sandbox* level = new Sandbox();
+        level->load();
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
