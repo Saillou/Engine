@@ -168,9 +168,8 @@ void Texture::unbind(GLuint texture_type) {
 }
 
 void Texture::load(GLuint target, const std::string& path, int* poutWidth, int* poutHeight, int* poutChans) {
-	if (!Cache::Create(path)) {
+	if (!Cache::Create(path))
 		return;
-	}
 
 	const Cache::Metadata& metadata = Cache::Get(path);
 
