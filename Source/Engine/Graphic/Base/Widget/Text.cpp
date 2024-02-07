@@ -21,7 +21,7 @@ Text::Text(const Block& texts, float scale):
     _size(0,0)
 {
     if(scale > 0)
-        style().set_textSize(scale);
+        style().textSize.setValue(scale);
 
     _compute_size();
 }

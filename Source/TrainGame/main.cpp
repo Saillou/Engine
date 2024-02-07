@@ -1,5 +1,7 @@
 #include <Engine/Graphic/Window.hpp>
 
+#include "Engine/Utils/Service.hpp"
+
 #include "App/View.hpp"
 #include "App/Game.hpp"
 
@@ -17,28 +19,11 @@ int main() {
     // Loop
     do {
         // Inputs
-        for (auto key : game.window()->keyPressed()) {
-            switch (key) 
-            {
-            case GLFW_KEY_ESCAPE:
-                game.window()->close();
-                break;
-
-            default:
-                Event::Emit(CommonEvents::KeyPressed(key));
-                break;
-            }
-        }
-
-        Event::Emit(CommonEvents::MouseMoved(
-            (int)game.window()->mousePos().x, (int)game.window()->mousePos().y
-        ));
-
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());
         }
-    } while (game.window()->update());
+    } while (Service<Window>::get().update());
 
     // Cleanup
     return 0;

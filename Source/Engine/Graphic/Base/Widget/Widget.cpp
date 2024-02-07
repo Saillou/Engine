@@ -30,6 +30,11 @@ bool Widget::isMouseOver() const {
 	return _mouse_over;
 }
 
+bool Widget::isMouseClicked() const
+{
+	return _mouse_clicked;
+}
+
 const Layout* Widget::parent() const {
 	return _parent;
 }
@@ -58,16 +63,26 @@ bool Widget::IsIn(const Widget& widget, int x, int y) {
 }
 
 void Widget::_applyStyle() {
-	if(_style.has_hint_x()) x() = _style.hint_x();
-	if(_style.has_hint_y()) y() = _style.hint_y();
-	if(_style.has_hint_w()) w() = _style.hint_w();
-	if(_style.has_hint_h()) h() = _style.hint_h();
+	if(_style.hint_x.hasValue()) x() = _style.hint_x();
+	if(_style.hint_y.hasValue()) y() = _style.hint_y();
+	if(_style.hint_w.hasValue()) w() = _style.hint_w();
+	if(_style.hint_h.hasValue()) h() = _style.hint_h();
 
 	_surface->material.diffuse_color = _style.background();
 }
 
 // Events propagated
 void Widget::_on_mouse_button(const CommonEvents::MouseButton& evt) {
+	if (_mouse_over && evt.button == MouseButton::Left && evt.action == InputAction::Pressed)
+	{
+		_mouse_clicked = true;
+	}
+
+	if (evt.button == MouseButton::Left && evt.action == InputAction::Released)
+	{
+		_mouse_clicked = false;
+	}
+
 	if (_mouse_over && evt.button == MouseButton::Left && evt.action == InputAction::Released) {
 		Event::Emit(WidgetEvents::MouseClick(), this);
 	}

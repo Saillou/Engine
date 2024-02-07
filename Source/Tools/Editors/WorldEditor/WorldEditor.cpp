@@ -100,6 +100,18 @@ void WorldEditor::_drawMenu() {
 void WorldEditor::_drawScene() {
     Renderer& render = m_scene.renderer();
 
+    static float a = 0.f;
+    static float x = 0.03f;
+    a += x;
+
+    if (std::abs(a) > 3.14f)
+        x *= -1;
+
+    m_entities["quad"].setPosesWithMaterials(
+        { glm::rotate(glm::mat4(1.0f), a, glm::vec3(1, 0, 0)) },
+        { Material{glm::vec4(1, 0, 0, 1), false} }
+    );
+
     for (auto& entity : m_entities) {
         render.draw(Render::DrawType::Lights, entity.second);
     }

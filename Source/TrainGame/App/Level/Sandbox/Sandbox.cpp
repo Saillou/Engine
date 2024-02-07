@@ -10,7 +10,12 @@
 
 namespace Thomas
 {
-    void Sandbox::loadLevel()
+    Sandbox::Sandbox()
+    {
+        _subscribe(&Sandbox::_on_key_pressed);
+    }
+
+    void Sandbox::load()
     {
         const int x = -14;
         const int y = -14;
@@ -529,7 +534,23 @@ namespace Thomas
         }
     }
 
-    void Sandbox::unloadLevel()
+    void Sandbox::unload()
     {
+    }
+
+    void Sandbox::update(float dt)
+    {
+
+    }
+
+    void Sandbox::_on_key_pressed(const CommonEvents::KeyPressed& evt)
+    {
+        if (evt.action == InputAction::Pressed)
+        {
+            switch (evt.key)
+            {
+            case KeyCode::Escape: m_ui.showPauseMenu(); break;
+            }
+        }
     }
 }

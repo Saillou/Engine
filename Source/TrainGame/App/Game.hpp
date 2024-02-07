@@ -19,8 +19,6 @@ namespace Thomas
         Game();
         ~Game();
 
-        Window* window() const { return m_window.get(); }
-
         void createScene();
     private:
         void onStateUpdate(const CommonEvents::StateUpdated& evt);
@@ -29,7 +27,6 @@ namespace Thomas
         void onSceneFinishedRender(const SceneEvents::RenderFinished& evt);
 
         Timer::Chronometre      m_timer;
-        std::unique_ptr<Window> m_window;
         std::shared_ptr<View>   m_view;
         std::unique_ptr<MainUI> m_ui;
 

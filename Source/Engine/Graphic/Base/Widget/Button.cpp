@@ -15,11 +15,19 @@ void Button::draw(Scene& scene) {
     // Get style
     Widget::_applyStyle();
 
-    _surface->material.diffuse_color = isMouseOver() ? style().foreground() : style().background();
-    content.style().set_foreground(    isMouseOver() ? style().background() : style().foreground());
+    if (isMouseClicked())
+    {
+        _surface->material.diffuse_color = style().clicked_background();
+        content.style().foreground.setValue(style().clicked_foreground());
+    }
+    else
+    {
+        _surface->material.diffuse_color = isMouseOver() ? style().hovered_background() : style().background();
+        content.style().foreground.setValue(isMouseOver() ? style().hovered_foreground() : style().foreground());
+    }
 
     // Propagate style to text
-    content.style().set_contentAlign(style().contentAlign());
+    content.style().contentAlign.setValue(style().contentAlign());
     
     // Left align text
     content.x() = x();
