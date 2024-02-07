@@ -1,13 +1,18 @@
 #include "WorldEditor.h"
 
 // -------- Utilities --------
+static const glm::mat4 s_identity = glm::mat4(1.0f);
+
 static Entity __create_tile_with_texture(const std::string& texturePath) {
     Entity entity(Entity::SimpleShape::Quad);
 
     // Transform:
     //  - translate on z for having the ground level at 0
     //  - rotate for having Y as depth (instead of Z because i prefer)
-    entity.localPose() = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 1.0f)), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
+    //  - scale in half because quads are 2x2 by default
+    entity.localPose() = glm::scale(glm::mat4(entity.localPose()), glm::vec3(0.5f));
+    entity.localPose() = glm::translate(glm::mat4(entity.localPose()), glm::vec3(0, 0, 1.0f));
+    entity.localPose() = glm::rotate(glm::mat4(entity.localPose()), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
 
     // Define opacity < 1: trick renderer with reordering
     entity.localMaterial() = Material{ glm::vec4(0, 0, 0, 0.9f), false }; 
@@ -23,10 +28,21 @@ static Entity __create_tile_with_texture(const std::string& texturePath) {
 static Entity __create_tile_with_rgba(const glm::vec4& colorRGBA) {
     Entity entity(Entity::SimpleShape::Quad);
 
+    // Transform:
+    //  - scale in half because quads are 2x2 by default
+    entity.localPose() = glm::scale(s_identity, glm::vec3(0.5f));
+
     // channel color 8-bits to float
     entity.localMaterial() = Material{ colorRGBA / 255.0f, false };
 
     return entity;
+}
+
+static glm::mat4 __pose(const glm::vec2& position, float scale = 1.0f) {
+    glm::mat4 model_translate = glm::translate(s_identity, glm::vec3(position, 0.0f));
+    glm::mat4 model_scale     = glm::scale(model_translate, glm::vec3(scale));
+
+    return model_scale;
 }
 
 // -------- Editor --------
@@ -54,12 +70,13 @@ void WorldEditor::onEnter()
 
     // Create world
     m_entities["grass"].poses() = {
-        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)), glm::vec3(-0.25f, 0.1f, 0.0f)),
-        glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.0f)), glm::vec3(+0.25f, 0.2f, 0.0f)),
+        __pose(glm::vec2(-0.25f, 0.1f), 0.5f),
+        __pose(glm::vec2(-0.25f, 0.1f), 1.5f)
     };
 
     m_entities["earth"].poses() = {
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)),
+        __pose(glm::vec2(0, 0)),
+        __pose(glm::vec2(1.01f, 0))
     };
 }
 
