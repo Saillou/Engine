@@ -40,6 +40,8 @@ struct Mesh {
     const std::vector<unsigned int>& indices()  const;
     const glm::mat4&                 obb()      const;
 
+    std::vector<TextureData>& textures();
+
 private:
     // Gpu data
     Array  m_vao;

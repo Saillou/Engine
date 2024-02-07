@@ -31,7 +31,7 @@ std::optional<Style> StyleSheet::getStyle(const Widget* pWidget)
 	}
 	
 	// Priorities: User defined (Widget::style()), then id, then class, then tag.
-	return (((styleTag + styleClass) + styleId) + pWidget->style());
+	return pWidget->style() + styleId + styleClass + styleTag;
 }
 
 void StyleSheet::applyStyle(Widget* widget) {

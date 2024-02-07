@@ -19,19 +19,6 @@ int main() {
     // Loop
     do {
         // Inputs
-        for (auto key : Service<Window>::get().keyPressed()) {
-            switch (key) 
-            {
-            case GLFW_KEY_ESCAPE:
-                Service<Window>::get().close();
-                break;
-
-            default:
-                Event::Emit(CommonEvents::KeyPressed(key));
-                break;
-            }
-        }
-
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());

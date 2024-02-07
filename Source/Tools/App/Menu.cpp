@@ -1,25 +1,18 @@
 #include "Menu.hpp"
 
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
+#include "../_imgui/imgui.h"
+#include "../_imgui/imgui_impl_glfw.h"
+#include "../_imgui/imgui_impl_opengl3.h"
 
 // Start ImGui
 Menu::Menu(GLFWwindow* backend) 
 {
     ImGui::CreateContext();
-
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+    ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(backend, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
-
-    ImGui::StyleColorsDark();
-
-    state =
-    {
-        false,
-        EditorId::None
-    };
 }
 
 // Cleanup
@@ -34,34 +27,35 @@ Menu::~Menu()
 // Copied from imgui_demo.cpp
 void Menu::ShowMenuBar()
 {
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            ShowMenuFile();
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Editors"))
-        {
-            if (ImGui::MenuItem("Clear"))
-            {
-                state.goToNewEditor = true;
-                state.editorId = EditorId::None;
-            }
-            if (ImGui::MenuItem("Material Editor"))
-            {
-                state.goToNewEditor = true;
-                state.editorId = EditorId::Material;
-            }
-            if (ImGui::MenuItem("Model Editor"))
-            {
-                state.goToNewEditor = true;
-                state.editorId = EditorId::Model;
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
+    if (!ImGui::BeginMainMenuBar())
+        return;
+
+    if (ImGui::BeginMenu("File")) {
+        ShowMenuFile();
+        ImGui::EndMenu();
     }
+
+    if (ImGui::BeginMenu("Editors")) {
+        if (ImGui::MenuItem("Clear")) {
+            state.editorId = EditorId::None;
+        }
+
+        if (ImGui::MenuItem("Material Editor")) {
+            state.editorId = EditorId::Material;
+        }
+
+        if (ImGui::MenuItem("Model Editor")) {
+            state.editorId = EditorId::Model;
+        }
+
+        if (ImGui::MenuItem("World Editor")) {
+            state.editorId = EditorId::World;
+        }
+
+        ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
 }
 
 void Menu::ShowMenuFile()

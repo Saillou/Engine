@@ -5,7 +5,7 @@
 
 namespace Thomas
 {
-    class Sandbox : public Level
+    class Sandbox : public Level, private Event::Subscriber
     {
     public:
         Sandbox();
@@ -15,6 +15,7 @@ namespace Thomas
         void update(float dt) override;
 
     private:
+        void _on_key_pressed(const CommonEvents::KeyPressed& evt);
         Ui m_ui;
     };
 }

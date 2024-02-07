@@ -58,6 +58,10 @@ const glm::mat4& Mesh::obb() const {
     return m_obb;
 }
 
+std::vector<TextureData>& Mesh::textures() {
+    return m_textures;
+}
+
 // initializes all the buffer objects/arrays
 void Mesh::_setup() {
     m_vao.bind();

@@ -1,5 +1,6 @@
 #include "Entity.hpp"
 
+#include "Primitive/Quad.hpp"
 #include "Primitive/Cube.hpp"
 #include "Primitive/Sphere.hpp"
 
@@ -16,6 +17,10 @@ Entity::Entity(SimpleShape shape):
     _model->_root = std::make_unique<Model::Node>();
 
     switch (shape) {
+    case Entity::Quad:
+        _model->_root->meshes.push_back(Quad::CreateMesh());
+        break;
+
     case Entity::Cube: 
         _model->_root->meshes.push_back(Cube::CreateMesh());
         break;
@@ -62,6 +67,10 @@ const std::vector<Material>& Entity::materials() const {
 }
 
 const Model& Entity::model() const {
+    return *_model;
+}
+
+Model& Entity::model() {
     return *_model;
 }
 

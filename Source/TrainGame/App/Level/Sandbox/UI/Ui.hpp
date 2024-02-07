@@ -17,8 +17,12 @@ public:
     Ui();
     virtual ~Ui() = default;
 
+    void showPauseMenu();
+
 private:
     void createLayouts();
+    void subscribeEvents();
+
     StyleSheet _create_style() const;
 
     SceneFrame m_frame;

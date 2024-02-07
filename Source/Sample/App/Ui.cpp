@@ -59,15 +59,15 @@ void Ui::setState(Ui::State state) {
         break;
 
     case State::InGame:
-        m_main_frame.layout().style().set_opacity(1.0f);
-        m_main_frame.layout().style().set_background(Style::Transparent());
+        m_main_frame.layout().style().opacity.setValue(1.0f);
+        m_main_frame.layout().style().background.setValue(Style::Transparent());
 
         m_main_frame.layout().add(m_layouts["InGame"]);
         break;
 
     case State::Pause:
-        m_main_frame.layout().style().set_opacity(0.9f);
-        m_main_frame.layout().style().set_background(glm::vec4(0.1f, 0.1f, 0.15f, 0.5f));
+        m_main_frame.layout().style().opacity.setValue(0.9f);
+        m_main_frame.layout().style().background.setValue(glm::vec4(0.1f, 0.1f, 0.15f, 0.5f));
 
         m_main_frame.layout().add(m_layouts["Pause"]);
         break;
@@ -118,35 +118,35 @@ StyleSheet Ui::_create_style() const
 
     return StyleSheet::CreateDefault()
         .addRule(Style::Tag::Layout, Style()
-            .set_opacity(0.90f)
-            .set_background(primary_color)
+            .opacity.setValue(0.90f)
+            .background.setValue(primary_color)
         )
         .addRule(Style::Tag::Button, Style()
-            .set_background(secondary_color)
-            .set_foreground(foreground_color)
-            .set_contentAlign({ 
+            .background.setValue(secondary_color)
+            .foreground.setValue(foreground_color)
+            .contentAlign.setValue({
                 Style::Align::Centered, 
                 Style::Align::Centered 
             })
         )
         .addRule(Style::Tag::Text, Style()
-            .set_foreground(main_text_color)
+            .foreground.setValue(main_text_color)
         )
         .addRule(DefaultButton, Style()
-            .set_hint_w(0.1f)
+            .hint_w.setValue(0.1f)
         )
         .addRule(SmallButton, Style()
-            .set_hint_w(0.020f)
-            .set_hint_h(0.035f)
+            .hint_w.setValue(0.020f)
+            .hint_h.setValue(0.035f)
         )
         .addRule(Title, Style()
-            .set_textSize(1.0f)
+            .textSize.setValue(1.0f)
         )
         .addRule(Info, Style()
-            .set_textSize(0.35f)
+            .textSize.setValue(0.35f)
         )
         .addRule("#Count", Style()
-            .set_foreground(foreground_color)
+            .foreground.setValue(foreground_color)
         )
     ;
 }

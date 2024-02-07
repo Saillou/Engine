@@ -9,6 +9,10 @@
 struct Quad :
     private PrimitiveHelper
 {
+    // Create entity from mesh
+    static std::unique_ptr<Mesh> CreateMesh(bool sendToGpu = true);
+
+    // Create object to be cpu manipulated
     Quad(float x0 = .0f, float y0 = .0f, float width = 1.f, float height = 1.f);
     ~Quad() = default;
 
@@ -32,5 +36,5 @@ struct Quad :
 
 private:
     float _x, _y, _w, _h;
-    Mesh quad_mesh;
+    std::unique_ptr<Mesh> _quad_mesh;
 };

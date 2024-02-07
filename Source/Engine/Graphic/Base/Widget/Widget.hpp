@@ -52,6 +52,7 @@ struct Widget
 
     // Access
     bool isMouseOver() const;
+    bool isMouseClicked() const;
     const Layout* parent() const;
 
     Style::Tag tag() const;
@@ -97,5 +98,6 @@ protected:
 
 private:
     bool _mouse_over = false;
+    bool _mouse_clicked = false;
     int _evt_accepted = 0;
 };
