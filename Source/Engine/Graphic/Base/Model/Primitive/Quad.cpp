@@ -10,7 +10,7 @@ std::unique_ptr<Mesh> Quad::CreateMesh(bool sendToGpu)
     createQuad(*quad_mesh,
         glm::vec3(-1, +1, 0), glm::vec3(-1, -1, 0), glm::vec3(+1, -1, 0), glm::vec3(+1, +1, 0),
         glm::vec3(0, 0, 1),
-        glm::vec2(0, 1), glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1)
+        glm::vec2(0, 0), glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(1, 0)
     );
 
     // Send to gpu
