@@ -13,8 +13,8 @@
 
 #include <Engine/Events/CommonEvents.hpp>
 
-struct View : Event::Subscriber {
-    View();
+struct ViewCube : Event::Subscriber {
+    ViewCube();
 
     bool enable_filter = false;
     bool enable_interaction = false;

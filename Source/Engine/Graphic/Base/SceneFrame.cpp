@@ -10,15 +10,11 @@ SceneFrame::SceneFrame(Scene& scene_, std::shared_ptr<Layout> layout_) :
     // - Events -
     _subscribe(&SceneFrame::_on_draw);
 
-    // Notes: Order has its importance
-    //   Mouse move will detect if the mouse is over the widget
-    //  then mouse button will trigger or not if inside of it.
-
-    _subscribe([=](const CommonEvents::MouseMoved& evt) { 
-        m_layout->_on_mouse_move(evt);   
-    });
     _subscribe([=](const CommonEvents::MouseButton& evt) { 
         m_layout->_on_mouse_button(evt); 
+    });
+    _subscribe([=](const CommonEvents::MouseMoved& evt) { 
+        m_layout->_on_mouse_move(evt);   
     });
     _subscribe([=](const SceneEvents::Resized& size) {
         m_frame.resize(size.width, size.height);

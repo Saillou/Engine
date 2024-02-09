@@ -10,8 +10,6 @@
 #include "TrainGame/Engine/Components/Grid.h"
 #include "TrainGame/Engine/Components/RenderComponent.h"
 
-#include "TrainGame/App/Level/Sandbox/Sandbox.hpp"
-
 namespace Thomas
 {
     static uint64_t gs_id = 0;
@@ -45,8 +43,8 @@ namespace Thomas
 
     void Game::createScene()
     {
-        Sandbox* level = new Sandbox();
-        level->load();
+        m_curr_level = std::make_unique<Sandbox>(); // ntm
+        m_curr_level->load();
     }
 
     void Game::onStateUpdate(const CommonEvents::StateUpdated& evt)
@@ -93,7 +91,7 @@ namespace Thomas
     {
 
     }
-    void Game::onSceneFinishedRender(const SceneEvents::RenderFinished& evt)
+    void Game::onSceneFinishedRender(const SceneEvents::SceneFinished& evt)
     {
         if(m_ui && m_ui->ready)
             m_ui->Render();

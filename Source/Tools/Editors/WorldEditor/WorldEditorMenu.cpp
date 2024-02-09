@@ -33,18 +33,22 @@ void WorldEditorMenu::createSection(const std::string& sectionName) {
     _datas[sectionName] = _row{};
 }
 
+void WorldEditorMenu::addContent(const std::string& sectionName, const std::string& articleName, const std::string& value) {
+    _datas[sectionName][articleName] = value;
+}
+
 void WorldEditorMenu::addContent(const std::string& sectionName, const std::string& articleName, const glm::vec3& value) {
-    _datas[sectionName][articleName] = glm::to_string(value);
+    addContent(sectionName, articleName, glm::to_string(value));
 }
 
 void WorldEditorMenu::addContent(const std::string& sectionName, const std::string& articleName, const glm::vec2& value) {
-    _datas[sectionName][articleName] = glm::to_string(value);
+    addContent(sectionName, articleName, glm::to_string(value));
 }
 
 void WorldEditorMenu::addContent(const std::string& sectionName, const std::string& articleName, const float& value) {
-    _datas[sectionName][articleName] = std::to_string(value);
+    addContent(sectionName, articleName, std::to_string(value));
 }
 
 void WorldEditorMenu::addContent(const std::string& sectionName, const std::string& articleName, const int& value) {
-    _datas[sectionName][articleName] = std::to_string(value);
+    addContent(sectionName, articleName, std::to_string(value));
 }

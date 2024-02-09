@@ -2,9 +2,9 @@
 
 #include "App.hpp"
 #include "Menu.hpp"
-#include "../Editors/MaterialEditor/MaterialEditor.h"
-#include "../Editors/ModelEditor/ModelEditor.h"
-#include "../Editors/WorldEditor/WorldEditor.h"
+#include "../Editors/MaterialEditor/MaterialEditor.hpp"
+#include "../Editors/ModelEditor/ModelEditor.hpp"
+#include "../Editors/WorldEditor/WorldEditor.hpp"
 
 #include <unordered_map>
 

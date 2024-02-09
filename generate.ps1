@@ -3,6 +3,7 @@
     [switch] $NoBuild,   # Don't build binaries
     [switch] $NoInstall, # Don't install resources
     [switch] $NoCleanup, # Don't clean
+    [switch] $No,        # NoBuild | NoInstall | NoCleanup
     [switch] $VS2019     # Use Visual Studio 2019 instead of 2022
  )
 
@@ -88,19 +89,19 @@ else
 {
     Write-Host "Start project generation ..." -ForegroundColor DarkMagenta 
 
-    if(-Not($NoCleanup))
+    if(-Not($NoCleanup) -And -Not($No))
     {
         clearPrevious
     }
     
     generateSolution
 
-    if(-Not($NoBuild)) 
+    if(-Not($NoBuild) -And -Not($No)) 
     {
         compileProject
     }
 
-    if(-Not($NoInstall)) 
+    if(-Not($NoInstall) -And -Not($No)) 
     {
         installResources
     }

@@ -8,6 +8,7 @@ struct SceneEvents : public Event {
         Draw_ = 1024,
         PostDraw_,
         RenderFinished_,
+        SceneFinished_,
         Resized_,
     };
 
@@ -33,6 +34,11 @@ struct SceneEvents : public Event {
     struct RenderFinished : public _Base {
         RenderFinished() :
             _Base(_Type::RenderFinished_)
+        {};
+    };
+    struct SceneFinished : public _Base {
+        SceneFinished() :
+            _Base(_Type::SceneFinished_)
         {};
     };
 };

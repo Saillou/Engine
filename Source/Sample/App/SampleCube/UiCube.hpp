@@ -10,9 +10,9 @@
 #include <Engine/Graphic/Base/Widget/Layout/HorizontalLayout.hpp>
 
 
-struct Ui : Event::Subscriber {
-    Ui();
-    virtual ~Ui() = default;
+struct UiCube : Event::Subscriber {
+    UiCube();
+    virtual ~UiCube() = default;
 
     enum class State {
         Idle, 
@@ -20,7 +20,7 @@ struct Ui : Event::Subscriber {
     };
     
     // Accessors
-    void setState(Ui::State state);
+    void setState(UiCube::State state);
 
     State state()       const;
     int   lightsCount() const;

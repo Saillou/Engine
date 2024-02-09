@@ -1,24 +1,24 @@
-#include <Engine/Utils/Service.hpp>
+#include <Engine/Events/CommonEvents.hpp>
 #include <Engine/Graphic/Window.hpp>
+#include <Engine/Utils/Service.hpp>
 
-#include "App/View.hpp"
-#include "App/Controller.hpp"
-#include "App/Ui.hpp"
+#include "Menu/Menu.hpp"
+#include "App/app.hpp"
 
 // -- Entry point --
 int main() {
     // Setup
     Service<Window>::build(1600, 900, "Sample scene");
-
-    View       view;
-    Ui         ui;
-    Controller controller(ui, view);
+    Service<Menu>::build();
+    Service<App>::build();
 
     // Loop
     do {
         // Check stuff
-        if (ui.wantQuit())
+        if (Service<App>::get().wantQuit())
+        {
             Service<Window>::get().close();
+        }
 
         // States, Physics ..
         {
@@ -27,6 +27,8 @@ int main() {
     } while (Service<Window>::get().update());
 
     // Cleanup
+    Service<App>::destroy();
+    Service<Menu>::destroy();
     Service<Window>::destroy();
     return 0;
 }

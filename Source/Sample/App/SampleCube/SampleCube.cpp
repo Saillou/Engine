@@ -1,24 +1,23 @@
-#include "Controller.hpp"
+#include "SampleCube.hpp"
+#include "ViewCube.hpp"
+#include "UiCube.hpp"
 
 #include <memory>
 #include <iostream>
 
-#include <Engine/Utils/Service.hpp>
-#include <Engine/Graphic/Window.hpp>
-
-Controller::Controller(Ui& ui, View& view):
-    m_ui(ui),
-    m_view(view)
+SampleCube::SampleCube()
 {
     Scene& scene = Service<Window>::get().scene();
+    m_ui   = std::make_unique<UiCube>();
+    m_view = std::make_unique<ViewCube>();
 
     // Root events
-    _subscribe(&Controller::_on_state_update);
-    _subscribe(&Controller::_on_key_pressed);
-    _subscribe(&Controller::_on_mouse_moved);
-    _subscribe(&Controller::_on_mouse_button);
+    _subscribe(&SampleCube::_on_state_update);
+    _subscribe(&SampleCube::_on_key_pressed);
+    _subscribe(&SampleCube::_on_mouse_moved);
+    _subscribe(&SampleCube::_on_mouse_button);
 
-    _subscribe(&ui, &Controller::_on_ui_update);
+    _subscribe(m_ui.get(), &SampleCube::_on_ui_update);
 
     // Camera
     scene.camera().position  = glm::vec3(m_distance, 0, 1.25f);
@@ -32,31 +31,35 @@ Controller::Controller(Ui& ui, View& view):
         Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
+    scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui->lightsCount());
 
     // States
-    m_view.enable_filter      = m_enable_filter;
-    m_view.enable_interaction = m_enable_interaction;
+    m_view->enable_filter      = m_enable_filter;
+    m_view->enable_interaction = m_enable_interaction;
+}
+
+bool SampleCube::wantQuit() const {
+    return m_ui->wantQuit();
 }
 
 // Events
-void Controller::_on_state_update(const CommonEvents::StateUpdated& evt) {
+void SampleCube::_on_state_update(const CommonEvents::StateUpdated& evt) {
     // .. do stuff ..
 }
 
-void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
+void SampleCube::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     Scene& scene = Service<Window>::get().scene();
 
     // Nothing until click on start
-    if (m_ui.state() < Ui::State::InGame)
+    if (m_ui->state() < UiCube::State::InGame)
         return;
 
     // Pause
-    if (m_ui.state() == Ui::State::Pause) 
+    if (m_ui->state() == UiCube::State::Pause)
     {
         if (evt.action == InputAction::Pressed && evt.key == KeyCode::Escape) {
-            m_ui.setState(Ui::State::InGame);
-            m_view.enable_interaction = m_enable_interaction;
+            m_ui->setState(UiCube::State::InGame);
+            m_view->enable_interaction = m_enable_interaction;
         }
 
         return;
@@ -93,34 +96,34 @@ void Controller::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         switch (evt.key)
         {
-            case 'R': m_view.enable_filter      = (m_enable_filter       = !m_enable_filter);         break;
-            case 'T': m_view.enable_interaction = (m_enable_interaction  = !m_enable_interaction);    break;
+            case 'R': m_view->enable_filter      = (m_enable_filter       = !m_enable_filter);         break;
+            case 'T': m_view->enable_interaction = (m_enable_interaction  = !m_enable_interaction);    break;
 
-            case KeyCode::Escape: m_ui.setState(Ui::State::Pause); break;
+            case KeyCode::Escape: m_ui->setState(UiCube::State::Pause); break;
         }
     }
 }
 
-void Controller::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
+void SampleCube::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
     // ..
 }
 
-void Controller::_on_mouse_button(const CommonEvents::MouseButton& evt) {
+void SampleCube::_on_mouse_button(const CommonEvents::MouseButton& evt) {
     // ..
 }
 
-void Controller::_on_ui_update(const CommonEvents::StateUpdated& evt) {
+void SampleCube::_on_ui_update(const CommonEvents::StateUpdated& evt) {
     Scene& scene = Service<Window>::get().scene();
 
-    switch (m_ui.state()) 
+    switch (m_ui->state()) 
     {
-        case Ui::State::InGame:
-            scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui.lightsCount());
-            m_view.enable_interaction = m_enable_interaction;
+        case UiCube::State::InGame:
+            scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + m_ui->lightsCount());
+            m_view->enable_interaction = m_enable_interaction;
             break;
 
-        case Ui::State::Pause:
-            m_view.enable_interaction = false;
+        case UiCube::State::Pause:
+            m_view->enable_interaction = false;
             break;
     }
 }

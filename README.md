@@ -19,6 +19,7 @@ Available arguments are:
 | `-NoBuild`   | Don't build executables and libraries  |
 | `-NoInstall` | Don't install resources                |
 | `-NoCleanup` | Don't clean resources                  |
+| `-No`        | All of the above no                    |
 | `-VS2019`    | Use Visual Studio 2019 instead of 2022 |
 
 

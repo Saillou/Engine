@@ -6,11 +6,11 @@
 #include <unordered_map>
 #include <vector>
 
-struct WorldEditorMenu
+struct UiTrain
 {
-	WorldEditorMenu() {};
-	~WorldEditorMenu() {};
-		
+	UiTrain() {};
+	~UiTrain() {};
+
 	void show();
 	void reset();
 

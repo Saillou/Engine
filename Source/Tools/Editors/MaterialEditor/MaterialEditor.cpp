@@ -1,4 +1,4 @@
-#include "MaterialEditor.h"
+#include "MaterialEditor.hpp"
 
 MaterialEditor::MaterialEditor(Scene& scene) :
     Editor(scene)

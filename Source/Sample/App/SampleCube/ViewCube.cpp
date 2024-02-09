@@ -1,4 +1,4 @@
-#include "View.hpp"
+#include "ViewCube.hpp"
 
 #include <ctime>
 #include <sstream>
@@ -8,14 +8,14 @@
 #include <Engine/Utils/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
 
-View::View():
+ViewCube::ViewCube():
     m_mousePos(0.0f, 0.0f)
 {
     // Root events
-    _subscribe(&View::_draw);
-    _subscribe(&View::_on_resize);
-    _subscribe(&View::_post_process);
-    _subscribe(&View::_on_mouse_moved);
+    _subscribe(&ViewCube::_draw);
+    _subscribe(&ViewCube::_on_resize);
+    _subscribe(&ViewCube::_post_process);
+    _subscribe(&ViewCube::_on_mouse_moved);
 
     // Entities
     m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
@@ -70,20 +70,20 @@ View::View():
 }
 
 // Callbacks
-void View::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
+void ViewCube::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
     Scene& scene = Service<Window>::get().scene();
 
     m_mousePos.x = (float)evt.x / scene.width();
     m_mousePos.y = (float)evt.y / scene.height();
 }
 
-void View::_on_resize(const SceneEvents::Resized& evt) {
+void ViewCube::_on_resize(const SceneEvents::Resized& evt) {
     Scene& scene = Service<Window>::get().scene();
 
     m_filter.resize(scene.width(), scene.height());
 }
 
-void View::_draw(const SceneEvents::Draw&) {
+void ViewCube::_draw(const SceneEvents::Draw&) {
     m_timer.tic();
 
     _drawLights();
@@ -93,7 +93,7 @@ void View::_draw(const SceneEvents::Draw&) {
         _drawTarget();
 }
 
-void View::_drawLights() {
+void ViewCube::_drawLights() {
     Scene& scene = Service<Window>::get().scene();
 
     {
@@ -108,14 +108,14 @@ void View::_drawLights() {
     scene.renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
 }
 
-void View::_drawObjects() {
+void ViewCube::_drawObjects() {
     Scene& scene = Service<Window>::get().scene();
 
     scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
     scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
 }
 
-void View::_drawTarget() {
+void ViewCube::_drawTarget() {
     Scene& scene = Service<Window>::get().scene();
 
     for (auto& obj : m_interact_objects) {
@@ -131,7 +131,7 @@ void View::_drawTarget() {
     }
 }
 
-void View::_post_process(const SceneEvents::PostDraw&) {
+void ViewCube::_post_process(const SceneEvents::PostDraw&) {
     Scene& scene = Service<Window>::get().scene();
 
     // Filters
@@ -149,7 +149,7 @@ void View::_post_process(const SceneEvents::PostDraw&) {
 }
 
 // Helpers
-void View::_initFilters() {
+void ViewCube::_initFilters() {
     Scene& scene = Service<Window>::get().scene();
 
     m_filter.shader()

@@ -46,6 +46,7 @@ bool Window::update() {
     if (m_scene) {
         m_scene->run();
     }
+    Event::Emit(SceneEvents::SceneFinished());
 
     glfwSwapBuffers(m_window);
 

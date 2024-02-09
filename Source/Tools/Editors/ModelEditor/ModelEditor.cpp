@@ -1,4 +1,4 @@
-#include "ModelEditor.h"
+#include "ModelEditor.hpp"
 
 ModelEditor::ModelEditor(Scene& scene)
     : Editor(scene)

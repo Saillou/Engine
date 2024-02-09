@@ -1,4 +1,4 @@
-#include "Ui.hpp"
+#include "UiCube.hpp"
 
 #include <Engine/Utils/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
@@ -10,9 +10,9 @@ static constexpr char SmallButton[]   = ".SmallButton";
 static constexpr char DefaultButton[] = ".DefaultButton";
 
 // -- Ui --
-Ui::Ui(): 
-    m_prev_state(Ui::State::Idle),
-    m_state(Ui::State::Idle),
+UiCube::UiCube():
+    m_prev_state(UiCube::State::Idle),
+    m_state(UiCube::State::Idle),
     m_main_frame(Service<Window>::get().scene())
 {
     // Temporary container for gui elements
@@ -25,7 +25,7 @@ Ui::Ui():
     _create_layouts(btns, txts);
     
     // Define events
-    _subscribe(&m_main_frame, &Ui::draw);
+    _subscribe(&m_main_frame, &UiCube::draw);
 
     _subscribe(btns.at("Start"),  [=](const WidgetEvents::MouseClick&) { setState(State::InGame); });
     _subscribe(btns.at("Resume"), [=](const WidgetEvents::MouseClick&) { setState(State::InGame); });
@@ -36,10 +36,10 @@ Ui::Ui():
     _subscribe(btns.at("Close"),  [=](const WidgetEvents::MouseClick&) { m_wantQuit = true;       });
 
     // Let's start
-    setState(Ui::State::Start);
+    setState(UiCube::State::Start);
 }
 
-void Ui::setState(Ui::State state) {
+void UiCube::setState(UiCube::State state) {
     if (m_state == state)
         return;
 
@@ -77,19 +77,19 @@ void Ui::setState(Ui::State state) {
     Event::Emit(CommonEvents::StateUpdated(), this);
 }
 
-Ui::State Ui::state() const {
+UiCube::State UiCube::state() const {
     return m_state;
 }
 
-int Ui::lightsCount() const {
+int UiCube::lightsCount() const {
     return m_lights_count;
 }
 
-bool Ui::wantQuit() const {
+bool UiCube::wantQuit() const {
     return m_wantQuit;
 }
 
-void Ui::draw(const WidgetEvents::Draw& msg) {
+void UiCube::draw(const WidgetEvents::Draw& msg) {
     Scene& scene = Service<Window>::get().scene();
 
     switch (m_state) {
@@ -100,7 +100,7 @@ void Ui::draw(const WidgetEvents::Draw& msg) {
     }
 }
 
-void Ui::_updateCount(int delta) {
+void UiCube::_updateCount(int delta) {
     if (m_lights_count + delta < 0 || m_lights_count + delta > 5)
         return;
 
@@ -109,7 +109,7 @@ void Ui::_updateCount(int delta) {
 }
 
 // ---------- Helpers ----------
-StyleSheet Ui::_create_style() const
+StyleSheet UiCube::_create_style() const
 {
     const glm::vec4 primary_color    = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
     const glm::vec4 secondary_color  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
@@ -151,7 +151,7 @@ StyleSheet Ui::_create_style() const
     ;
 }
 
-void Ui::_create_widgets(
+void UiCube::_create_widgets(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
@@ -178,7 +178,7 @@ void Ui::_create_widgets(
     });
 }
 
-void Ui::_create_layouts(
+void UiCube::_create_layouts(
     std::unordered_map<std::string, std::shared_ptr<Button>>& btns, 
     std::unordered_map<std::string, std::shared_ptr<Text>>& txts)
 {
@@ -212,8 +212,8 @@ void Ui::_create_layouts(
     // In game
     m_layouts["InGame"] = Layout::Create<Layout>(scene);
     {
-        m_layouts["InGame"]->add(txts["Ig1"], 0.01f, 0.02f, "#Ig1"); // Set an Id to retrieve it later
-        m_layouts["InGame"]->add(txts["Ig2"], 0.01f, 0.10f);
+        m_layouts["InGame"]->add(txts["Ig1"], 0.01f, 0.04f, "#Ig1"); // Set an Id to retrieve it later
+        m_layouts["InGame"]->add(txts["Ig2"], 0.01f, 0.12f);
     }
 
     // Pause

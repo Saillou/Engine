@@ -1,14 +1,13 @@
 #pragma once
 
-#include <Engine/Events/CommonEvents.hpp>
-#include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Utils/Timer.hpp>
+#include "../Sample.hpp"
+#include "ViewCube.hpp"
+#include "UiCube.hpp"
 
-#include "View.hpp"
-#include "Ui.hpp"
+struct SampleCube : public Sample {
+    SampleCube();
 
-struct Controller: Event::Subscriber {
-    Controller(Ui& ui, View& view);
+    bool wantQuit() const;
 
 protected:
     // Events
@@ -20,9 +19,9 @@ protected:
     void _on_ui_update(const CommonEvents::StateUpdated& evt);
 
 private:
-    Ui& m_ui;
-    View& m_view;
-    std::vector<Light> m_pontential_lights;
+    std::unique_ptr<UiCube>   m_ui;
+    std::unique_ptr<ViewCube> m_view;
+    std::vector<Light>    m_pontential_lights;
 
     float m_distance = 6.0f;
     float m_theta    = 0.0f;
