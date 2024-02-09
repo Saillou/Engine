@@ -1,10 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-#include <Engine/Events/CommonEvents.hpp>
 
 #include "../Sample.hpp"
 #include "UiTrain.hpp"
+#include <unordered_map>
 
 class SampleTrain : public Sample
 {

@@ -4,9 +4,9 @@
 #include <sstream>
 #include <algorithm>
 
-#include <Engine/Utils/RayCaster.hpp>
-#include <Engine/Utils/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
+#include <Engine/Utils/Service.hpp>
+#include <Engine/Utils/RayCaster.hpp>
 
 ViewCube::ViewCube():
     m_mousePos(0.0f, 0.0f)
