@@ -1,10 +1,10 @@
 #include "App.hpp"
 
 // List of samples
-#include "SampleCube/SampleCube.hpp"
-#include "SampleTrain/SampleTrain.hpp"
-#include "SampleForest/SampleForest.hpp"
-#include "SampleParticles/SampleParticles.hpp"
+#include "Samples/SampleCube/SampleCube.hpp"
+#include "Samples/SampleTrain/SampleTrain.hpp"
+#include "Samples/SampleForest/SampleForest.hpp"
+#include "Samples/SampleParticles/SampleParticles.hpp"
 
 // App
 App::App()

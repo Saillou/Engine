@@ -112,7 +112,7 @@ ShaderSource Cookable::_init_fragment() {
 // - Shaders
 void Cookable::_set_shader_basic(Shader& shader) {
     shader
-        .attachSource(GL_VERTEX_SHADER, 
+        .attachSource(Shader::Vertex,
             _init_vertex()
 
             .add_func("void", "main", "", R"_main_(
@@ -124,7 +124,7 @@ void Cookable::_set_shader_basic(Shader& shader) {
                 gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_")
         ).
-        attachSource(GL_FRAGMENT_SHADER, 
+        attachSource(Shader::Fragment,
             _init_fragment()
 
             .add_var("uniform", "bool",        "use_shadow")
@@ -250,7 +250,7 @@ void Cookable::_set_shader_geometry(Shader& shader) {
 
 void Cookable::_set_shader_shape(Shader& shader) {
     shader
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+        .attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("uniform", "mat4", "projection")
             .add_var("uniform", "mat4", "LocalModel")
@@ -262,7 +262,7 @@ void Cookable::_set_shader_shape(Shader& shader) {
                 TexCoords = vec2(tx, ty);
             )_main_")
         )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+        .attachSource(Shader::Fragment, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
             .add_var("uniform", "sampler2D", "quadTexture")
             .add_var("uniform", "vec4", "background_color")
@@ -277,7 +277,7 @@ void Cookable::_set_shader_shape(Shader& shader) {
 
 void Cookable::_set_shader_particle(Shader& shader) {
     shader
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+        .attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("layout (location = 1) in", "vec3", "aNormal")
             .add_var("layout (location = 2) in", "vec2", "aTexCoords")
@@ -301,7 +301,7 @@ void Cookable::_set_shader_particle(Shader& shader) {
                 gl_Position    = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_")
         )
-        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
+        .attachSource(Shader::Geometry, ShaderSource{}
             .add_var("in", "layout", "(triangles)")
             .add_var("out", "layout", "(triangle_strip, max_vertices = 3)")
 
@@ -332,7 +332,7 @@ void Cookable::_set_shader_particle(Shader& shader) {
                 EndPrimitive();
             )_main_")
         )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+        .attachSource(Shader::Fragment, ShaderSource{}
             .add_var("in", "vec3",  "Center")
             .add_var("in", "vec3",  "FragPos")
             .add_var("in", "vec4",  "Color")

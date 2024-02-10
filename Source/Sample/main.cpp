@@ -2,8 +2,8 @@
 #include <Engine/Graphic/Window.hpp>
 #include <Engine/Utils/Service.hpp>
 
-#include "Menu/Menu.hpp"
-#include "App/app.hpp"
+#include "Menu.hpp"
+#include "App.hpp"
 
 // -- Entry point --
 int main() {

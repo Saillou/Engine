@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <glm/gtx/string_cast.hpp>
 
-// Public
+// Rendering
 void Renderer::quad(const Quad& surface) {
     if (!_deferred)
         return _drawQuadSync(surface);
@@ -27,6 +27,16 @@ void Renderer::draw(Render::DrawType type, Entity& entity) {
     _heapEntities.emplace_back(std::move(di));
 }
 
+void Renderer::draw(const std::string& shaderName, Entity& entity) {
+    if (_userShaders.find(shaderName) == _userShaders.cend())
+    {
+        std::cerr << "Shader not found. Abort draw." << std::endl;
+        return;
+    }
+
+    draw(_userShaders[shaderName].type, entity);
+}
+
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
     if(!_deferred)
         return _drawTextSync(text, x, y, scale, color);
@@ -41,7 +51,17 @@ void Renderer::text(const std::string& text, float x, float y, float scale, cons
     _heapText.emplace_back(std::move(dt));
 }
 
-// --
+// Public
+void Renderer::add_shader(const std::string& shaderName, const ShaderGetter& getter, const ShaderSetter& setter) {
+    _userShaders[shaderName] = {
+        Render::DrawType(Render::Custom + _userShaders.size()),
+        getter,
+        setter
+    };
+    _userShadersName[_userShaders[shaderName].type] = shaderName;
+}
+
+// Private
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     addRecipe(type);
 
@@ -229,15 +249,22 @@ void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool updat
     if(update_buffer)
         entity._update_model_buffer();
 
-    entity._model->draw([&]() -> Shader& {
-        switch (type) {
-            case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
-            case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
-            case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
-            case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
-            case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
-        } return placeHolder;
-    }().set("diffuse_color", entity._localMaterial.diffuse_color));
+    if(type < Render::Custom) {
+        entity._model->draw([&]() -> Shader& {
+            switch (type) {
+                case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
+                case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
+                case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
+                case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
+                case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
+            } return placeHolder;
+        }().set("diffuse_color", entity._localMaterial.diffuse_color));
+    }
+    else {
+        _UserShaderMemo& _usrShader = _userShaders[_userShadersName[type]];
+        _usrShader.setter(entity);
+        entity._model->draw(_usrShader.getter());
+    }
 }
 
 void Renderer::_drawTextSync(const std::string& text, float x, float y, float scale, const glm::vec4& color) {

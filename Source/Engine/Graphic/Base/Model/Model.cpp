@@ -35,8 +35,9 @@ void Model::draw(Shader& shader) const {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
-            shader.use()
-                  .set("LocalModel", localPose() * (*currNode)->transform);
+            shader.use();
+            if(shader.has("LocalModel"))
+                shader.set("LocalModel", localPose() * (*currNode)->transform);
 
             mesh->bindTextures(shader);
             mesh->drawElements();
@@ -64,8 +65,9 @@ void Model::drawElements(Shader& shader) const {
 
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
-            shader.use()
-                  .set("LocalModel", localPose() * (*currNode)->transform);
+            shader.use();
+            if (shader.has("LocalModel"))
+                shader.set("LocalModel", localPose() * (*currNode)->transform);
 
             mesh->drawElements();
         }

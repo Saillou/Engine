@@ -8,8 +8,7 @@
 
 Shader::Shader() : 
     m_id(glCreateProgram()) 
-{
-}
+{ }
 Shader::~Shader() {
     glDeleteProgram(m_id);
 }

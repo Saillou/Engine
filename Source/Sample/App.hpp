@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "Sample.hpp"
+#include "Samples/Sample.hpp"
 
 struct App {
     App();

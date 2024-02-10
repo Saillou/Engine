@@ -7,7 +7,7 @@ CopyFilter::CopyFilter(int width, int height):
     _frame_solo_c(Framebuffer::Unique, width, height)
 {
     _shader        
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+        .attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("out", "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(
@@ -17,7 +17,7 @@ CopyFilter::CopyFilter(int width, int height):
                 TexCoords = vec2(tx, ty);
             )_main_")
         )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+        .attachSource(Shader::Fragment, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
             .add_var("uniform", "float", "opacity")
             .add_var("uniform", "vec4", "background")

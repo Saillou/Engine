@@ -153,7 +153,7 @@ void ViewCube::_initFilters() {
     Scene& scene = Service<Window>::get().scene();
 
     m_filter.shader()
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+        .attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
             .add_var("out", "vec2", "TexCoords")
             .add_func("void", "main", "", R"_main_(
@@ -163,7 +163,7 @@ void ViewCube::_initFilters() {
                 TexCoords = vec2(tx, ty);
             )_main_")
         )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+        .attachSource(Shader::Fragment, ShaderSource{}
             .add_var("in", "vec2", "TexCoords")
             .add_var("uniform", "sampler2D", "quadTexture")
             .add_var("out", "vec4", "FragColor")

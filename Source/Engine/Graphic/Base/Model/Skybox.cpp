@@ -21,7 +21,7 @@ Skybox::Skybox(const std::array<std::string, 6>& textures_path):
 
     // Shader
     shader.
-        attachSource(GL_VERTEX_SHADER, ShaderSource{}
+        attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")
 
             .add_var("uniform", "mat4", "view")
@@ -35,7 +35,7 @@ Skybox::Skybox(const std::array<std::string, 6>& textures_path):
                 gl_Position = pos.xyww;
             )_main_")
         )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+        .attachSource(Shader::Fragment, ShaderSource{}
             .add_var("in", "vec3", "TexCoords")
             .add_var("uniform", "samplerCube", "skybox")
             .add_var("out", "vec4", "FragColor")

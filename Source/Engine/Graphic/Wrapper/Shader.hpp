@@ -11,6 +11,13 @@ struct Shader
 {
 	friend struct Cookable;
 
+	// Helper to not have to check glad documentation all the time
+	enum Type: unsigned int {
+		Vertex   = 0x8B31 /* GL_VERTEX_SHADER   */,
+		Geometry = 0x8DD9 /* GL_GEOMETRY_SHADER */,
+		Fragment = 0x8B30 /* GL_FRAGMENT_SHADER */
+	};
+
 	Shader();
 	virtual ~Shader();
 

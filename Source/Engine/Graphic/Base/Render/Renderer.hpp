@@ -17,10 +17,17 @@
 struct Renderer : private Cookable {
 	friend struct Scene;
 
-	// Methods
+	// Render
 	void quad(const Quad& surface);
 	void draw(Render::DrawType, Entity& entity);
+	void draw(const std::string& shaderName, Entity& entity);
 	void text(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
+
+	// Methods
+	typedef std::function<Shader& (void)>				ShaderGetter;
+	typedef std::function<void(const Entity& entity)>	ShaderSetter;
+
+	void add_shader(const std::string& shaderName, const ShaderGetter&, const ShaderSetter&);
 
 private:
 	Renderer() = default;
@@ -56,7 +63,16 @@ private:
 		glm::vec4 color;
 	};
 
-	std::vector<_DrawEntity> _heapEntities;
-	std::vector<_DrawText> _heapText;
-	std::unordered_set<size_t> _entitiesDuplicates;
+	std::vector<_DrawEntity>	_heapEntities;
+	std::vector<_DrawText>		_heapText;
+	std::unordered_set<size_t>	_entitiesDuplicates;
+
+	// External shaders
+	struct _UserShaderMemo {
+		Render::DrawType type; // >= DrawType::Custom
+		ShaderGetter getter;
+		ShaderSetter setter;
+	};
+	std::unordered_map<Render::DrawType /*type*/, std::string /*name*/> _userShadersName;
+	std::unordered_map<std::string /*name*/, _UserShaderMemo> _userShaders;
 };

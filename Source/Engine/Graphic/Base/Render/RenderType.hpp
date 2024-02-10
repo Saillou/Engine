@@ -6,6 +6,7 @@ namespace Render {
 		Basic,
 		Lights,
 		Shadows,
-		Geometry
+		Geometry,
+		Custom = 4096
 	};
 }
