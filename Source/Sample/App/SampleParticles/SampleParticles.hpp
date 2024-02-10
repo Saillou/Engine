@@ -5,7 +5,7 @@
 struct SampleParticles : 
     public Sample 
 {
-    SampleParticles();
+     SampleParticles();
     ~SampleParticles();
 
 private:

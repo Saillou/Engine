@@ -303,53 +303,57 @@ void Cookable::_set_shader_particle(Shader& shader) {
         )
         .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
             .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(triangle_strip, max_vertices = 3)")
+
             .add_var("in", "VS_OUT", R"_struct_({
                 vec3 FragPos;
                 vec4 Color;
             } gs_in[])_struct_")
 
-            .add_var("out", "vec3", "Center")
-            .add_var("out", "vec3", "FragPos")
-            .add_var("out", "vec4", "Color")
-            .add_var("out", "layout", "(triangle_strip, max_vertices = 6)")
+            .add_var("out", "vec3",  "Center")
+            .add_var("out", "vec3",  "FragPos")
+            .add_var("out", "vec4",  "Color")
+            .add_var("out", "float", "Radius")
 
             .add_func("void", "main", "", R"_main_(
-                //// Compute centroid
-                //for(int face = 0; face < 1; face++) {
-                //    gl_Layer = face;
+                // Compute circle dimensions (by our current quad definition: gs_in[1] is the right angle apex)
+                Center = 0.5 * (gs_in[0].FragPos + gs_in[2].FragPos);
+                Radius = 0.5 * distance(gs_in[0].FragPos, gs_in[1].FragPos);
 
-                //    for(int i = 0; i < 3; i++) {
-                //        Center += gs_in[i].FragPos;
-                //    }
-                //}
-                //Center *= (1.0/3.0);
-                Center = gs_in[0].FragPos;
+                // Emit triangle
+                for(int i = 0; i < 3; i++) {
+                    FragPos = gs_in[i].FragPos;
+                    Color   = gs_in[i].Color;
 
-                // Emit triangles
-                for(int face = 0; face < 1; face++) {
-                    gl_Layer = face;
-
-                    for(int i = 0; i < 3; i++) {
-                        FragPos = gs_in[i].FragPos;
-                        Color   = gs_in[i].Color;
-
-                        gl_Position = gl_in[i].gl_Position;
-                        EmitVertex();
-                    }
-    
-                    EndPrimitive();
+                    gl_Position = gl_in[i].gl_Position;
+                    EmitVertex();
                 }
+    
+                EndPrimitive();
             )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
-            .add_var("in", "vec3", "Center")
-            .add_var("in", "vec3", "FragPos")
-            .add_var("in", "vec4", "Color")
+            .add_var("in", "vec3",  "Center")
+            .add_var("in", "vec3",  "FragPos")
+            .add_var("in", "vec4",  "Color")
+            .add_var("in", "float", "Radius")
 
             .add_var("out", "vec4", "FragColor")
 
             .add_func("void", "main", "", R"_main_(
-                FragColor = vec4(Color.rgb * distance(Center, FragPos), 1.0);
+                float dist = distance(Center, FragPos);
+                float smooth_dist = Radius * 4.0 / 100.0;
+
+                // None
+                if(dist > Radius)
+                    discard;
+
+                // Smooth
+                float ratio = 1.0;
+                if(dist > Radius - smooth_dist)
+                    ratio = (Radius - dist) / smooth_dist;
+                
+                FragColor = Color * ratio;
             )_main_")
         );
 }
