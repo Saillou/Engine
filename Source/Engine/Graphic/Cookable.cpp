@@ -343,17 +343,22 @@ void Cookable::_set_shader_particle(Shader& shader) {
             .add_func("void", "main", "", R"_main_(
                 float dist = distance(Center, FragPos);
                 float smooth_dist = Radius * 4.0 / 100.0;
+                float smooth_fact = 1.0;
 
                 // None
-                if(dist > Radius)
+                if(dist > Radius) {
                     discard;
+                }
 
                 // Smooth
-                float ratio = 1.0;
-                if(dist > Radius - smooth_dist)
-                    ratio = (Radius - dist) / smooth_dist;
+                else if(dist > Radius - smooth_dist)
+                    smooth_fact = (Radius - dist) / smooth_dist;
+
+                // Solid
+                else
+                    smooth_fact = 1.0;
                 
-                FragColor = Color * ratio;
+                FragColor = vec4(Color.rgb, Color.a * smooth_fact);
             )_main_")
         );
 }

@@ -108,7 +108,7 @@ void Renderer::_compute()
         //  - transparent: furthest first
         di.drawPriority = std::numeric_limits<float>::max();
 
-        if (di.copied_entity.localMaterial().diffuse_color.a < 1.0f) {
+        if (di.copied_entity.localMaterial().diffuse_color.a < 1.0f || di.copied_entity.localMaterial().force_reorder) {
             // Sort also poses in batch
             using dist_entity = std::tuple<float, Pose, Material>;
             std::vector<dist_entity> all_dist_entity;
