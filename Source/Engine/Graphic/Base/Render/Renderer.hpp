@@ -28,6 +28,7 @@ struct Renderer : private Cookable {
 	typedef std::function<void(const Entity& entity)>	ShaderSetter;
 
 	void add_shader(const std::string& shaderName, const ShaderGetter&, const ShaderSetter&);
+	void remove_shader(const std::string& shaderName);
 
 private:
 	Renderer() = default;

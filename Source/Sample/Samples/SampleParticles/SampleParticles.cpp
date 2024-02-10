@@ -23,8 +23,8 @@ SampleParticles::SampleParticles() :
     m_entities["particle"].localMaterial().diffuse_color = glm::vec4(0.2f, 1.0f, 0.9f, 0.9f);
 
     m_entities["particle_custom"] = Entity(Entity::SimpleShape::Quad);
-    m_entities["particle_custom"].localPose() = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f));
-    m_entities["particle_custom"].localMaterial().diffuse_color = glm::vec4(0.7f, 1.0f, 0.9f, 0.5f);
+    m_entities["particle_custom"].localPose() = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
+    m_entities["particle_custom"].localMaterial().diffuse_color = glm::vec4(0.7f, 1.0f, 0.9f, 0.4f);
 
     // Custom shader for particules
     _add_custom_shader("custom_particule_shader");
@@ -38,6 +38,8 @@ SampleParticles::SampleParticles() :
 
 SampleParticles::~SampleParticles() {
     m_scene.camera().up = glm::vec3(0, 0, 1);
+
+    m_scene.renderer().remove_shader("custom_particule_shader");
 }
 
 // Events
@@ -52,42 +54,37 @@ void SampleParticles::_draw(const SceneEvents::Draw&)
     m_scene.renderer().draw("custom_particule_shader",  m_entities["particle_custom"]);
 
     // Prepare next
-    _generate_particle(_particles,        10'000);
-    _generate_particle(_particles_custom, 1'000);
+    static const _conditions _particles_conditions = {
+        /*.number_limit = */ 10'000,
+        /*.p_start      = */ glm::vec3(0.0f,   0.0f,  -900.0f),
+        /*.p_range      = */ glm::vec3(300.0f, 10.0f, 0),
+        /*.v_dir        = */ glm::vec3(0,0,1),
+        /*.v_max        = */ 1.0f,
+    };
+    static const _conditions _custom_particles_conditions = {
+        /*.number_limit = */ 250,
+        /*.p_start      = */ glm::vec3(-300.0f, -10.0f, -400.0f),
+        /*.p_range      = */ glm::vec3(10.0f,   10.0f, 100.0f),
+        /*.v_dir        = */ glm::vec3(1, 0.05f, 0.2f),
+        /*.v_max        = */ 0.2f,
+    };
+
+    _generate_particle(_particles, _particles_conditions);
+    _generate_particle(_particles_custom, _custom_particles_conditions);
 
     m_timer.tic();
 }
 
 // Particules methods
-void SampleParticles::_generate_particle(std::deque<_particle>& container, size_t limit) 
+void SampleParticles::_generate_particle(std::deque<_particle>& container, const _conditions& cnd) 
 {
-    _particle particle;
+    container.push_back({
+        /* .particle.pose  = */ glm::translate(glm::mat4(1.0f), cnd.p_start + cnd.p_range * (dstr_one(gen) - 0.5f)),
+        /* .particle.speed = */ cnd.v_dir * cnd.v_max * dstr_one(gen)
+    });
 
-    // Positions
-    constexpr float x_range = 300.0f;
-    constexpr float y_range = 10.0f;
-    constexpr float z_start = -900.0f;
-
-    particle.pose = glm::translate(glm::mat4(1.0f), glm::vec3(
-        x_range * (dstr_one(gen) - 0.5f),
-        y_range * (dstr_one(gen) - 0.5f),
-        z_start
-    ));
-
-    // Speed
-    constexpr float v_max = 10.0f;
-
-    particle.speed = glm::vec3(
-        0.0f, 
-        0.0f, 
-        v_max * dstr_one(gen)
-    );
-
-    // Boum
-    container.push_back(particle);
-
-    while (_particles.size() > limit)
-        _particles.pop_front();
+    while (container.size() > cnd.number_limit)
+        container.pop_front();
 }
 
 void SampleParticles::_update_particle(std::deque<_particle>& container, std::vector<Pose>& entity_poses)
@@ -96,7 +93,7 @@ void SampleParticles::_update_particle(std::deque<_particle>& container, std::ve
 
     entity_poses.clear();
 
-    for (_particle& p : _particles) {
+    for (_particle& p : container) {
         p.pose = glm::translate(p.pose, p.speed * dt_ms);
         entity_poses.push_back(p.pose);
     }
@@ -212,5 +209,4 @@ void SampleParticles::_create_shader(const std::string& name)
             )_main_")
         )
         .link();
-
 }

@@ -10,6 +10,13 @@ struct SampleParticles :
 
 private:
     // Base
+    struct _conditions {
+        size_t number_limit;
+        glm::vec3 p_start;
+        glm::vec3 p_range;
+        glm::vec3 v_dir;
+        float v_max;
+    };
     struct _particle {
         glm::mat4 pose;
         glm::vec3 speed;
@@ -19,7 +26,7 @@ private:
     void _draw(const SceneEvents::Draw&);
 
     // Methods
-    void _generate_particle(std::deque<_particle>& container, size_t limit);
+    void _generate_particle(std::deque<_particle>& container, const _conditions& conditions);
     void _update_particle(std::deque<_particle>& container, std::vector<Pose>& entity_poses);
 
     void _add_custom_shader(const std::string& name);

@@ -61,6 +61,14 @@ void Renderer::add_shader(const std::string& shaderName, const ShaderGetter& get
     _userShadersName[_userShaders[shaderName].type] = shaderName;
 }
 
+void Renderer::remove_shader(const std::string& shaderName) {
+    if (_userShaders.find(shaderName) == _userShaders.cend())
+        return;
+
+    _userShadersName.erase(_userShaders[shaderName].type);
+    _userShaders.erase(shaderName);
+}
+
 // Private
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     addRecipe(type);
@@ -261,6 +269,9 @@ void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool updat
         }().set("diffuse_color", entity._localMaterial.diffuse_color));
     }
     else {
+        if (_userShadersName.find(type) == _userShadersName.cend())
+            return;
+
         _UserShaderMemo& _usrShader = _userShaders[_userShadersName[type]];
         _usrShader.setter(entity);
         entity._model->draw(_usrShader.getter());

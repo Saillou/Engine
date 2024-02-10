@@ -1,4 +1,4 @@
-#include "Menu.hpp"
+#include "AppMenu.hpp"
 
 #include <Engine/Utils/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
@@ -10,7 +10,7 @@
 #include "App.hpp"
 
 // Start ImGui
-Menu::Menu()
+AppMenu::AppMenu()
 {
     ImGui::CreateContext();
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
@@ -25,7 +25,7 @@ Menu::Menu()
 }
 
 // Cleanup
-Menu::~Menu()
+AppMenu::~AppMenu()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -34,7 +34,7 @@ Menu::~Menu()
 }
 
 // Draw methods
-void Menu::_prepare()
+void AppMenu::_prepare()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -68,7 +68,7 @@ void Menu::_prepare()
     ImGui::EndMainMenuBar();
 }
 
-void Menu::_render()
+void AppMenu::_render()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

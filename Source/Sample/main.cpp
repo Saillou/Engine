@@ -2,15 +2,15 @@
 #include <Engine/Graphic/Window.hpp>
 #include <Engine/Utils/Service.hpp>
 
-#include "Menu.hpp"
+#include "AppMenu.hpp"
 #include "App.hpp"
 
 // -- Entry point --
 int main() {
     // Setup
     Service<Window>::build(1600, 900, "Sample scene");
-    Service<Menu>::build();
     Service<App>::build();
+    Service<AppMenu>::build();
 
     // Loop
     do {
@@ -27,8 +27,8 @@ int main() {
     } while (Service<Window>::get().update());
 
     // Cleanup
+    Service<AppMenu>::destroy();
     Service<App>::destroy();
-    Service<Menu>::destroy();
     Service<Window>::destroy();
     return 0;
 }
