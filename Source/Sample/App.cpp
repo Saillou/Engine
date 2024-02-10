@@ -29,5 +29,5 @@ void App::changeSample(const SampleId& sample_id) {
 }
 
 bool App::wantQuit() const {
-    return m_curr_sample ? m_curr_sample->wantQuit() : false;
+    return m_curr_sample ? m_curr_sample->wantQuit : false;
 }

@@ -38,13 +38,9 @@ SampleCube::SampleCube()
     m_view->enable_interaction = m_enable_interaction;
 }
 
-bool SampleCube::wantQuit() const {
-    return m_ui->wantQuit();
-}
-
 // Events
 void SampleCube::_on_state_update(const CommonEvents::StateUpdated& evt) {
-    // .. do stuff ..
+    wantQuit = m_ui->wantQuit();
 }
 
 void SampleCube::_on_key_pressed(const CommonEvents::KeyPressed& evt) {

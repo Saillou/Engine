@@ -7,8 +7,6 @@
 struct SampleCube : public Sample {
     SampleCube();
 
-    bool wantQuit() const;
-
 protected:
     // Events
     void _on_state_update(const CommonEvents::StateUpdated& evt);

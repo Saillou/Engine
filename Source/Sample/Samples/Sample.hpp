@@ -18,7 +18,5 @@ struct Sample : Event::Subscriber {
 		_unsubscribeAll();
 	}
 
-	virtual bool wantQuit() const {
-		return false;
-	}
+	bool wantQuit = false;
 };

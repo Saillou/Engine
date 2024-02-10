@@ -12,13 +12,12 @@ private:
     void _draw(const SceneEvents::Draw&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
-    // Methods
-    // ..
-
     // Scene
     Scene& m_scene;
-    Timer::Chronometre m_timer;
     std::unordered_map<std::string, Entity> m_entities;
+
+    // State
+    Timer::Chronometre m_timer;
 
     // Camera
     float m_distance = -10.0f;
