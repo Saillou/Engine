@@ -8,10 +8,9 @@
 #include "Samples/SampleParticles/SampleParticles.hpp"
 
 // App
-App::App()
+App::App():
+    m_curr_sample(std::make_unique<SamplePong>())
 {
-    // Start by creating one sample
-    m_curr_sample = std::make_unique<SamplePong>();
 }
 
 void App::changeSample(const SampleId& sample_id) {

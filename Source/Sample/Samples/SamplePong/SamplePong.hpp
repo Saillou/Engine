@@ -5,39 +5,22 @@
 struct SamplePong : 
     public Sample 
 {
-     SamplePong();
-    ~SamplePong();
+    SamplePong();
 
 private:
-    // Base
-    struct _conditions {
-        size_t number_limit;
-        glm::vec3 p_start;
-        glm::vec3 p_range;
-        glm::vec3 v_dir;
-        float v_max;
-    };
-    struct _particle {
-        glm::mat4 pose;
-        glm::vec3 speed;
-    };
-
     // Events
     void _draw(const SceneEvents::Draw&);
+    void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Methods
-    void _generate_particle(std::deque<_particle>& container, const _conditions& conditions);
-    void _update_particle(std::deque<_particle>& container, std::vector<Pose>& entity_poses);
+    // ..
 
-    void _add_custom_shader(const std::string& name);
-    void _create_shader(const std::string& name);
-
-    // Members
+    // Scene
     Scene& m_scene;
     Timer::Chronometre m_timer;
     std::unordered_map<std::string, Entity> m_entities;
-    std::unordered_map<std::string, Shader> m_shaders;
 
-    std::deque<_particle> _particles;
-    std::deque<_particle> _particles_custom;
+    // Camera
+    float m_distance = -10.0f;
+    float m_theta = 0.0f;
 };
