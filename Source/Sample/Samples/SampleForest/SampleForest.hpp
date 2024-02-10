@@ -19,6 +19,5 @@ private:
     Scene& m_scene;
     bool m_want_quit = false;
     std::unique_ptr<ViewForest> m_view;
-    std::vector<Light> m_pontential_lights;
     Timer::Chronometre m_timer;
 };

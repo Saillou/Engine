@@ -13,14 +13,7 @@ SampleForest::SampleForest() :
     _subscribe(&SampleForest::_on_mouse_clicked);
 
     // Lights
-    m_pontential_lights = {
-        Light(glm::vec3{  0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{  0,  +1.50f, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  0,    0,    0.7f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{  -1.50f,  0, 0.7f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{  +1.50f,  0, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-    };
-    m_scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + 2);
+    m_scene.lights() = { Light(glm::vec3{ 0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
 
     // Camera
     m_scene.camera().position  = glm::vec3(1, -4, 3);
@@ -67,22 +60,6 @@ void SampleForest::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         case 'R': m_view->enable_filter = true;  break;
         case 'T': m_view->enable_filter = false; break;
-    }
-
-    // Lights
-    size_t nLightsEnabled = -1;
-    switch (evt.key)
-    {
-        case Numpad_0 + 0: nLightsEnabled = 0; break;
-        case Numpad_0 + 1: nLightsEnabled = 1; break;
-        case Numpad_0 + 2: nLightsEnabled = 2; break;
-        case Numpad_0 + 3: nLightsEnabled = 3; break;
-        case Numpad_0 + 4: nLightsEnabled = 4; break;
-        case Numpad_0 + 5: nLightsEnabled = 5; break;
-    }
-
-    if (nLightsEnabled != -1) {
-        m_scene.lights() = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + nLightsEnabled);
     }
 
     // Other actions

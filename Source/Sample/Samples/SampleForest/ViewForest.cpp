@@ -90,11 +90,12 @@ void ViewForest::_draw(const SceneEvents::Draw&) {
     for (const _Object& obj : m_objects) {
         // Normal colors
         for (const auto& quat : obj.quats) {
+            if(obj.id == _ObjectId::Cube)
+                m_entities[obj.id]->localMaterial().diffuse_color = glm::vec4(0.7f, 0.7f, 0.7f, 1);
+
             m_entities[obj.id]->poses() = { quat };
             scene.renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
         }
-        //m_entities[obj.id]->localMaterial().diffuse_color = obj.material_color;
-        //scene.renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
 
         // Ray cast
         for (const auto& quat : obj.quats) {
