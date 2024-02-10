@@ -45,40 +45,45 @@ void Renderer::text(const std::string& text, float x, float y, float scale, cons
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     addRecipe(type);
 
-    // Check light capabilities
-    const ShaderSource& ssource = get(type)->source(ShaderSource::Type::Fragment);
-
-    // Need to edit shader
-    if (ssource.getVar("LightPos").count < lights.size()) {
-        editRecipe(type, ShaderSource::Type::Fragment, ShaderSource{}            
-            .add_var("uniform", "vec3",        "LightPos",   (int)lights.size())
-            .add_var("uniform", "vec4",        "LightColor", (int)lights.size())
-            .add_var("uniform", "samplerCube", "depthMap",   (int)lights.size())
-        );
-    }
-
     // Use
     Shader& sh = get(type)->use();
 
     switch (type) {
     case Cookable::CookType::Basic:
-        if (shadower)
-            shadower->bindTextures(GL_TEXTURE0 + 1);
+        {
+            // Check light capabilities
+            const ShaderSource& ssource = get(type)->source(ShaderSource::Type::Fragment);
 
-        sh.set("Projection",  camera.projection)
-          .set("View",        camera.modelview)
-          .set("CameraPos",   camera.position)
-          .set("far_plane",   camera.far_plane)
-          .set("use_shadow",  shadower != nullptr)
-          .set("LightNumber", (int)lights.size());
+            // Need to edit shader
+            if (ssource.getVar("LightPos").count < lights.size()) {
+                editRecipe(type, ShaderSource::Type::Fragment, ShaderSource{}
+                    .add_var("uniform", "vec3", "LightPos", (int)lights.size())
+                    .add_var("uniform", "vec4", "LightColor", (int)lights.size())
+                    .add_var("uniform", "samplerCube", "depthMap", (int)lights.size())
+                );
+            }
 
-        for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-            sh.set("LightPos["    + std::to_string(iLight) + "]", lights[iLight].position)
-              .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
-              .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
+            // Bind shadow map
+            if (shadower)
+                shadower->bindTextures(GL_TEXTURE0 + 1);
+
+            // Set uniforms
+            sh.set("Projection",  camera.projection)
+              .set("View",        camera.modelview)
+              .set("CameraPos",   camera.position)
+              .set("far_plane",   camera.far_plane)
+              .set("use_shadow",  shadower != nullptr)
+              .set("LightNumber", (int)lights.size());
+
+            for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
+                sh.set("LightPos["    + std::to_string(iLight) + "]", lights[iLight].position)
+                  .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
+                  .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
+            }
         }
         break;
 
+    case Cookable::CookType::Particle:
     case Cookable::CookType::Geometry:
         sh.set("Projection", camera.projection)
           .set("View",       camera.modelview);
@@ -230,6 +235,7 @@ void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool updat
             case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
             case Render::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
             case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
+            case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
         } return placeHolder;
     }().set("diffuse_color", entity._localMaterial.diffuse_color));
 }

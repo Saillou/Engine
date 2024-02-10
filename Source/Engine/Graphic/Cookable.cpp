@@ -17,6 +17,10 @@ void Cookable::Set(CookType type, Shader& recipe) {
         _set_shader_shape(recipe);
         break;
 
+    case CookType::Particle:
+        _set_shader_particle(recipe);
+        break;
+
     default:
         std::cerr << "[Warning] No shader created." << std::endl;
         return;
@@ -267,6 +271,85 @@ void Cookable::_set_shader_shape(Shader& shader) {
                 vec2 tex_size = textureSize(quadTexture, 0);
                 vec4 bk_color = tex_size.x * tex_size.y > 1 ? texture(quadTexture, TexCoords) : background_color;
                 FragColor = bk_color;
+            )_main_")
+        );
+}
+
+void Cookable::_set_shader_particle(Shader& shader) {
+    shader
+        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("layout (location = 1) in", "vec3", "aNormal")
+            .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+            .add_var("layout (location = 3) in", "vec4", "aColor")
+            .add_var("layout (location = 4) in", "mat4", "aModel")
+
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+            .add_var("uniform", "mat4", "LocalModel")
+            .add_var("uniform", "vec4", "diffuse_color")
+
+            .add_var("out", "VS_OUT", R"_struct_({
+                vec3 FragPos;
+                vec4 Color;
+            } vs_out)_struct_")
+
+            .add_func("void", "main", "", R"_main_(
+                vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Color   = max(aColor, diffuse_color);
+
+                gl_Position    = Projection * View * vec4(vs_out.FragPos, 1.0);
+            )_main_")
+        )
+        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
+            .add_var("in", "layout", "(triangles)")
+            .add_var("in", "VS_OUT", R"_struct_({
+                vec3 FragPos;
+                vec4 Color;
+            } gs_in[])_struct_")
+
+            .add_var("out", "vec3", "Center")
+            .add_var("out", "vec3", "FragPos")
+            .add_var("out", "vec4", "Color")
+            .add_var("out", "layout", "(triangle_strip, max_vertices = 6)")
+
+            .add_func("void", "main", "", R"_main_(
+                //// Compute centroid
+                //for(int face = 0; face < 1; face++) {
+                //    gl_Layer = face;
+
+                //    for(int i = 0; i < 3; i++) {
+                //        Center += gs_in[i].FragPos;
+                //    }
+                //}
+                //Center *= (1.0/3.0);
+                Center = gs_in[0].FragPos;
+
+                // Emit triangles
+                for(int face = 0; face < 1; face++) {
+                    gl_Layer = face;
+
+                    for(int i = 0; i < 3; i++) {
+                        FragPos = gs_in[i].FragPos;
+                        Color   = gs_in[i].Color;
+
+                        gl_Position = gl_in[i].gl_Position;
+                        EmitVertex();
+                    }
+    
+                    EndPrimitive();
+                }
+            )_main_")
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec3", "Center")
+            .add_var("in", "vec3", "FragPos")
+            .add_var("in", "vec4", "Color")
+
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                FragColor = vec4(Color.rgb * distance(Center, FragPos), 1.0);
             )_main_")
         );
 }

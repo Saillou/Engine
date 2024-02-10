@@ -9,7 +9,8 @@
 #include <Engine/Utils/Service.hpp>
 
 enum class SampleId {
-	Cube, Train, Forest, Mandala, Pong
+	Cube,		Train,		Forest, 
+	Particles,	Mandala,	Pong
 };
 
 struct Sample : Event::Subscriber {
