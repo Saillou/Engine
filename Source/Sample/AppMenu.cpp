@@ -59,9 +59,9 @@ void AppMenu::_prepare()
         //if (ImGui::MenuItem("The sun like a Mandala")) {
         //    Service<App>::get().changeSample(SampleId::Mandala);
         //}
-        //if (ImGui::MenuItem("Pong revisited")) {
-        //    Service<App>::get().changeSample(SampleId::Pong);
-        //}
+        if (ImGui::MenuItem("Pong revisited")) {
+            Service<App>::get().changeSample(SampleId::Pong);
+        }
         ImGui::EndMenu();
     }
 
