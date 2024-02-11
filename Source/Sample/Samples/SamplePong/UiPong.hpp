@@ -15,4 +15,5 @@ struct UiPong
 
 	bool show_debug = true;
 	bool stop_time  = false;
+	bool want_restart = false;
 };

@@ -6,6 +6,19 @@
 SamplePong::SamplePong() :
     m_scene(Service<Window>::get().scene())
 {
+    _init_view();
+    _create_entities();
+    _update_position();
+
+    // Enable events
+    _subscribe(&SamplePong::_update);
+    _subscribe(&SamplePong::_on_key_pressed);
+
+    // Go
+    m_timer.tic();
+}
+
+void SamplePong::_init_view() {
     // Scene
     m_scene.lights() = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
 
@@ -22,8 +35,10 @@ SamplePong::SamplePong() :
 
     m_wall_1.pos       = glm::vec3(-2.0f, 0.0f, 0.0f);
     m_wall_2.pos       = glm::vec3(+2.0f, 0.0f, 0.0f);
+}
 
-    // Create entities shape
+void SamplePong::_create_entities() {
+   // Create entities shape
     m_entities["field"] = Entity(Entity::SimpleShape::Quad);
     {
         m_entities["field"].localMaterial().diffuse_color = glm::vec4(1, 1, 1, 0.2f);
@@ -67,18 +82,8 @@ SamplePong::SamplePong() :
         glm::translate(glm::mat4(1.0f), m_wall_1.pos),
         glm::translate(glm::mat4(1.0f), m_wall_2.pos)
     };
-
-    _update_position();
-
-    // Enable events
-    _subscribe(&SamplePong::_update);
-    _subscribe(&SamplePong::_on_key_pressed);
-
-    // Go
-    m_timer.tic();
 }
 
-// Methods
 void SamplePong::_physics(float dt_ms) {
     if (m_ui.stop_time)
         return;
@@ -87,26 +92,48 @@ void SamplePong::_physics(float dt_ms) {
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
     // Check collisions ball / players
-    std::optional<glm::vec3> collision_point = {};
+    struct _collision_ {
+        glm::vec3 point;
+        glm::vec3 body;
+        glm::vec3 target;
+    };
+    std::optional<_collision_> collision = {};
 
-    for (const glm::vec3& pos : { m_player_human.pos, m_player_ia.pos, m_wall_1.pos, m_wall_2.pos })
+    struct _collide_body_ {
+        const std::string& name;
+        const glm::vec3& pos;
+    };
+    std::vector<_collide_body_> bodies = 
     {
-        const glm::mat4 player_quat = glm::translate(glm::mat4(1.0f), pos);
-        const glm::mat4 ball_quat   = glm::translate(glm::mat4(1.0f), new_ball_pos);
+        { _Player::Entity_Name, m_player_human.pos}, 
+        { _Player::Entity_Name, m_player_ia.pos},
+        { _Wall::Entity_Name,   m_wall_1.pos},
+        { _Wall::Entity_Name,   m_wall_2.pos}
+    };
 
-        collision_point = Collider::Check(
-            m_entities[_Player::Entity_Name], player_quat,
-            m_entities[_Ball::Entity_Name],   ball_quat
+    for (const auto& body : bodies)
+    {
+        const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), body.pos);
+        const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
+
+        auto collision_point = Collider::Check(
+            m_entities[body.name],          body_quat,
+            m_entities[_Ball::Entity_Name], ball_quat
         );
 
-        if (collision_point.has_value())
+        if (collision_point.has_value()) {
+            collision = _collision_{
+                collision_point.value(),
+                new_ball_pos,
+                body.pos
+            };
             break; // we expect only one collision
+        }
     }
 
     // Solve
-    if (collision_point.has_value()) {
-        //m_ball.speed = glm::length(m_ball.speed) * glm::normalize(m_ball.pos - collision_point.value());
-        m_ball.speed *= -1.0f;
+    if (collision.has_value()) {
+        m_ball.speed = glm::length(m_ball.speed) * glm::normalize(collision.value().body - collision.value().target);
         new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
     }
 
@@ -157,6 +184,11 @@ void SamplePong::_draw_debug() {
 // Events
 void SamplePong::_update(const SceneEvents::Draw&)
 {
+    if (m_ui.want_restart) {
+        _init_view();
+        m_ui.want_restart = false;
+    }
+
     _physics(m_timer.elapsed<Timer::microsecond>()/1000.0f);
     _update_position();
 

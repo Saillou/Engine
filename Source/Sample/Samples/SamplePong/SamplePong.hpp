@@ -8,8 +8,11 @@ struct SamplePong :
 {
     SamplePong();
 
+
 private:
     // Methods
+    void _init_view();
+    void _create_entities();
     void _physics(float dt_ms);
     void _update_position();
 

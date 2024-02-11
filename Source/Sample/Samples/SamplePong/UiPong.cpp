@@ -9,5 +9,9 @@ void UiPong::show() {
     ImGui::Checkbox("Show hitboxes", &show_debug);
     ImGui::Checkbox("Stop time", &stop_time);
 
+    if (ImGui::Button("Restart")) {
+        want_restart = true;
+    }
+
     ImGui::End();
 }
