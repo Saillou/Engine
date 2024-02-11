@@ -114,7 +114,7 @@ void SampleParticles::_add_custom_shader(const std::string& name)
         getter().use()
             .set("Projection",    m_scene.camera().projection)
             .set("View",          m_scene.camera().modelview)
-            .set("diffuse_color", entity.localMaterial().diffuse_color);
+            .set("diffuse_color", entity.model().localMaterial().diffuse_color);
     };
 
     // Add to list

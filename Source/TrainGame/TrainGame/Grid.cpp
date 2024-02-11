@@ -56,7 +56,7 @@ namespace Thomas
 
         // TODO: this is not the good way of doing it (probably)
         auto pair = getPosition(pos);
-        return getPosition(pair.first, pair.second);
+        return getPosition((int)pair.first, (int)pair.second);
     }
 
     void OldGrid::clearCells()

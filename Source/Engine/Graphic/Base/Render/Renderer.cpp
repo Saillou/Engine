@@ -197,7 +197,7 @@ void Renderer::_compute()
     // Shadows
     _shadower.render(_camera, _lights, [=](Shader& sh) {
         for (_DrawEntity& di : _heapEntities) {
-            if (!di.copied_entity._localMaterial.cast_shadow)
+            if (!di.copied_entity._model->_localMaterial.cast_shadow)
                 continue;
 
             if (di.drawPriority < 0.0f)
@@ -266,7 +266,7 @@ void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool updat
                 case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
                 case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
             } return placeHolder;
-        }().set("diffuse_color", entity._localMaterial.diffuse_color));
+        }().set("diffuse_color", entity._model->_localMaterial.diffuse_color));
     }
     else {
         if (_userShadersName.find(type) == _userShadersName.cend())

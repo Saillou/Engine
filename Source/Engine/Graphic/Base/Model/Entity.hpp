@@ -6,7 +6,6 @@
 #include "../Render/RenderType.hpp"
 #include "Pose.hpp"
 #include "Model.hpp"
-#include "Material.hpp"
 
 struct Entity
 {
@@ -45,7 +44,6 @@ protected:
 
     std::shared_ptr<Model> _model;
 
-    Material _localMaterial;
     std::vector<Pose>     _poses;
     std::vector<Material> _materials;
 };

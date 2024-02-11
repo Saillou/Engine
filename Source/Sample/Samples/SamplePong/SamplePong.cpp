@@ -99,6 +99,7 @@ void SamplePong::_physics(float dt_ms) {
 
     // Solve
     if (collision_point.has_value()) {
+        //m_ball.speed = glm::length(m_ball.speed) * glm::normalize(m_ball.pos - collision_point.value());
         m_ball.speed *= -1.0f;
         new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
     }

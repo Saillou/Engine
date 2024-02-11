@@ -1,4 +1,4 @@
-#include "WorldEditor.h"
+#include "WorldEditor.hpp"
 #include "WorldEditorHelper.hpp"
 
 

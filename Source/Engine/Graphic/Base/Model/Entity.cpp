@@ -41,14 +41,14 @@ Pose& Entity::localPose() {
     return (Pose&)_model->_localPose;
 }
 Material& Entity::localMaterial() {
-    return _localMaterial;
+    return _model->_localMaterial;
 }
 
 const Pose& Entity::localPose() const {
     return _model->_localPose;
 }
 const Material& Entity::localMaterial() const {
-    return _localMaterial;
+    return _model->_localMaterial;
 }
 
 std::vector<Pose>& Entity::poses() {

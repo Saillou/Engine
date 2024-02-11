@@ -115,6 +115,10 @@ const glm::mat4& Model::localPose() const {
     return _localPose;
 }
 
+const Material& Model::localMaterial() const {
+    return _localMaterial;
+}
+
 void Model::_loadModel(const std::string& path) {
     // read file via ASSIMP
     Assimp::Importer importer;

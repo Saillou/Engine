@@ -11,6 +11,7 @@
 #include <assimp/postprocess.h>
 
 #include "Mesh.hpp"
+#include "Material.hpp"
 
 #include <memory>
 #include <string>
@@ -40,7 +41,8 @@ struct Model
     };
 
     const std::unique_ptr<Node>& root() const;
-    const glm::mat4& localPose() const;
+    const glm::mat4& localPose()        const;
+    const Material& localMaterial()     const;
 
     std::unique_ptr<Node>& root();
 
@@ -53,5 +55,6 @@ private:
 
     std::vector<TextureData> _textures_loaded;
     std::unique_ptr<Node>    _root;
-    glm::mat4 _localPose = glm::mat4(1.0f);
+    glm::mat4 _localPose    = glm::mat4(1.0f);
+    Material _localMaterial = {};
 };
