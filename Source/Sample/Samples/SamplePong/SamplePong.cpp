@@ -2,13 +2,11 @@
 
 #include <Engine/Utils/Physic/Collider.hpp>
 
-// Particles
 SamplePong::SamplePong() :
     m_scene(Service<Window>::get().scene())
 {
     _init_game_elements();
     _create_entities();
-    _update_entities();
 
     // Enable events
     _subscribe(&SamplePong::_update);
@@ -82,6 +80,8 @@ void SamplePong::_create_entities() {
         glm::translate(glm::mat4(1.0f), m_wall_1.pos),
         glm::translate(glm::mat4(1.0f), m_wall_2.pos)
     };
+
+    _update_entities();
 }
 
 void SamplePong::_ia() {
