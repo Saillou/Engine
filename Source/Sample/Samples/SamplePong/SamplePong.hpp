@@ -9,10 +9,11 @@ struct SamplePong :
 
 private:
     // Methods
-    void _draw();
-    void _physics();
+    void _physics(float dt_ms);
+    void _refresh_position();
 
     // Events
+    void _draw_debug();
     void _update(const SceneEvents::Draw&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
@@ -23,7 +24,7 @@ private:
     // Game elements
     struct _Player {
         inline static const std::string Entity_Name = "player";
-        inline static const float Speed = 0.05f;
+        inline static const float MaxSpeed = 0.05f;
 
         glm::vec3 pos = { 0, 0, 0 };
     };
@@ -32,6 +33,7 @@ private:
         inline static const std::string Entity_Name = "ball";
 
         glm::vec3 pos = { 0, 0, 0 };
+        glm::vec3 speed = { 0, 0, 0 };
     };
 
     _Ball   m_ball;
