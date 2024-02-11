@@ -99,19 +99,12 @@ void SamplePong::_physics(float dt_ms) {
     // Integrate pos
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
-    // Check collisions ball / players
-    struct _collision_ {
-        glm::vec3 point;
-        glm::vec3 body;
-        glm::vec3 target;
-    };
-    std::optional<_collision_> collision = {};
-
+    // Define potential colliders with the ball
     struct _collide_body_ {
         const std::string& name;
         const glm::vec3& pos;
     };
-    std::vector<_collide_body_> bodies = 
+    std::vector<_collide_body_> colliders = 
     {
         { _Player::Entity_Name, m_player_human.pos}, 
         { _Player::Entity_Name, m_player_ia.pos},
@@ -119,29 +112,37 @@ void SamplePong::_physics(float dt_ms) {
         { _Wall::Entity_Name,   m_wall_2.pos}
     };
 
-    for (const auto& body : bodies)
+    struct _collision_ {
+        glm::vec3 contact_point;
+        const _collide_body_& collider;
+    };
+    std::optional<_collision_> collision = {};
+
+    // Check
+    for (const auto& collider : colliders)
     {
-        const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), body.pos);
+        const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), collider.pos);
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
         auto collision_point = Collider::Check(
-            m_entities[body.name],          body_quat,
+            m_entities[collider.name],      body_quat,
             m_entities[_Ball::Entity_Name], ball_quat
         );
 
         if (collision_point.has_value()) {
-            collision = _collision_{
-                collision_point.value(),
-                new_ball_pos,
-                body.pos
-            };
+            collision.emplace(_collision_ { collision_point.value(), collider });
             break; // we expect only one collision
         }
     }
 
     // Solve
     if (collision.has_value()) {
-        m_ball.speed = glm::length(m_ball.speed) * glm::normalize(collision.value().body - collision.value().target);
+        if (collision.value().collider.name == _Player::Entity_Name) {
+            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - collision.value().collider.pos);
+        }
+        else {
+            m_ball.speed.x *= -1.0f;
+        }
         new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
     }
 

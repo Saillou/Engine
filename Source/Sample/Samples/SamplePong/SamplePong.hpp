@@ -56,7 +56,6 @@ private:
     Scene& m_scene;
     std::unordered_map<std::string, Entity> m_entities;
 
-
     _Ball   m_ball;
     _Player m_player_human;
     _Player m_player_ia;
