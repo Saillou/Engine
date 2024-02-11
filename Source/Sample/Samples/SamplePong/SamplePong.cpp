@@ -6,9 +6,9 @@
 SamplePong::SamplePong() :
     m_scene(Service<Window>::get().scene())
 {
-    _init_view();
+    _init_game_elements();
     _create_entities();
-    _update_position();
+    _update_entities();
 
     // Enable events
     _subscribe(&SamplePong::_update);
@@ -18,7 +18,7 @@ SamplePong::SamplePong() :
     m_timer.tic();
 }
 
-void SamplePong::_init_view() {
+void SamplePong::_init_game_elements() {
     // Scene
     m_scene.lights() = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
 
@@ -84,6 +84,14 @@ void SamplePong::_create_entities() {
     };
 }
 
+void SamplePong::_ia() {
+    if (m_player_ia.pos.x < m_ball.pos.x - 0.1f)
+        m_player_ia.next_action = _Player::Action::Right;
+
+    if (m_player_ia.pos.x > m_ball.pos.x + 0.1f)
+        m_player_ia.next_action = _Player::Action::Left;
+}
+
 void SamplePong::_physics(float dt_ms) {
     if (m_ui.stop_time)
         return;
@@ -141,7 +149,7 @@ void SamplePong::_physics(float dt_ms) {
     m_ball.pos = new_ball_pos;
 }
 
-void SamplePong::_update_position() {
+void SamplePong::_update_entities() {
     m_entities[_Player::Entity_Name].poses() = {
         glm::translate(glm::mat4(1.0f), m_player_human.pos),
         glm::translate(glm::mat4(1.0f), m_player_ia.pos),
@@ -150,6 +158,21 @@ void SamplePong::_update_position() {
     m_entities[_Ball::Entity_Name].poses() = {
         glm::translate(glm::mat4(1.0f), m_ball.pos)
     };
+}
+
+void SamplePong::_draw() {
+    for (auto& entity : m_entities) {
+        if (entity.first == "debug")
+            continue;
+
+        m_scene.renderer().draw(Render::Shadows, entity.second);
+    }
+
+    if (m_ui.show_debug) {
+        _draw_debug();
+    }
+
+    m_ui.show();
 }
 
 void SamplePong::_draw_debug() {
@@ -181,29 +204,32 @@ void SamplePong::_draw_debug() {
     m_scene.renderer().draw(Render::Geometry, m_entities["debug"]);
 }
 
+void SamplePong::_apply_actions(_Player& player) 
+{
+    switch (player.next_action) {
+        case _Player::Action::Left:  player.pos.x -= _Player::MaxSpeed; break;
+        case _Player::Action::Right: player.pos.x += _Player::MaxSpeed; break;
+    }
+
+    player.next_action = _Player::Action::None;
+}
+
 // Events
 void SamplePong::_update(const SceneEvents::Draw&)
 {
     if (m_ui.want_restart) {
-        _init_view();
+        _init_game_elements();
         m_ui.want_restart = false;
     }
 
+    _ia();
+    _apply_actions(m_player_ia);
+    _apply_actions(m_player_human);
+
     _physics(m_timer.elapsed<Timer::microsecond>()/1000.0f);
-    _update_position();
-
-    for (auto& entity : m_entities) {
-        if (entity.first == "debug")
-            continue;
-
-        m_scene.renderer().draw(Render::Shadows, entity.second);
-    }
-
-    if (m_ui.show_debug) {
-        _draw_debug();
-    }
-
-    m_ui.show();
+    _update_entities();
+    
+    _draw();
 
     m_timer.tic();
 }
@@ -217,8 +243,8 @@ void SamplePong::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     // - Move player -
     {
         switch (evt.key) {
-            case KeyCode::ArrowLeft:  m_player_human.pos.x -= _Player::MaxSpeed; break;
-            case KeyCode::ArrowRight: m_player_human.pos.x += _Player::MaxSpeed; break;
+            case KeyCode::ArrowLeft:  m_player_human.next_action = _Player::Action::Left; break;
+            case KeyCode::ArrowRight: m_player_human.next_action = _Player::Action::Right; break;
         }
     }
 
