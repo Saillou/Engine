@@ -1,9 +1,15 @@
 #pragma once
 
+#include <array>
+
 #include "../../Model/Mesh.hpp"
 
 struct PrimitiveHelper 
 {
+	// Types
+	using Triangle = std::array<glm::vec3, 3>;
+
+	// Vertices helper
 	static int  addPoint	 (Mesh&, const glm::vec3& vec);
 	static int  addPoint	 (Mesh&, const glm::vec3& vec, const glm::vec3& norm, const glm::vec2& uv);
 
@@ -21,5 +27,4 @@ struct PrimitiveHelper
 
 	// For inhertied instances
 	virtual ~PrimitiveHelper() = default;
-
 };

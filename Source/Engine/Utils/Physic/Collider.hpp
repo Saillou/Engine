@@ -3,7 +3,7 @@
 #include <array>
 #include <optional>
 
-#include "../Graphic/Base/Model/Entity.hpp"
+#include "../../Graphic/Base/Model/Entity.hpp"
 
 namespace Collider {
 	std::optional<glm::vec3> Check(

@@ -1,6 +1,6 @@
 #include "SamplePong.hpp"
 
-#include <Engine/Utils/Collider.hpp>
+#include <Engine/Utils/Physic/Collider.hpp>
 
 // Particles
 SamplePong::SamplePong() :
@@ -17,7 +17,7 @@ SamplePong::SamplePong() :
     m_player_human.pos = glm::vec3(0.0f, 0.0f, -2.0f);
     m_player_ia.pos    = glm::vec3(0.0f, 0.0f, +2.0f);
 
-    m_ball.pos         = glm::vec3(0.0f, 0.0f, +1.0f);
+    m_ball.pos         = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ball.speed       = glm::vec3(0.0f, 0.0f, -0.0015f);
 
     // Create entities shape
@@ -65,14 +65,7 @@ SamplePong::SamplePong() :
         glm::translate(glm::mat4(1.0f), glm::vec3(+2.0f, 0.0f, 0.0f))
     };
 
-    m_entities[_Player::Entity_Name].poses() = {
-        glm::translate(glm::mat4(1.0f), m_player_human.pos),
-        glm::translate(glm::mat4(1.0f), m_player_ia.pos),
-    };
-
-    m_entities[_Ball::Entity_Name].poses() = {
-        glm::translate(glm::mat4(1.0f), m_ball.pos)
-    };
+    _update_position();
 
     // Enable events
     _subscribe(&SamplePong::_update);
@@ -92,7 +85,7 @@ void SamplePong::_physics(float dt_ms) {
 
     for (const glm::vec3& pos : { m_player_human.pos, m_player_ia.pos }) 
     {
-        const glm::mat4 player_quat = glm::translate(glm::mat4(1.0f), m_player_human.pos);
+        const glm::mat4 player_quat = glm::translate(glm::mat4(1.0f), pos);
         const glm::mat4 ball_quat   = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
         collision_point = Collider::Check(
@@ -106,15 +99,15 @@ void SamplePong::_physics(float dt_ms) {
 
     // Solve
     if (collision_point.has_value()) {
-        // ...
-        new_ball_pos = m_ball.pos - m_ball.speed * dt_ms;
+        m_ball.speed *= -1.0f;
+        new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
     }
 
     // Apply
     m_ball.pos = new_ball_pos;
 }
 
-void SamplePong::_refresh_position() {
+void SamplePong::_update_position() {
     m_entities[_Player::Entity_Name].poses() = {
         glm::translate(glm::mat4(1.0f), m_player_human.pos),
         glm::translate(glm::mat4(1.0f), m_player_ia.pos),
@@ -136,7 +129,7 @@ void SamplePong::_draw_debug() {
     auto __get_hitbox = [=](const std::string& entity_name, const glm::vec3& pos) {
         return
             glm::translate(glm::mat4(1.0f), pos) *
-            glm::mat4(m_entities[entity_name].model().localPose()) *
+            m_entities[entity_name].model().localPose() *
             m_entities[entity_name].model().root()->transform *
             m_entities[entity_name].model().root()->meshes.front()->obb();
     };
@@ -156,7 +149,7 @@ void SamplePong::_draw_debug() {
 void SamplePong::_update(const SceneEvents::Draw&)
 {
     _physics(m_timer.elapsed<Timer::microsecond>()/1000.0f);
-    _refresh_position();
+    _update_position();
 
     for (auto& entity : m_entities) {
         if (entity.first == "debug")

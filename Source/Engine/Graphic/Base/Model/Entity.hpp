@@ -45,10 +45,7 @@ protected:
 
     std::shared_ptr<Model> _model;
 
-    Pose     _localPose;
     Material _localMaterial;
-
     std::vector<Pose>     _poses;
     std::vector<Material> _materials;
-
 };

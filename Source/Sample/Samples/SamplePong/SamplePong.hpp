@@ -10,7 +10,7 @@ struct SamplePong :
 private:
     // Methods
     void _physics(float dt_ms);
-    void _refresh_position();
+    void _update_position();
 
     // Events
     void _draw_debug();

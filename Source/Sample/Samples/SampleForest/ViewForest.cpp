@@ -7,7 +7,7 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-#include <Engine/Utils/RayCaster.hpp>
+#include <Engine/Utils/Physic/RayCaster.hpp>
 
 // Random engine
 static std::default_random_engine gen;

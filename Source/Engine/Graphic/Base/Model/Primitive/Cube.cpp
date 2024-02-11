@@ -49,3 +49,10 @@ std::unique_ptr<Mesh> Cube::CreateMesh(bool sendToGpu) {
 
 	return cubeMesh;
 }
+
+std::shared_ptr<Mesh> Cube::GetOne() {
+    // Create cube mesh if needed
+    static std::shared_ptr<Mesh> s_cubeMesh = CreateMesh(false);
+
+    return s_cubeMesh;
+}

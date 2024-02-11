@@ -6,7 +6,7 @@
 
 #include <Engine/Graphic/Window.hpp>
 #include <Engine/Utils/Service.hpp>
-#include <Engine/Utils/RayCaster.hpp>
+#include <Engine/Utils/Physic/RayCaster.hpp>
 
 ViewCube::ViewCube():
     m_mousePos(0.0f, 0.0f)

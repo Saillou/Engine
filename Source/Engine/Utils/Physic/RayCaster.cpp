@@ -1,6 +1,6 @@
 #include "RayCaster.hpp"
 
-#include "../Graphic/Base/Model/Primitive/Cube.hpp"
+#include "../../Graphic/Base/Model/Primitive/Cube.hpp"
 
 #include <stack>
 #include <glm/gtx/string_cast.hpp>
@@ -21,7 +21,7 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 	std::optional<glm::vec4> result;
 
 	for (size_t i = 0; i < idx.size(); i += 3) {
-		auto optIntersect = RayCaster::Intersect(camPos, camDir, RayCaster::Triangle{
+		auto optIntersect = RayCaster::Intersect(camPos, camDir, PrimitiveHelper::Triangle{
 			vec3(quat * vec4(v[idx[i + 0]].Position, +1.0f)),
 			vec3(quat * vec4(v[idx[i + 1]].Position, +1.0f)),
 			vec3(quat * vec4(v[idx[i + 2]].Position, +1.0f))
@@ -37,18 +37,18 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 }
 
 // Public
-std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& objModel, const glm::mat4& quat)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& entity, const glm::mat4& quat)
 {
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return {};
 
 	// Traverse model's nodes
-	if (!objModel.model().root())
+	if (!entity.model().root())
 		return {};
 
 	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&objModel.model().root());
+	st.push(&entity.model().root());
 
 	while (!st.empty()) {
 		// Get next in line
@@ -57,7 +57,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * glm::mat4(objModel.localPose()) * (*currNode)->transform);
+			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * entity.model().localPose() * (*currNode)->transform);
 
 			if (optIntersect.has_value())
 				return optIntersect;
@@ -90,31 +90,31 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 
 
-float RayCaster::ApproxDistance(const glm::vec3& origin, const Entity& objModel, const glm::mat4& quat)
+float RayCaster::ApproxDistance(const glm::vec3& origin, const Entity& entity, const glm::mat4& quat)
 {
 	// Will just check the root element..
-	if (!objModel.model().root() || objModel.model().root()->meshes.empty())
+	if (!entity.model().root() || entity.model().root()->meshes.empty())
 		return -1.0f;
 
 	// Check all meshes of root
 	float avg_distance = 0.0f;
-	const glm::mat4 Q = quat * objModel.model().root()->transform * glm::mat4(objModel.localPose());
+	const glm::mat4 Q = quat * entity.model().root()->transform * entity.model().localPose();
 
-	for (const auto& mesh : objModel.model().root()->meshes) {
+	for (const auto& mesh : entity.model().root()->meshes) {
 		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);
 	}
 
-	return avg_distance / objModel.model().root()->meshes.size();
+	return avg_distance / entity.model().root()->meshes.size();
 }
 
 // - Helpers -
 bool RayCaster::IntersectBox(const glm::vec2& mousePos, const glm::vec3& camPos, const glm::vec3& camDir, const glm::mat4& quat)
 {
-	return _intersect_mesh(mousePos, camPos, camDir, *GetCube(), quat).has_value();
+	return _intersect_mesh(mousePos, camPos, camDir, *Cube::GetOne(), quat).has_value();
 }
 
 // Note: It's Muller-Trumbore intersection algorithm
-std::optional<glm::vec4> RayCaster::Intersect(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const Triangle& triangle)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec3& ray_origin, const glm::vec3& ray_vector, const PrimitiveHelper::Triangle& triangle)
 {
 	constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
@@ -166,11 +166,4 @@ bool RayCaster::PointInRect(const glm::vec2& point, const Quad& quad)
 	const glm::vec2 rectBotRight = rectTopLeft + glm::vec2(quad.w(), quad.h());
 
 	return PointInRect(point, rectTopLeft, rectBotRight);
-}
-
-std::shared_ptr<Mesh> RayCaster::GetCube() {
-	// Create cube mesh if needed
-	static std::shared_ptr<Mesh> s_cubeMesh = Cube::CreateMesh(false);
-
-	return s_cubeMesh;
 }

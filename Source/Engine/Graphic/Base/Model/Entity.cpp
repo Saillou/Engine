@@ -38,14 +38,14 @@ void Entity::setPosesWithMaterials(const std::vector<Pose>& poses, const std::ve
 }
 
 Pose& Entity::localPose() {
-    return _localPose;
+    return (Pose&)_model->_localPose;
 }
 Material& Entity::localMaterial() {
     return _localMaterial;
 }
 
 const Pose& Entity::localPose() const {
-    return _localPose;
+    return _model->_localPose;
 }
 const Material& Entity::localMaterial() const {
     return _localMaterial;
@@ -76,6 +76,5 @@ Model& Entity::model() {
 
 // Methods
 void Entity::_update_model_buffer() {
-    _model->_localPose = glm::mat4(_localPose);
     _model->_setBatch(std::vector<glm::mat4>(_poses.cbegin(), _poses.cend()), Material::ExtractColors(_materials));
 }
