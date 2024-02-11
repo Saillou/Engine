@@ -13,7 +13,6 @@ struct UiPong
 
 	void show();
 
-private:
-	bool _show_debug = true;
-	bool _stop_time = false;
+	bool show_debug = true;
+	bool stop_time  = false;
 };

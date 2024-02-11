@@ -80,6 +80,9 @@ SamplePong::SamplePong() :
 
 // Methods
 void SamplePong::_physics(float dt_ms) {
+    if (m_ui.stop_time)
+        return;
+
     // Integrate pos
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
@@ -163,7 +166,11 @@ void SamplePong::_update(const SceneEvents::Draw&)
 
         m_scene.renderer().draw(Render::Shadows, entity.second);
     }
-    _draw_debug();
+
+    if (m_ui.show_debug) {
+        _draw_debug();
+    }
+
     m_ui.show();
 
     m_timer.tic();
