@@ -28,10 +28,6 @@ using namespace HelperTrain;
 SampleTrain::SampleTrain() :
     m_scene(Service<Window>::get().scene())
 {
-    // Change app draw style to be able to reorder entities and compute shadows
-    m_scene.directDraw(false);
-
-    m_menu.reset();
     m_scene.lights() = { Light(glm::vec3{ 0, 0, 5 }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
 
     // Create entities

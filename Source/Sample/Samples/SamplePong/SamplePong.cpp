@@ -20,6 +20,9 @@ SamplePong::SamplePong() :
     m_ball.pos         = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ball.speed       = glm::vec3(0.0f, 0.0f, -0.0015f);
 
+    m_wall_1.pos       = glm::vec3(-2.0f, 0.0f, 0.0f);
+    m_wall_2.pos       = glm::vec3(+2.0f, 0.0f, 0.0f);
+
     // Create entities shape
     m_entities["field"] = Entity(Entity::SimpleShape::Quad);
     {
@@ -32,12 +35,12 @@ SamplePong::SamplePong() :
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
     }
 
-    m_entities["wall"] = Entity(Entity::SimpleShape::Quad);
+    m_entities[_Wall::Entity_Name] = Entity(Entity::SimpleShape::Quad);
     {
-        m_entities["wall"].localMaterial().diffuse_color = glm::vec4(1, 1, 1, 0.2f);
-        m_entities["wall"].localMaterial().cast_shadow = false;
+        m_entities[_Wall::Entity_Name].localMaterial().diffuse_color = glm::vec4(1, 1, 1, 0.2f);
+        m_entities[_Wall::Entity_Name].localMaterial().cast_shadow = false;
 
-        glm::mat4& pose = m_entities["wall"].localPose();
+        glm::mat4& pose = m_entities[_Wall::Entity_Name].localPose();
         pose = glm::translate(pose, glm::vec3(0, -0.1f, 0));
         pose = glm::scale(pose, glm::vec3(1.0f, 0.2f, 2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(0, 1, 0));
@@ -60,9 +63,9 @@ SamplePong::SamplePong() :
         glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
     };
 
-    m_entities["wall"].poses() = {
-        glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)),
-        glm::translate(glm::mat4(1.0f), glm::vec3(+2.0f, 0.0f, 0.0f))
+    m_entities[_Wall::Entity_Name].poses() = {
+        glm::translate(glm::mat4(1.0f), m_wall_1.pos),
+        glm::translate(glm::mat4(1.0f), m_wall_2.pos)
     };
 
     _update_position();
@@ -83,7 +86,7 @@ void SamplePong::_physics(float dt_ms) {
     // Check collisions ball / players
     std::optional<glm::vec3> collision_point = {};
 
-    for (const glm::vec3& pos : { m_player_human.pos, m_player_ia.pos }) 
+    for (const glm::vec3& pos : { m_player_human.pos, m_player_ia.pos, m_wall_1.pos, m_wall_2.pos })
     {
         const glm::mat4 player_quat = glm::translate(glm::mat4(1.0f), pos);
         const glm::mat4 ball_quat   = glm::translate(glm::mat4(1.0f), new_ball_pos);
@@ -140,6 +143,8 @@ void SamplePong::_draw_debug() {
     {
         __get_hitbox(_Player::Entity_Name, m_player_ia.pos),
         __get_hitbox(_Player::Entity_Name, m_player_human.pos),
+        __get_hitbox(_Wall::Entity_Name, m_wall_1.pos),
+        __get_hitbox(_Wall::Entity_Name, m_wall_2.pos),
         __get_hitbox(_Ball::Entity_Name, m_ball.pos)
     };
 
@@ -159,6 +164,7 @@ void SamplePong::_update(const SceneEvents::Draw&)
         m_scene.renderer().draw(Render::Shadows, entity.second);
     }
     _draw_debug();
+    m_ui.show();
 
     m_timer.tic();
 }

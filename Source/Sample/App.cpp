@@ -14,7 +14,6 @@ App::App():
 }
 
 void App::changeSample(const SampleId& sample_id) {
-	// Better to call the destructor first
 	m_curr_sample = nullptr;
 
 	switch (sample_id)

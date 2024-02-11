@@ -6,6 +6,7 @@
 struct SceneEvents : public Event {
     enum _Type {
         Draw_ = 1024,
+        PreDraw_,
         PostDraw_,
         RenderFinished_,
         SceneFinished_,
@@ -16,6 +17,11 @@ struct SceneEvents : public Event {
     struct Draw : public _Base {
         Draw():
             _Base(_Type::Draw_)
+        {};
+    };
+    struct PreDraw : public _Base {
+        PreDraw() :
+            _Base(_Type::PreDraw_)
         {};
     };
     struct PostDraw : public _Base {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Sample.hpp"
+#include "UiPong.hpp"
 
 struct SamplePong : 
     public Sample 
@@ -36,11 +37,20 @@ private:
         glm::vec3 speed = { 0, 0, 0 };
     };
 
+    struct _Wall {
+        inline static const std::string Entity_Name = "wall";
+
+        glm::vec3 pos = { 0, 0, 0 };
+    };
+
     _Ball   m_ball;
     _Player m_player_human;
     _Player m_player_ia;
+    _Wall   m_wall_1;
+    _Wall   m_wall_2;
 
     // State
+    UiPong m_ui;
     Timer::Chronometre m_timer;
 
     // Camera

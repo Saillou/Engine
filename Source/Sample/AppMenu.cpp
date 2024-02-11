@@ -20,7 +20,7 @@ AppMenu::AppMenu()
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
     // Events
-    _subscribe([=](const SceneEvents::Draw&)          { _prepare(); });
+    _subscribe([=](const SceneEvents::PreDraw&)       { _prepare(); });
     _subscribe([=](const SceneEvents::SceneFinished&) { _render();  });
 }
 

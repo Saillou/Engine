@@ -26,6 +26,8 @@ void Scene::run() {
     _renderer._clear();
     _renderer._deferred = m_enable_deffered_draw;
 
+    Event::Emit(SceneEvents::PreDraw());
+
     if (!m_enable_deffered_draw)
         clear();
 

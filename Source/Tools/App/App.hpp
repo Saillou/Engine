@@ -11,7 +11,7 @@
 struct App : Event::Subscriber {
     App(Window& window);
 
-    void pre_draw();
+    void pre_draw(const SceneEvents::PreDraw&);
     void draw(const SceneEvents::Draw&);
     void end_draw(const SceneEvents::RenderFinished&);
 

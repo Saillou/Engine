@@ -1,0 +1,10 @@
+#include "UiPong.hpp"
+
+#include <sstream>
+
+void UiPong::show() {
+    ImGui::Begin("Actions");
+    ImGui::Separator();
+
+    ImGui::End();
+}

@@ -16,13 +16,14 @@ App::App(Window& window) :
     editors[EditorId::Model]    = std::make_shared<ModelEditor>(window.scene());
     editors[EditorId::World]    = std::make_shared<WorldEditor>(window.scene());
 
+    _subscribe(&App::pre_draw);
     _subscribe(&App::draw);
     _subscribe(&App::end_draw);
 
     window.scene().directDraw(true);
 }
 
-void App::pre_draw() {
+void App::pre_draw(const SceneEvents::PreDraw&) {
     if (menu.state.editorId != current_editor_id)
         _changeEditor();
 
