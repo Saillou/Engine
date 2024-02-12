@@ -19,22 +19,22 @@ ViewForest::ViewForest() :
         glm::vec3(0, 0, 0),
         {
             size_t(2500),
-            std::make_unique<Entity>(Entity::SimpleShape::Cube)
+            Model::Create(Model::Cube)
         }
-        }),
+    }),
     m_mousePos(0.0f, 0.0f)
 {
     // Load models
     m_timer.tic();
     {
-        m_entities[_ObjectId::Locomotive] = std::make_unique<Entity>("Resources/objects/train/locomotive.glb");
-        m_entities[_ObjectId::Tree]       = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
-        m_entities[_ObjectId::Character]  = std::make_unique<Entity>("Resources/objects/character/character.glb");
+        m_models[_ObjectId::Locomotive] = Model::Create("Resources/objects/train/locomotive.glb");
+        m_models[_ObjectId::Tree]       = Model::Create("Resources/objects/tree/tree.glb");
+        m_models[_ObjectId::Character]  = Model::Create("Resources/objects/character/character.glb");
 
-        m_entities[_ObjectId::Grid]   = std::make_unique<Entity>(Entity::SimpleShape::Cube);
-        m_entities[_ObjectId::Cube]   = std::make_unique<Entity>(Entity::SimpleShape::Cube);
-        m_entities[_ObjectId::Sphere] = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
-        m_entities[_ObjectId::Target] = std::make_unique<Entity>(Entity::SimpleShape::Sphere);
+        m_models[_ObjectId::Grid]   = Model::Create(Model::Cube);
+        m_models[_ObjectId::Cube]   = Model::Create(Model::Cube);
+        m_models[_ObjectId::Sphere] = Model::Create(Model::Sphere);
+        m_models[_ObjectId::Target] = Model::Create(Model::Sphere);
     }
     std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -75,12 +75,17 @@ void ViewForest::_draw(const SceneEvents::Draw&) {
     m_timer.tic();
 
     // Lights
-    for (auto& light : scene.lights()) {
-        const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
+    {
+        m_models[_ObjectId::Sphere]->poses.clear();
+        m_models[_ObjectId::Sphere]->materials.clear();
 
-        m_entities[_ObjectId::Sphere]->localMaterial().diffuse_color = light.color;
-        m_entities[_ObjectId::Sphere]->poses() = { Q };
-        scene.renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Sphere]);
+        for (auto& light : scene.lights()) {
+            const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
+
+            m_models[_ObjectId::Sphere]->poses.push_back(Q);
+            m_models[_ObjectId::Sphere]->materials.push_back(Material{ light.color });
+        }
+        scene.renderer().draw(Render::DrawType::Basic, m_models[_ObjectId::Sphere]);
     }
 
     // List of targets
@@ -88,25 +93,29 @@ void ViewForest::_draw(const SceneEvents::Draw&) {
 
     // Draw objects
     for (const _Object& obj : m_objects) {
-        // Normal colors
-        for (const auto& quat : obj.quats) {
-            if(obj.id == _ObjectId::Cube)
-                m_entities[obj.id]->localMaterial().diffuse_color = glm::vec4(0.7f, 0.7f, 0.7f, 1);
+        m_models[obj.id]->poses.clear();
 
-            m_entities[obj.id]->poses() = { quat };
-            scene.renderer().draw(Render::DrawType::Shadows, *m_entities[obj.id]);
+        for (const auto& quat : obj.quats) {
+            if (obj.id == _ObjectId::Cube) {
+                m_models[obj.id]->localMaterial.diffuse_color = glm::vec4(0.7f, 0.7f, 0.7f, 1);
+            }
+
+            m_models[obj.id]->poses.push_back(quat);
         }
+        scene.renderer().draw(Render::DrawType::Shadows, m_models[obj.id]);
+    }
 
-        // Ray cast
+    // Ray cast
+    for (const _Object& obj : m_objects) {
         for (const auto& quat : obj.quats) {
-            auto cast_res = RayCaster::Intersect(m_mousePos, scene.camera(), *m_entities[obj.id], quat);
+            auto cast_res = RayCaster::Intersect(m_mousePos, scene.camera(), m_models[obj.id], quat);
             if (!cast_res)
                 continue;
 
             // Highlight
-            m_entities[obj.id]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
-            m_entities[obj.id]->poses() = { quat };
-            scene.renderer().draw(Render::DrawType::Geometry, *m_entities[obj.id]);
+            m_models[obj.id]->localMaterial.diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
+            m_models[obj.id]->poses = { quat };
+            scene.renderer().draw(Render::DrawType::Geometry, m_models[obj.id]);
 
             // Intersection
             targets.push_back(
@@ -117,28 +126,28 @@ void ViewForest::_draw(const SceneEvents::Draw&) {
 
     // Draw targets
     if (!targets.empty()) {
-        m_entities[_ObjectId::Target]->poses() = targets;
-        m_entities[_ObjectId::Target]->localMaterial().diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
-        scene.renderer().draw(Render::DrawType::Basic, *m_entities[_ObjectId::Target]);
+        m_models[_ObjectId::Target]->poses = targets;
+        m_models[_ObjectId::Target]->localMaterial.diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
+        scene.renderer().draw(Render::DrawType::Basic, m_models[_ObjectId::Target]);
     }
 
     // Particles
     {
-        scene.renderer().draw(Render::DrawType::Basic, *m_fireGrid.particles.object);
+        scene.renderer().draw(Render::DrawType::Basic, m_fireGrid.particles.object);
     }
 
     // Draw ground
     {
         // Grid
         {
-            m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
-            scene.renderer().draw(Render::DrawType::Geometry, *m_entities[_ObjectId::Grid]);
+            m_models[_ObjectId::Grid]->localMaterial.diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
+            scene.renderer().draw(Render::DrawType::Geometry, m_models[_ObjectId::Grid]);
         }
 
         // Shadow
         {
-            m_entities[_ObjectId::Grid]->localMaterial().diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-            scene.renderer().draw(Render::DrawType::Shadows, *m_entities[_ObjectId::Grid]);
+            m_models[_ObjectId::Grid]->localMaterial.diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+            scene.renderer().draw(Render::DrawType::Shadows, m_models[_ObjectId::Grid]);
         }
     }
 
@@ -345,16 +354,17 @@ void ViewForest::_setParticles(float dt) {
     }
 
     // Update
-    m_fireGrid.particles.object->setPosesWithMaterials(m_fireGrid.particles.models, m_fireGrid.particles.materials);
+    m_fireGrid.particles.object->poses     = m_fireGrid.particles.models;
+    m_fireGrid.particles.object->materials = m_fireGrid.particles.materials;
 }
 
 void ViewForest::_setObjects() {
     // Grid
-    m_entities[_ObjectId::Grid]->poses() = m_grid->grid_cells;
+    m_models[_ObjectId::Grid]->poses = m_grid->grid_cells;
 
     // Objects
     for (const _Object& obj : m_objects) {
-        m_entities[obj.id]->poses() = obj.quats;
+        m_models[obj.id]->poses = obj.quats;
     }
 }
 

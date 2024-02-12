@@ -1,7 +1,7 @@
 #include "Ui.hpp"
 
-#include "Engine/Utils/Service.hpp"
-#include "Engine/Graphic/Window.hpp"
+#include <Engine/Framework/Service.hpp>
+#include <Engine/Graphic/Window.hpp>
 
 Ui::Ui()
     : m_frame(Service<Window>::get().scene())

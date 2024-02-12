@@ -8,7 +8,7 @@
 #include <Engine/Utils/Filter/BaseFilter.hpp>
 
 #include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Graphic/Base/Model/Entity.hpp>
+#include <Engine/Graphic/Base/Model/Model.hpp>
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 
 #include <Engine/Events/CommonEvents.hpp>
@@ -33,8 +33,8 @@ private:
     void _drawObjects();
     void _drawTarget();
 
-    std::unordered_map<std::string, std::shared_ptr<Entity>> m_entities;
-    std::vector<std::shared_ptr<Entity>> m_interact_objects;
+    std::unordered_map<std::string, Model::Ref> m_models;
+    std::vector<Model::Ref> m_interact_objects;
     std::unique_ptr<Skybox> m_skybox;
 
     BaseFilter m_filter;

@@ -5,8 +5,7 @@
 #include "../../Light.hpp"
 #include "../../TextEngine.hpp"
 #include "../../Wrapper/Framebuffer.hpp"
-#include "../Model/Primitive/Quad.hpp"
-#include "../Model/Entity.hpp"
+#include "../Model/Model.hpp"
 #include "../Render/RenderType.hpp"
 #include "ShadowRender.hpp"
 
@@ -19,13 +18,13 @@ struct Renderer : private Cookable {
 
 	// Render
 	void quad(const Quad& surface);
-	void draw(Render::DrawType, Entity& entity);
-	void draw(const std::string& shaderName, Entity& entity);
+	void draw(Render::DrawType, Model::Ref model);
+	void draw(const std::string& shaderName, Model::Ref model);
 	void text(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
 
 	// Methods
-	typedef std::function<Shader& (void)>				ShaderGetter;
-	typedef std::function<void(const Entity& entity)>	ShaderSetter;
+	typedef std::function<Shader& (void)>	    ShaderGetter;
+	typedef std::function<void(const Model::Ref)> ShaderSetter;
 
 	void add_shader(const std::string& shaderName, const ShaderGetter&, const ShaderSetter&);
 	void remove_shader(const std::string& shaderName);
@@ -35,7 +34,7 @@ private:
 
 	Shader& _setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower);
 
-	bool _deferred = true;
+	bool _deferred				= true;
 	Camera _camera				= {};
 	std::vector<Light> _lights	= {};
 	ShadowRender _shadower;
@@ -45,15 +44,15 @@ private:
 	void _draw();
 
 	void _drawQuadSync(const Quad& surface);
-	void _drawEntitySync(Render::DrawType, Entity& entity, bool update_buffer = true);
+	void _drawEntitySync(Render::DrawType, Model::Ref model, bool update_buffer = true);
 	void _drawTextSync(const std::string& text, float x, float y, float scale = 0.5f, const glm::vec4& color = glm::vec4(1, 1, 1, 1));
 
 	// Deferred rendering
 	struct _DrawEntity {
 		size_t drawId;
-		float drawPriority;
+		float priority;
 		Render::DrawType type;
-		Entity copied_entity;
+		Model::Ref model = nullptr;
 	};
 
 	struct _DrawText {
@@ -64,9 +63,8 @@ private:
 		glm::vec4 color;
 	};
 
-	std::vector<_DrawEntity>	_heapEntities;
-	std::vector<_DrawText>		_heapText;
-	std::unordered_set<size_t>	_entitiesDuplicates;
+	std::vector<_DrawEntity> _heapEntities;
+	std::vector<_DrawText>	 _heapText;
 
 	// External shaders
 	struct _UserShaderMemo {
@@ -74,6 +72,6 @@ private:
 		ShaderGetter getter;
 		ShaderSetter setter;
 	};
-	std::unordered_map<Render::DrawType /*type*/, std::string /*name*/> _userShadersName;
-	std::unordered_map<std::string /*name*/, _UserShaderMemo> _userShaders;
+	std::unordered_map<Render::DrawType, std::string> _userShadersName;
+	std::unordered_map<std::string, _UserShaderMemo> _userShaders;
 };

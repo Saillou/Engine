@@ -1,6 +1,7 @@
 #include "Sandbox.hpp"
 
-#include "TrainGame/Engine/Core/ECS.h"
+#include <Engine/Framework/ECS/ECS.hpp>
+
 #include "TrainGame/Engine/Components/RenderComponent.h"
 #include "TrainGame/Engine/Components/Transform.h"
 #include "TrainGame/Engine/Components/Grid.h"

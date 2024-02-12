@@ -31,15 +31,15 @@ SampleTrain::SampleTrain() :
     m_scene.lights() = { Light(glm::vec3{ 0, 0, 5 }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
 
     // Create entities
-    m_entities["train"] = train();
-    m_entities["grass"] = tile_with_texture("Resources/textures/grass.png");
-    m_entities["earth"] = tile_with_rgba(glm::vec4(185, 122, 87, 255));
+    m_models["train"] = train();
+    m_models["grass"] = tile_with_texture("Resources/textures/grass.png");
+    m_models["earth"] = tile_with_rgba(glm::vec4(185, 122, 87, 255));
 
     // - Setup world -
     // Grid of earth
     for (float x = -Ctx.Ground_Size /2.0f; x < Ctx.Ground_Size /2.0f; x++) {
         for (float y = -Ctx.Ground_Size /2.0f; y < Ctx.Ground_Size /2.0f; y++) {
-            m_entities["earth"].poses().push_back(pose(glm::vec2(x, y)));
+            m_models["earth"]->poses.push_back(pose(glm::vec2(x, y)));
         }
     }
 
@@ -48,11 +48,11 @@ SampleTrain::SampleTrain() :
         float x = (rand() % (100*Ctx.Ground_Size))/100.0f - Ctx.Ground_Size /2.0f;
         float y = (rand() % (100*Ctx.Ground_Size))/100.0f - Ctx.Ground_Size /2.0f;
         float s = (Ctx.Grass_Max_Scale - Ctx.Grass_Min_Scale) * (rand() % 1000) / 1000.0f + Ctx.Grass_Min_Scale;
-        m_entities["grass"].poses().push_back(pose_scale(glm::vec2(x, y), s));
+        m_models["grass"]->poses.push_back(pose_scale(glm::vec2(x, y), s));
     }
 
     // Only one train
-    m_entities["train"].poses() = { 
+    m_models["train"]->poses = {
         pose(m_player_data.position)
     };
 
@@ -114,7 +114,7 @@ void SampleTrain::_compute_physics() {
     m_player_data.angle_speed  *= Ctx.Friction_Air;
 
     // Update model
-    m_entities["train"].poses().front() = pose_rot(m_player_data.position, m_player_data.angle);
+    m_models["train"]->poses.front() = pose_rot(m_player_data.position, m_player_data.angle);
 
     m_timer.tic();
 }
@@ -133,7 +133,7 @@ void SampleTrain::_drawScene() {
     // Draw items
     Renderer& render = m_scene.renderer();
 
-    for (auto& entity : m_entities) {
+    for (auto& entity : m_models) {
         render.draw(Render::DrawType::Shadows, entity.second);
     }
 }

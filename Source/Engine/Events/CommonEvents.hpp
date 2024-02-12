@@ -6,17 +6,26 @@
 struct CommonEvents : public Event {
 	// -- Inputs --
 	struct KeyPressed : public _Base {
-		KeyPressed(int key = -1, int action = -1);
+		KeyPressed(int key = -1, int action = -1) :
+			_Base(_Type::EventKeyPressed), key(key), action(action)
+		{ }
+
 		int key;
 		int action;
 	};
 	struct MouseMoved : public _Base {
-		MouseMoved(int x = 0, int y = 0);
+		MouseMoved(int x = 0, int y = 0) :
+			_Base(_Type::EventMouseMoved), x(x), y(y)
+		{ }
+
 		int x;
 		int y;
 	};
 	struct MouseButton : public _Base {
-		MouseButton(int button = -1, int action = -1, int x = -1, int y = -1);
+		MouseButton(int button = -1, int action = -1, int x = -1, int y = -1) :
+			_Base(_Type::EventMouseButton), button(button), action(action), x(x), y(y)
+		{ }
+
 		int button;
 		int action;
 		int x;
@@ -25,24 +34,9 @@ struct CommonEvents : public Event {
 
 	// -- State --
 	struct StateUpdated : public _Base {
-		StateUpdated();
-	};
-
-	// -- Scene --
-	struct SceneRefresh : public _Base {
-		SceneRefresh();
-	};
-	struct SceneEnded : public _Base {
-		SceneEnded();
-	};
-	struct SceneFinishedRender : public _Base {
-		SceneFinishedRender();
-	};
-
-	// -- Ray casting --
-	struct MouseHit : public _Base {
-		MouseHit(float x = 0, float y = 0, float z = 0);
-		float x, y, z;
+		StateUpdated() :
+			_Base(_Type::EventStateUpdated)
+		{ }
 	};
 
 private:
@@ -50,13 +44,7 @@ private:
 		EventKeyPressed,
 		EventMouseMoved,
 		EventMouseButton,
-		
+
 		EventStateUpdated,
-		
-		EventSceneEnded,
-		EventSceneRefresh,
-		EventSceneFinishedRender,
-		
-		EventMouseHit,
 	};
 };

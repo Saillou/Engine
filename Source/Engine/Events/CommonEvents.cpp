@@ -26,34 +26,10 @@ CommonEvents::MouseButton::MouseButton(int button, int action, int x, int y) :
 	// ..
 }
 
-
-// -- Game events --
+// -- State events --
 CommonEvents::StateUpdated::StateUpdated() :
 	_Base(_Type::EventStateUpdated)
 {
 	// ..
 }
 
-CommonEvents::SceneEnded::SceneEnded() :
-	_Base(_Type::EventSceneEnded)
-{
-	// ..
-}
-
-CommonEvents::SceneRefresh::SceneRefresh() :
-	_Base(_Type::EventSceneRefresh)
-{
-	// ..
-}
-
-CommonEvents::SceneFinishedRender::SceneFinishedRender() :
-				_Base(_Type::EventSceneFinishedRender)
-{
-				// ..
-}
-
-CommonEvents::MouseHit::MouseHit(float x, float y, float z) :
-				_Base(_Type::EventMouseHit),
-				x(x), y(y), z(z)
-{
-}

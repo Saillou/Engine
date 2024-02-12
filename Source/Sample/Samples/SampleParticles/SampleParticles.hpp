@@ -35,7 +35,7 @@ private:
     // Members
     Scene& m_scene;
     Timer::Chronometre m_timer;
-    std::unordered_map<std::string, Entity> m_entities;
+    std::unordered_map<std::string, Model::Ref> m_models;
     std::unordered_map<std::string, Shader> m_shaders;
 
     std::deque<_particle> _particles;

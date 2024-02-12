@@ -10,28 +10,28 @@ using namespace glm;
 
 // Public
 std::optional<glm::vec3> Collider::Check(
-	const Entity& e1, const mat4& q1, 
-	const Entity& e2, const mat4& q2)
+	const Model::Ref model1, const mat4& q1,
+	const Model::Ref model2, const mat4& q2)
 {
 	// TODO: do better - here just checking root's model's obb
-	const mat4& obb_1 = e1.model().root()->meshes.front()->obb();
-	const mat4& obb_2 = e2.model().root()->meshes.front()->obb();
+	const mat4& obb_1 = model1->root->meshes.front()->obb();
+	const mat4& obb_2 = model2->root->meshes.front()->obb();
 
-	const mat4 tq_1 = q1 * e1.model().localPose() * e1.model().root()->transform * obb_1;
-	const mat4 tq_2 = q2 * e2.model().localPose() * e2.model().root()->transform * obb_2;
+	const mat4 tq_1 = q1 * model1->localPose * model1->root->transform * obb_1;
+	const mat4 tq_2 = q2 * model2->localPose * model2->root->transform * obb_2;
 
 	return Collider::Check(*Cube::GetOne(), tq_1, *Cube::GetOne(), tq_2);
 }
 
 std::optional<glm::vec3> Collider::Check(
-	const Mesh& m1, const mat4& q1,
-	const Mesh& m2, const mat4& q2)
+	const Mesh& mesh1, const mat4& q1,
+	const Mesh& mesh2, const mat4& q2)
 {
 	// TODO: do better - here just the first intersection, but there are (potentially) multiple ones
-	const auto& idx1 = m1.indices();
-	const auto& idx2 = m2.indices();
-	const auto& v1   = m1.vertices();
-	const auto& v2   = m2.vertices();
+	const auto& idx1 = mesh1.indices();
+	const auto& idx2 = mesh2.indices();
+	const auto& v1   = mesh1.vertices();
+	const auto& v2   = mesh2.vertices();
 
 	for (size_t i1 = 0; i1 < idx1.size(); i1 += 3) {
 		// Get triangle from mesh #1

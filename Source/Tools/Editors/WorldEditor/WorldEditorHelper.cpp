@@ -1,52 +1,60 @@
 #include "WorldEditorHelper.hpp"
 
 // -------- Utilities --------
-Entity WorldEditorHelper::train() {
-    Entity entity("Resources/objects/train/locomotive.glb");
+Model::Ref WorldEditorHelper::train() {
+    Model::Ref model = Model::Create("Resources/objects/train/locomotive.glb");
 
     // Transform:
+    glm::mat4& pose(model->localPose);
+
     //  - translate on z for having the ground level at 0
     //  - rotate for having Y as depth (instead of Z because i prefer)
-    entity.localPose() = glm::scale(glm::mat4(entity.localPose()), glm::vec3(0.5f));
-    entity.localPose() = glm::translate(glm::mat4(entity.localPose()), glm::vec3(0, 0, 0.17f));
-    entity.localPose() = glm::rotate(glm::mat4(entity.localPose()), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
 
-    return entity;
+    pose = glm::scale(pose, glm::vec3(0.5f));
+    pose = glm::translate(pose, glm::vec3(0, 0, 0.17f));
+    pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
+
+    return model;
 }
 
-Entity WorldEditorHelper::tile_with_texture(const std::string& texturePath) {
-    Entity entity(Entity::SimpleShape::Quad);
+Model::Ref WorldEditorHelper::tile_with_texture(const std::string& texturePath) {
+    Model::Ref model = Model::Create(Model::Quad);
 
     // Transform:
+    glm::mat4& pose(model->localPose);
+
     //  - translate on z for having the ground level at 0
     //  - rotate for having Y as depth (instead of Z because i prefer)
     //  - scale in half because quads are 2x2 by default
-    entity.localPose() = glm::scale(glm::mat4(entity.localPose()), glm::vec3(0.5f));
-    entity.localPose() = glm::translate(glm::mat4(entity.localPose()), glm::vec3(0, 0, 1.0f));
-    entity.localPose() = glm::rotate(glm::mat4(entity.localPose()), glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
+
+    pose = glm::scale(pose, glm::vec3(0.5f));
+    pose = glm::translate(pose, glm::vec3(0, 0, 1.0f));
+    pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
 
     // Define opacity < 1: trick renderer with reordering
-    entity.localMaterial() = Material{ glm::vec4(0, 0, 0, 0.9f) };
+    model->localMaterial = Material{ glm::vec4(0, 0, 0, 0.9f) };
 
     // Set texture on the first (and only) mesh
-    entity.model().root()->meshes.front()->textures().push_back(
+    model->root->meshes.front()->textures().push_back(
         TextureData{ "texture_diffuse", std::make_unique<Texture>(texturePath) }
     );
 
-    return entity;
+    return model;
 }
 
-Entity WorldEditorHelper::tile_with_rgba(const glm::vec4& colorRGBA) {
-    Entity entity(Entity::SimpleShape::Quad);
+Model::Ref WorldEditorHelper::tile_with_rgba(const glm::vec4& colorRGBA) {
+    Model::Ref model = Model::Create(Model::Quad);
 
     // Transform:
+    glm::mat4& pose(model->localPose);
+
     //  - scale in half because quads are 2x2 by default
-    entity.localPose() = glm::scale(glm::mat4(entity.localPose()), glm::vec3(0.5f));
+    pose = glm::scale(pose, glm::vec3(0.5f));
 
     // channel color 8-bits to float
-    entity.localMaterial() = Material{ colorRGBA / 255.0f, false };
+    model->localMaterial = Material{ colorRGBA / 255.0f, false };
 
-    return entity;
+    return model;
 }
 
 glm::mat4 WorldEditorHelper::pose(const glm::vec2& position) {

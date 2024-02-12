@@ -14,7 +14,7 @@ struct MaterialEditorMenu
 	// Members
 	struct State
 	{
-		bool   lightEnabled;
-		ImVec4 color;
+		bool lightEnabled = true;
+		ImVec4 color = ImVec4(1,1,1,1);
 	} state;
 };

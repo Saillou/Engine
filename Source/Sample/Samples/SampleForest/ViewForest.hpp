@@ -4,15 +4,15 @@
 #include <memory>
 #include <unordered_map>
 
+#include <Engine/Framework/Service.hpp>
 #include <Engine/Utils/Timer.hpp>
-#include <Engine/Utils/Service.hpp>
 #include <Engine/Utils/Filter/BaseFilter.hpp>
 
 #include <Engine/Graphic/Window.hpp>
 #include <Engine/Graphic/Base/Scene.hpp>
 
+#include <Engine/Graphic/Base/Model/Model.hpp>
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
-#include <Engine/Graphic/Base/Model/Entity.hpp>
 
 struct ViewForest : Event::Subscriber {
     ViewForest();
@@ -54,7 +54,7 @@ private:
     void _setObjects();
 
     // Object models (vertices, textures..)
-    std::unordered_map<_ObjectId, std::unique_ptr<Entity>> m_entities;
+    std::unordered_map<_ObjectId, Model::Ref> m_models;
 
     // Scene objects
     std::vector<_Object>    m_objects;
@@ -67,7 +67,7 @@ private:
 
         struct Particles {
             const size_t amount;
-            std::unique_ptr<Entity> object;
+            Model::Ref              object;
             std::vector<Pose>       models;
             std::vector<Material>   materials;
             std::vector<glm::vec4>  speeds;

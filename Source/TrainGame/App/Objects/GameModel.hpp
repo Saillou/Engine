@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "TrainGame/Engine/Components/Transform.h"
-#include <Engine/Graphic/Base/Model/Entity.hpp>
+#include <Engine/Graphic/Base/Model/Model.hpp>
 
 namespace Thomas
 {

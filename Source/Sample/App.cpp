@@ -10,7 +10,7 @@
 
 // App
 App::App():
-    m_curr_sample(std::make_unique<SampleParticles>())
+    m_curr_sample(std::make_unique<SampleForest>())
 {
 }
 

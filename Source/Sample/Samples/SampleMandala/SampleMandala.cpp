@@ -10,10 +10,10 @@ SampleMandala::SampleMandala() {
     scene.camera().position = glm::vec3(0, -1.0f, 0);
     scene.camera().direction = glm::vec3(0, 0, 0);
 
-    Entity& mandala     = m_entities["mandala"];
+    Model::Ref& mandala = m_models["mandala"];
     mandala             = HelperTrain::tile_with_texture("Resources/textures/mandala.png");
-    mandala.poses()     = { glm::mat4(1.0f) };
-    mandala.localPose() = glm::scale(glm::rotate(glm::mat4(1.0f), glm::pi<float>()/2.0f, glm::vec3(1,0,0)), glm::vec3(1.0f, 1.0f, 1.0f));
+    mandala->poses      = { glm::mat4(1.0f) };
+    mandala->localPose  = glm::scale(glm::rotate(glm::mat4(1.0f), glm::pi<float>()/2.0f, glm::vec3(1,0,0)), glm::vec3(1.0f, 1.0f, 1.0f));
 
     _subscribe([&](const SceneEvents::Draw&) {
         scene.renderer().draw(Render::DrawType::Lights, mandala);

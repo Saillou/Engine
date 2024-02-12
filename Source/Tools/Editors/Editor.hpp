@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include <Engine/Graphic/Base/Model/Entity.hpp>
+#include <Engine/Graphic/Base/Model/Model.hpp>
 #include <Engine/Graphic/Base/Scene.hpp>
 
 class Editor

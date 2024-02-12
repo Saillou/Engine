@@ -19,12 +19,12 @@ SampleParticles::SampleParticles() :
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Particles shape
-    m_entities["particle"] = Entity(Entity::SimpleShape::Quad);
-    m_entities["particle"].localMaterial().diffuse_color = glm::vec4(0.2f, 1.0f, 0.9f, 0.9f);
+    m_models["particle"] = Model::Create(Model::Quad);
+    m_models["particle"]->localMaterial.diffuse_color = glm::vec4(0.2f, 1.0f, 0.9f, 0.9f);
 
-    m_entities["particle_custom"] = Entity(Entity::SimpleShape::Quad);
-    m_entities["particle_custom"].localPose() = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
-    m_entities["particle_custom"].localMaterial().diffuse_color = glm::vec4(0.7f, 1.0f, 0.9f, 0.4f);
+    m_models["particle_custom"] = Model::Create(Model::Quad);
+    m_models["particle_custom"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
+    m_models["particle_custom"]->localMaterial.diffuse_color = glm::vec4(0.7f, 1.0f, 0.9f, 0.4f);
 
     // Custom shader for particules
     _add_custom_shader("custom_particule_shader");
@@ -46,12 +46,12 @@ SampleParticles::~SampleParticles() {
 void SampleParticles::_draw(const SceneEvents::Draw&) 
 {
     // Update
-    _update_particle(_particles,        m_entities["particle"].poses());
-    _update_particle(_particles_custom, m_entities["particle_custom"].poses());
+    _update_particle(_particles,        m_models["particle"]->poses);
+    _update_particle(_particles_custom, m_models["particle_custom"]->poses);
 
     // Draw items
-    m_scene.renderer().draw(Render::DrawType::Particle, m_entities["particle"]);
-    m_scene.renderer().draw("custom_particule_shader",  m_entities["particle_custom"]);
+    m_scene.renderer().draw(Render::DrawType::Particle, m_models["particle"]);
+    m_scene.renderer().draw("custom_particule_shader",  m_models["particle_custom"]);
 
     // Prepare next
     static const _conditions _particles_conditions = {
@@ -110,11 +110,11 @@ void SampleParticles::_add_custom_shader(const std::string& name)
         return m_shaders[name];
     };
 
-    Renderer::ShaderSetter setter = [=](const Entity& entity) -> void {
+    Renderer::ShaderSetter setter = [=](const Model::Ref& model) -> void {
         getter().use()
             .set("Projection",    m_scene.camera().projection)
             .set("View",          m_scene.camera().modelview)
-            .set("diffuse_color", entity.model().localMaterial().diffuse_color);
+            .set("diffuse_color", model->localMaterial.diffuse_color);
     };
 
     // Add to list

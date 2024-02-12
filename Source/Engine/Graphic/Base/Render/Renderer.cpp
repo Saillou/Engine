@@ -1,40 +1,40 @@
 #include "Renderer.hpp"
 
-#include "../../../Utils/Timer.hpp"
-#include "../../../Utils/Physic/RayCaster.hpp"
 #include <iostream>
 #include <algorithm>
-#include <glm/gtx/string_cast.hpp>
+
+#include "../../../Utils/Timer.hpp"
+#include "../../../Utils/Physic/RayCaster.hpp"
 
 // Rendering
 void Renderer::quad(const Quad& surface) {
     if (!_deferred)
         return _drawQuadSync(surface);
 
-    std::cerr << "[Warning] Renderer: can't draw quad in deferred mode. (Wrap these in an entity instead)" << std::endl;
+    std::cerr << "[Warning] Renderer: can't draw quad in deferred mode. (Wrap these in a model and call draw)" << std::endl;
 }
 
-void Renderer::draw(Render::DrawType type, Entity& entity) {
+void Renderer::draw(Render::DrawType type, Model::Ref model) {
     if (!_deferred)
-        return _drawEntitySync(type, entity);
+        return _drawEntitySync(type, model);
 
     _DrawEntity di;
-    di.drawId         = _heapEntities.size() + 1;
-    di.drawPriority   = -1.0f;
-    di.type           = type;
-    di.copied_entity  = entity;
+    di.type     = type;
+    di.model    = model;
+    di.drawId   = _heapEntities.size() + 1;
+    di.priority = -1.0f;
 
     _heapEntities.emplace_back(std::move(di));
 }
 
-void Renderer::draw(const std::string& shaderName, Entity& entity) {
+void Renderer::draw(const std::string& shaderName, Model::Ref model) {
     if (_userShaders.find(shaderName) == _userShaders.cend())
     {
         std::cerr << "Shader not found. Abort draw." << std::endl;
         return;
     }
 
-    draw(_userShaders[shaderName].type, entity);
+    draw(_userShaders[shaderName].type, model);
 }
 
 void Renderer::text(const std::string& text, float x, float y, float scale, const glm::vec4& color) {
@@ -123,30 +123,28 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
 void Renderer::_clear() {
     _heapEntities.clear();
     _heapText.clear();
-    _entitiesDuplicates.clear();
 }
 
 void Renderer::_compute() 
 {
     // Apply batch transformations
-    std::unordered_map<std::shared_ptr<Model>, size_t> first_model_id;
     for (_DrawEntity& di : _heapEntities) {
         // Decide draw order:
         //  - opaque first: no order
         //  - transparent: furthest first
-        di.drawPriority = std::numeric_limits<float>::max();
+        di.priority = std::numeric_limits<float>::max();
 
-        if (di.copied_entity.localMaterial().diffuse_color.a < 1.0f || di.copied_entity.localMaterial().force_reorder) {
+        if (di.model->localMaterial.diffuse_color.a < 1.0f || di.model->localMaterial.force_reorder) {
             // Sort also poses in batch
             using dist_entity = std::tuple<float, Pose, Material>;
             std::vector<dist_entity> all_dist_entity;
-            all_dist_entity.reserve(di.copied_entity.materials().size());
+            all_dist_entity.reserve(di.model->materials.size());
 
             size_t i_element = 0;
-            auto& materials = di.copied_entity.materials();
+            auto& materials = di.model->materials;
 
-            for (const Pose& pose : di.copied_entity.poses()) {
-                float entity_distance = RayCaster::ApproxDistance(_camera.position, di.copied_entity, pose);
+            for (const Pose& pose : di.model->poses) {
+                float entity_distance = RayCaster::ApproxDistance(_camera.position, di.model, pose);
 
                 all_dist_entity.push_back({
                     entity_distance, 
@@ -154,7 +152,7 @@ void Renderer::_compute()
                     i_element < materials.size() ? materials[i_element] : Material{{0,0,0,0}}
                 });
 
-                di.drawPriority = std::min(entity_distance, di.drawPriority);
+                di.priority = std::min(entity_distance, di.priority);
 
                 i_element++;
             }
@@ -171,59 +169,39 @@ void Renderer::_compute()
                 sorted_materials.push_back(std::get<2>(de));
             }
 
-            di.copied_entity.setPosesWithMaterials(sorted_poses, sorted_materials);
-        }
-
-        // Check if models already used for another draw
-        if (first_model_id.find(di.copied_entity._model) != first_model_id.cend()) {
-            _entitiesDuplicates.insert(di.drawId);
-
-            // First one will also need to be redrawn
-            if (_entitiesDuplicates.find(first_model_id[di.copied_entity._model]) == _entitiesDuplicates.cend())
-                _entitiesDuplicates.insert(first_model_id[di.copied_entity._model]);
-            continue; // gpu buffer needs to be setup after
+            di.model->poses = sorted_poses;
+            di.model->materials = sorted_materials;
         }
 
         // Update model buffers
-        first_model_id.emplace(di.copied_entity._model, di.drawId);
-        di.copied_entity._update_model_buffer();
+        di.model->_updateInternalBatch();
     }
 
     // Re-order vector from last to first
     std::sort(_heapEntities.begin(), _heapEntities.end(), [=](const _DrawEntity& di1, const _DrawEntity& di2) {
-        return di1.drawPriority > di2.drawPriority;
+        return di1.priority > di2.priority;
     });
     
     // Shadows
     _shadower.render(_camera, _lights, [=](Shader& sh) {
         for (_DrawEntity& di : _heapEntities) {
-            if (!di.copied_entity._model->_localMaterial.cast_shadow)
+            if (!di.model->localMaterial.cast_shadow)
                 continue;
 
-            if (di.drawPriority < 0.0f)
+            if (di.priority < 0.0f)
                 break;
 
-            // Need to re-set batch models
-            if (_entitiesDuplicates.find(di.drawId) != _entitiesDuplicates.cend()) {
-                di.copied_entity._update_model_buffer();
-            }
-
-            di.copied_entity._model->drawElements(sh);
+            di.model->drawElements(sh);
         }
     });
 }
 
 void Renderer::_draw() {
     for (_DrawEntity& di : _heapEntities) {
-        if (di.drawPriority < 0.0f)
+        if (di.priority < 0.0f)
             break;
 
-        // Need to re-set batch models
-        if (_entitiesDuplicates.find(di.drawId) != _entitiesDuplicates.cend()) {
-            di.copied_entity._update_model_buffer();
-        }
-
-        _drawEntitySync(di.type, di.copied_entity, false);
+        _drawEntitySync(di.type, di.model, false);
     }
 
     for (_DrawText& dt : _heapText) {
@@ -251,14 +229,14 @@ void Renderer::_drawQuadSync(const Quad& surface) {
     surface.drawElements();
 }
 
-void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool update_buffer) {
+void Renderer::_drawEntitySync(Render::DrawType type, Model::Ref model, bool update_buffer) {
     Shader placeHolder;
 
     if(update_buffer)
-        entity._update_model_buffer();
+        model->_updateInternalBatch();
 
     if(type < Render::Custom) {
-        entity._model->draw([&]() -> Shader& {
+        model->draw([&]() -> Shader& {
             switch (type) {
                 case Render::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
                 case Render::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
@@ -266,15 +244,15 @@ void Renderer::_drawEntitySync(Render::DrawType type, Entity& entity, bool updat
                 case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
                 case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
             } return placeHolder;
-        }().set("diffuse_color", entity._model->_localMaterial.diffuse_color));
+        }().set("diffuse_color", model->localMaterial.diffuse_color));
     }
     else {
         if (_userShadersName.find(type) == _userShadersName.cend())
             return;
 
         _UserShaderMemo& _usrShader = _userShaders[_userShadersName[type]];
-        _usrShader.setter(entity);
-        entity._model->draw(_usrShader.getter());
+        _usrShader.setter(model);
+        model->draw(_usrShader.getter());
     }
 }
 

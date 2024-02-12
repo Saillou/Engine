@@ -37,46 +37,46 @@ void SamplePong::_init_game_elements() {
 
 void SamplePong::_create_entities() {
    // Create entities shape
-    m_entities["field"] = Entity(Entity::SimpleShape::Quad);
+    m_models["field"] = Model::Create(Model::Quad);
     {
-        m_entities["field"].localMaterial().diffuse_color = glm::vec4(1, 1, 1, 0.2f);
-        m_entities["field"].localMaterial().cast_shadow = false;
+        m_models["field"]->localMaterial.diffuse_color = glm::vec4(1, 1, 1, 0.2f);
+        m_models["field"]->localMaterial.cast_shadow = false;
 
-        glm::mat4& pose = m_entities["field"].localPose();
+        glm::mat4& pose(m_models["field"]->localPose);
         pose = glm::translate(pose, glm::vec3(0, 0.1f, 0));
         pose = glm::scale(pose, glm::vec3(2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
     }
 
-    m_entities[_Wall::Entity_Name] = Entity(Entity::SimpleShape::Quad);
+    m_models[_Wall::Entity_Name] = Model::Create(Model::Quad);
     {
-        m_entities[_Wall::Entity_Name].localMaterial().diffuse_color = glm::vec4(1, 1, 1, 0.2f);
-        m_entities[_Wall::Entity_Name].localMaterial().cast_shadow = false;
+        m_models[_Wall::Entity_Name]->localMaterial.diffuse_color = glm::vec4(1, 1, 1, 0.2f);
+        m_models[_Wall::Entity_Name]->localMaterial.cast_shadow = false;
 
-        glm::mat4& pose = m_entities[_Wall::Entity_Name].localPose();
+        glm::mat4& pose(m_models[_Wall::Entity_Name]->localPose);
         pose = glm::translate(pose, glm::vec3(0, -0.1f, 0));
         pose = glm::scale(pose, glm::vec3(1.0f, 0.2f, 2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(0, 1, 0));
     }
 
-    m_entities[_Player::Entity_Name] = Entity(Entity::SimpleShape::Cube);
+    m_models[_Player::Entity_Name] = Model::Create(Model::Cube);
     {
-        m_entities[_Player::Entity_Name].localMaterial().diffuse_color = glm::vec4(1.0f);
-        m_entities[_Player::Entity_Name].localPose() = { glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f)) };
+        m_models[_Player::Entity_Name]->localMaterial.diffuse_color = glm::vec4(1.0f);
+        m_models[_Player::Entity_Name]->localPose = { glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f)) };
     }
 
-    m_entities[_Ball::Entity_Name] = Entity(Entity::SimpleShape::Sphere);
+    m_models[_Ball::Entity_Name] = Model::Create(Model::Sphere);
     {
-        m_entities[_Ball::Entity_Name].localMaterial().diffuse_color = glm::vec4(1.0f);
-        m_entities[_Ball::Entity_Name].localPose() = { glm::scale(glm::mat4(1.0f), glm::vec3(0.1f)) };
+        m_models[_Ball::Entity_Name]->localMaterial.diffuse_color = glm::vec4(1.0f);
+        m_models[_Ball::Entity_Name]->localPose = { glm::scale(glm::mat4(1.0f), glm::vec3(0.1f)) };
     }
 
     // Populate entities
-    m_entities["field"].poses() = {
+    m_models["field"]->poses = {
         glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
     };
 
-    m_entities[_Wall::Entity_Name].poses() = {
+    m_models[_Wall::Entity_Name]->poses = {
         glm::translate(glm::mat4(1.0f), m_wall_1.pos),
         glm::translate(glm::mat4(1.0f), m_wall_2.pos)
     };
@@ -125,8 +125,8 @@ void SamplePong::_physics(float dt_ms) {
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
         auto collision_point = Collider::Check(
-            m_entities[collider.name],      body_quat,
-            m_entities[_Ball::Entity_Name], ball_quat
+            m_models[collider.name],      body_quat,
+            m_models[_Ball::Entity_Name], ball_quat
         );
 
         if (collision_point.has_value()) {
@@ -151,18 +151,18 @@ void SamplePong::_physics(float dt_ms) {
 }
 
 void SamplePong::_update_entities() {
-    m_entities[_Player::Entity_Name].poses() = {
+    m_models[_Player::Entity_Name]->poses = {
         glm::translate(glm::mat4(1.0f), m_player_human.pos),
         glm::translate(glm::mat4(1.0f), m_player_ia.pos),
     };
 
-    m_entities[_Ball::Entity_Name].poses() = {
+    m_models[_Ball::Entity_Name]->poses = {
         glm::translate(glm::mat4(1.0f), m_ball.pos)
     };
 }
 
 void SamplePong::_draw() {
-    for (auto& entity : m_entities) {
+    for (auto& entity : m_models) {
         if (entity.first == "debug")
             continue;
 
@@ -178,22 +178,22 @@ void SamplePong::_draw() {
 
 void SamplePong::_draw_debug() {
     // Create debug box
-    if (m_entities.find("debug") == m_entities.cend()) {
-        m_entities["debug"] = Entity(Entity::SimpleShape::Cube);
-        m_entities["debug"].localMaterial() = Material{ glm::vec4(1, 0, 0, 1), false };
+    if (m_models.find("debug") == m_models.cend()) {
+        m_models["debug"] = Model::Create(Model::Cube);
+        m_models["debug"]->localMaterial = Material{ glm::vec4(1, 0, 0, 1), false };
     }
 
     // Get first mesh's obb of an entity
     auto __get_hitbox = [=](const std::string& entity_name, const glm::vec3& pos) {
         return
             glm::translate(glm::mat4(1.0f), pos) *
-            m_entities[entity_name].model().localPose() *
-            m_entities[entity_name].model().root()->transform *
-            m_entities[entity_name].model().root()->meshes.front()->obb();
+            m_models[entity_name]->localPose *
+            m_models[entity_name]->root->transform *
+            m_models[entity_name]->root->meshes.front()->obb();
     };
 
     // Draw hitboxes
-    m_entities["debug"].poses() =
+    m_models["debug"]->poses =
     {
         __get_hitbox(_Player::Entity_Name, m_player_ia.pos),
         __get_hitbox(_Player::Entity_Name, m_player_human.pos),
@@ -202,7 +202,7 @@ void SamplePong::_draw_debug() {
         __get_hitbox(_Ball::Entity_Name, m_ball.pos)
     };
 
-    m_scene.renderer().draw(Render::Geometry, m_entities["debug"]);
+    m_scene.renderer().draw(Render::Geometry, m_models["debug"]);
 }
 
 void SamplePong::_apply_actions(_Player& player) 

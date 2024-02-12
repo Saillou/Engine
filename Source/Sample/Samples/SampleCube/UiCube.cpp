@@ -1,6 +1,6 @@
 #include "UiCube.hpp"
 
-#include <Engine/Utils/Service.hpp>
+#include <Engine/Framework/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
 
 // Classnames

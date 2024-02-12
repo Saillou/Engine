@@ -13,7 +13,9 @@ SampleForest::SampleForest() :
     _subscribe(&SampleForest::_on_mouse_clicked);
 
     // Lights
-    m_scene.lights() = { Light(glm::vec3{ 0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
+    m_scene.lights() = { 
+        Light(glm::vec3{ 0,  -1.50f, 0.7f }, glm::vec4{ 1, 0.7, 0.3, 1 })
+    };
 
     // Camera
     m_scene.camera().position  = glm::vec3(1, -4, 3);

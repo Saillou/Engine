@@ -1,8 +1,8 @@
 #pragma once
 
 #include <map>
-#include "glm/glm.hpp"
-#include "TrainGame/Engine/Core/Types.h"
+#include <glm/glm.hpp>
+#include <Engine/Framework/ECS/System.hpp>
 
 namespace Thomas
 {
@@ -11,10 +11,6 @@ namespace Thomas
     public:
         void init(const glm::vec3& pos, const glm::vec2& size);
         void update(float dt);
-
-        void onEntityAdded(Entity entity) override {};
-        void onEntityRemoved(Entity entity) override {};
-        void onEntityDeleted(Entity entity) override {};
 
     private:
         struct GridCell

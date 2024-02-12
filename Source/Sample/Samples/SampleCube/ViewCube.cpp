@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include <Engine/Graphic/Window.hpp>
-#include <Engine/Utils/Service.hpp>
+#include <Engine/Framework/Service.hpp>
 #include <Engine/Utils/Physic/RayCaster.hpp>
 
 ViewCube::ViewCube():
@@ -18,29 +18,29 @@ ViewCube::ViewCube():
     _subscribe(&ViewCube::_on_mouse_moved);
 
     // Entities
-    m_entities["Ground"]  = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Cube"]    = std::make_shared<Entity>(Entity::SimpleShape::Cube);
-    m_entities["Target"]  = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
-    m_entities["Lantern"] = std::make_shared<Entity>(Entity::SimpleShape::Sphere);
+    m_models["Ground"]  = Model::Create(Model::Cube);
+    m_models["Cube"]    = Model::Create(Model::Cube);
+    m_models["Target"]  = Model::Create(Model::Sphere);
+    m_models["Lantern"] = Model::Create(Model::Sphere);
 
     // Scene objects
     Material stone = { glm::vec4(0.7f, 0.7f, 0.7f, 1.0f) };
     Material paper = { glm::vec4(0.8f, 0.1f, 0.6f, 0.4f) };
     Material glass = { glm::vec4(0.3f, 1.0f, 1.0f, 0.5f), false };
 
-    m_entities["Ground"]->localMaterial() = stone;
-    m_entities["Ground"]->localPose()     = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.01f));
-    m_entities["Ground"]->poses()         = { glm::mat4(1.0f) };
+    m_models["Ground"]->localMaterial = stone;
+    m_models["Ground"]->localPose     = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 0.01f));
+    m_models["Ground"]->poses         = { glm::mat4(1.0f) };
 
-    m_entities["Cube"]->localMaterial()   = paper;
-    m_entities["Cube"]->localPose()       = glm::scale(glm::mat4(1.0f), glm::vec3(0.15f));
+    m_models["Cube"]->localMaterial   = paper;
+    m_models["Cube"]->localPose       = glm::scale(glm::mat4(1.0f), glm::vec3(0.15f));
     {
         const float n_size = 0.5f;
         const int n_side = 2;
         for (int x = -n_side; x <= n_side; x++) {
             for (int y = -n_side; y <= n_side; y++) {
                 for (int z = 0; z <= n_side; z++) {
-                    m_entities["Cube"]->poses().push_back(
+                    m_models["Cube"]->poses.push_back(
                         glm::translate(glm::mat4(1.0f), glm::vec3(n_size * x, n_size * y, 0.1f + n_size * z))
                     );
                 }
@@ -49,12 +49,12 @@ ViewCube::ViewCube():
     }
 
     m_interact_objects = {
-        m_entities["Ground"]
+        m_models["Ground"]
     };
 
     // Decors
-    m_entities["Target"]->localMaterial() = glass;
-    m_entities["Target"]->localPose()     = glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f));
+    m_models["Target"]->localMaterial = glass;
+    m_models["Target"]->localPose     = glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f));
 
     m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
         "Resources/textures/skybox/front.jpg",
@@ -103,30 +103,31 @@ void ViewCube::_drawLights() {
             Qs.push_back(glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f)));
             Ms.push_back(Material{ light.color });
         }
-        m_entities["Lantern"]->setPosesWithMaterials(Qs, Ms);
+        m_models["Lantern"]->poses = Qs;
+        m_models["Lantern"]->materials = Ms;
     }
-    scene.renderer().draw(Render::DrawType::Basic, *m_entities["Lantern"]);
+    scene.renderer().draw(Render::DrawType::Basic, m_models["Lantern"]);
 }
 
 void ViewCube::_drawObjects() {
     Scene& scene = Service<Window>::get().scene();
 
-    scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Ground"]);
-    scene.renderer().draw(Render::DrawType::Shadows, *m_entities["Cube"]);
+    scene.renderer().draw(Render::DrawType::Shadows, m_models["Ground"]);
+    scene.renderer().draw(Render::DrawType::Shadows, m_models["Cube"]);
 }
 
 void ViewCube::_drawTarget() {
     Scene& scene = Service<Window>::get().scene();
 
     for (auto& obj : m_interact_objects) {
-        for (auto& pose : obj->poses()) {
-            auto intersect_result = RayCaster::Intersect(m_mousePos, scene.camera(), *obj, pose);
+        for (auto& pose : obj->poses) {
+            auto intersect_result = RayCaster::Intersect(m_mousePos, scene.camera(), obj, pose);
             if (!intersect_result.has_value())
                 continue;
 
             const glm::mat4& Q = glm::translate(glm::mat4(1.0f), glm::vec3(intersect_result.value()));
-            m_entities["Target"]->poses() = { Q };
-            scene.renderer().draw(Render::DrawType::Basic, *m_entities["Target"]);
+            m_models["Target"]->poses = { Q };
+            scene.renderer().draw(Render::DrawType::Basic, m_models["Target"]);
         }
     }
 }

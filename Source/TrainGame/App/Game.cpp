@@ -1,10 +1,10 @@
 #include "Game.hpp"
 
-#include "Engine/Utils/Service.hpp"
+#include <Engine/Framework/ECS/ECS.hpp>
+#include <Engine/Framework/Service.hpp>
 
 #include "TrainGame/TrainGame/Grid.hpp"
 
-#include "TrainGame/Engine/Core/ECS.h"
 #include "TrainGame/Engine/Components/Transform.h"
 #include "TrainGame/Engine/Components/TrainController.h"
 #include "TrainGame/Engine/Components/Grid.h"

@@ -21,7 +21,7 @@ private:
     // - Members -
     Timer::Chronometre m_timer;
     UiTrain m_menu;
-    std::unordered_map<std::string, Entity> m_entities;
+    std::unordered_map<std::string, Model::Ref> m_models;
 
     struct {
         float distance = 1.0f;

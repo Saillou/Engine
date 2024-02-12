@@ -2,9 +2,6 @@
 
 #include "../../Graphic/Base/Model/Primitive/Cube.hpp"
 
-#include <stack>
-#include <glm/gtx/string_cast.hpp>
-
 using namespace glm;
 
 // Private
@@ -16,7 +13,7 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 	const glm::mat4& quat)
 {
 	const auto& idx = mesh.indices();
-	const auto& v = mesh.vertices();
+	const auto& v   = mesh.vertices();
 
 	std::optional<glm::vec4> result;
 
@@ -37,18 +34,15 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 }
 
 // Public
-std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Entity& entity, const glm::mat4& quat)
+std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Model::Ref model , const glm::mat4& quat)
 {
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return {};
 
 	// Traverse model's nodes
-	if (!entity.model().root())
-		return {};
-
 	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&entity.model().root());
+	st.push(&model->root);
 
 	while (!st.empty()) {
 		// Get next in line
@@ -57,7 +51,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 		// Check all meshes of this node
 		for (const auto& mesh : (*currNode)->meshes) {
-			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * entity.model().localPose() * (*currNode)->transform);
+			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * model->localPose * (*currNode)->transform);
 
 			if (optIntersect.has_value())
 				return optIntersect;
@@ -90,21 +84,21 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 
 
 
-float RayCaster::ApproxDistance(const glm::vec3& origin, const Entity& entity, const glm::mat4& quat)
+float RayCaster::ApproxDistance(const glm::vec3& origin, const Model::Ref model, const glm::mat4& quat)
 {
 	// Will just check the root element..
-	if (!entity.model().root() || entity.model().root()->meshes.empty())
+	if (!model->root || model->root->meshes.empty())
 		return -1.0f;
 
 	// Check all meshes of root
 	float avg_distance = 0.0f;
-	const glm::mat4 Q = quat * entity.model().root()->transform * entity.model().localPose();
+	const glm::mat4 Q = quat * model->root->transform * model->localPose;
 
-	for (const auto& mesh : entity.model().root()->meshes) {
+	for (const auto& mesh : model->root->meshes) {
 		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);
 	}
 
-	return avg_distance / entity.model().root()->meshes.size();
+	return avg_distance / model->root->meshes.size();
 }
 
 // - Helpers -

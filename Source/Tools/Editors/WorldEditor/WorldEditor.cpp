@@ -20,15 +20,15 @@ void WorldEditor::onEnter() {
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Create entities
-    m_entities["grass"] = tile_with_texture("Resources/textures/grass.png");
-    m_entities["grass"].poses().push_back(pose_scale(glm::vec2(0.0f, 0.0f), 1.0f));
+    m_models["grass"] = tile_with_texture("Resources/textures/grass.png");
+    m_models["grass"]->poses.push_back(pose_scale(glm::vec2(0.0f, 0.0f), 1.0f));
 }
 
 void WorldEditor::onExit() { 
     // Put back original app state
     m_scene.directDraw(true);
 
-    m_entities.clear();
+    m_models.clear();
 
     // Disable events
     _unsubscribeAll();
@@ -44,8 +44,8 @@ void WorldEditor::_drawScene() {
     // Draw items
     Renderer& render = m_scene.renderer();
 
-    for (auto& entity : m_entities) {
-        render.draw(Render::DrawType::Lights, entity.second);
+    for (auto& model : m_models) {
+        render.draw(Render::DrawType::Lights, model.second);
     }
 }
 
@@ -58,7 +58,7 @@ void WorldEditor::_drawInfo() {
     m_menu.addContent("Lights", "-", "-");
 
     m_menu.createSection("Entities");
-    m_menu.addContent("Entities", "grass", glm::vec3(glm::mat4(m_entities["grass"].poses().front())[3]));
+    m_menu.addContent("Entities", "grass", glm::vec3(glm::mat4(m_models["grass"]->poses.front())[3]));
 
     m_menu.show();
 }

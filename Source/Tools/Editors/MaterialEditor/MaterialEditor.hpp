@@ -14,6 +14,6 @@ public:
     void onUpdate() override;
 
 private:
-    std::unique_ptr<Entity> m_entity;
-    MaterialEditorMenu      m_menu;
+    Model::Ref         m_model;
+    MaterialEditorMenu m_menu;
 };

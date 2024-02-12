@@ -1,5 +1,14 @@
 #include "Model.hpp"
 
+#include "Primitive/Quad.hpp"
+#include "Primitive/Cube.hpp"
+#include "Primitive/Sphere.hpp"
+
+#include <stb_image.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <glm/gtx/string_cast.hpp>
 
 // Helper
@@ -15,18 +24,52 @@ inline glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
     return to;
 }
 
+// Creators
+Model::Ref Model::Create(SimpleShape shape) 
+{
+    struct ModelInstance : public Model {
+        ModelInstance(SimpleShape s) : Model(s) { }
+    };
+
+    return std::make_shared<ModelInstance>(shape);
+}
+Model::Ref Model::Create(const std::string& path) 
+{
+    struct ModelInstance : public Model {
+        ModelInstance(const std::string& p) : Model(p) { }
+    };
+
+    return std::make_shared<ModelInstance>(path);
+}
+
 // Instance
+Model::Model(SimpleShape shape):
+    root(std::make_unique<Model::Node>())
+{
+    switch (shape) 
+    {
+    case Quad:
+        root->meshes.push_back(Quad::CreateMesh());
+        break;
+
+    case Cube:
+        root->meshes.push_back(Cube::CreateMesh());
+        break;
+
+    case Sphere:
+        root->meshes.push_back(Sphere::CreateMesh());
+        break;
+    }
+}
+
 Model::Model(const std::string& path)
 {
     _loadModel(path);
 }
 
 void Model::draw(Shader& shader) const {
-    if (!_root)
-        return;
-
     std::stack<const std::unique_ptr<Node>*> st;
-    st.push(&_root);
+    st.push(&root);
 
     while (!st.empty()) {
         // Get next in line
@@ -37,7 +80,7 @@ void Model::draw(Shader& shader) const {
         for (const auto& mesh : (*currNode)->meshes) {
             shader.use();
             if(shader.has("LocalModel"))
-                shader.set("LocalModel", localPose() * (*currNode)->transform);
+                shader.set("LocalModel", localPose * (*currNode)->transform);
 
             mesh->bindTextures(shader);
             mesh->drawElements();
@@ -52,11 +95,8 @@ void Model::draw(Shader& shader) const {
 }
 
 void Model::drawElements(Shader& shader) const {
-    if (!_root)
-        return;
-
     std::stack<const std::unique_ptr<Node>*> st;
-    st.push(&_root);
+    st.push(&root);
 
     while (!st.empty()) {
         // Get next in line
@@ -67,7 +107,7 @@ void Model::drawElements(Shader& shader) const {
         for (const auto& mesh : (*currNode)->meshes) {
             shader.use();
             if (shader.has("LocalModel"))
-                shader.set("LocalModel", localPose() * (*currNode)->transform);
+                shader.set("LocalModel", localPose * (*currNode)->transform);
 
             mesh->drawElements();
         }
@@ -80,11 +120,8 @@ void Model::drawElements(Shader& shader) const {
 }
 
 void Model::_setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
-    if (!_root)
-        return;
-
     std::stack<const std::unique_ptr<Node>*> st;
-    st.push(&_root);
+    st.push(&root);
 
     while (!st.empty()) {
         // Get next in line
@@ -103,20 +140,8 @@ void Model::_setBatch(const std::vector<glm::mat4>& models, const std::vector<gl
     }
 }
 
-std::unique_ptr<Model::Node>& Model::root() {
-    return _root;
-}
-
-const std::unique_ptr<Model::Node>& Model::root() const {
-    return _root;
-}
-
-const glm::mat4& Model::localPose() const {
-    return _localPose;
-}
-
-const Material& Model::localMaterial() const {
-    return _localMaterial;
+void Model::_updateInternalBatch() {
+    _setBatch(std::vector<glm::mat4>(poses.cbegin(), poses.cend()), Material::ExtractColors(materials));
 }
 
 void Model::_loadModel(const std::string& path) {
@@ -132,8 +157,8 @@ void Model::_loadModel(const std::string& path) {
     }
 
     // Ok, create and process from root (recursive)
-    _root = std::make_unique<Node>();
-    _processNode(scene->mRootNode, scene, _root);
+    root = std::make_unique<Node>();
+    _processNode(scene->mRootNode, scene, root);
 }
 
 void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::unique_ptr<Node>& currentNode) {

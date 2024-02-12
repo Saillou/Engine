@@ -7,11 +7,10 @@ ModelEditor::ModelEditor(Scene& scene)
 
 void ModelEditor::onEnter()
 {
-    m_center = std::make_unique<Entity>(Entity::Sphere);
-    m_center->localMaterial().diffuse_color = glm::vec4(1, 1, 1, 1);
+    m_center = Model::Create(Model::Sphere);
+    m_center->localMaterial.diffuse_color = glm::vec4(1, 1, 1, 1);
 
-    m_model = std::make_unique<Entity>("Resources/objects/tree/tree.glb");
-
+    m_model = Model::Create("Resources/objects/tree/tree.glb");
     m_scene.lights() = {
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
@@ -64,7 +63,7 @@ void ModelEditor::onUpdate()
     if (m_menu.state.updateAsset)
     {
         m_menu.state.updateAsset = false;
-        m_model = std::make_unique<Entity>(m_menu.state.path);
+        m_model = Model::Create(m_menu.state.path);
     }
 
     auto& renderer = m_scene.renderer();
@@ -78,10 +77,10 @@ void ModelEditor::onUpdate()
     model = glm::scale(model, m_menu.state.scale);
 
     glm::mat4 worldPos = glm::translate(glm::mat4(1.f), m_menu.state.worldPosition);
-    m_model->poses() = { worldPos * model };
-    renderer.draw(Render::DrawType::Lights, *m_model);
+    m_model->poses = { worldPos * model };
+    renderer.draw(Render::DrawType::Lights, m_model);
 
-    m_center->poses() = { glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)) };
-    renderer.draw(Render::DrawType::Basic, *m_center);
+    m_center->poses = { glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)) };
+    renderer.draw(Render::DrawType::Basic, m_center);
     m_menu.ShowMovableOptions();
 }

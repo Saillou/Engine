@@ -14,7 +14,7 @@ public:
     void onUpdate() override;
 
 private:
-    std::unique_ptr<Entity>  m_center;
-    std::unique_ptr<Entity>  m_model;
-    ModelEditorMenu          m_menu;
+    Model::Ref m_center;
+    Model::Ref m_model;
+    ModelEditorMenu m_menu;
 };
