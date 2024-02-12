@@ -7,6 +7,7 @@
 #include "Samples/SampleForest/SampleForest.hpp"
 #include "Samples/SampleMandala/SampleMandala.hpp"
 #include "Samples/SampleParticles/SampleParticles.hpp"
+#include "Samples/SampleBreaker/SampleBreaker.hpp"
 
 // App
 App::App():
@@ -25,6 +26,7 @@ void App::changeSample(const SampleId& sample_id) {
 		case SampleId::Forest:		m_curr_sample = std::make_unique<SampleForest>();		break;
 		case SampleId::Mandala:		m_curr_sample = std::make_unique<SampleMandala>();		break;
 		case SampleId::Particles:   m_curr_sample = std::make_unique<SampleParticles>();	break;
+		case SampleId::Breaker:		m_curr_sample = std::make_unique<SampleBreaker>();		break;
 	}
 }
 

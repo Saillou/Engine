@@ -25,8 +25,8 @@ void SamplePong::_init_game_elements() {
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Game elements
-    m_player_human.pos = glm::vec3(0.0f, 0.0f, -2.0f);
-    m_player_ia.pos    = glm::vec3(0.0f, 0.0f, +2.0f);
+    m_player_human.pos = glm::vec3(0.0f, 0.0f, -3.0f);
+    m_player_ia.pos    = glm::vec3(0.0f, 0.0f, +3.0f);
 
     m_ball.pos         = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ball.speed       = glm::vec3(0.0f, 0.0f, -0.0015f);
@@ -129,7 +129,8 @@ void SamplePong::_physics(float dt_ms) {
             m_models[_Ball::Entity_Name], ball_quat
         );
 
-        if (collision_point.has_value()) {
+        if (collision_point.has_value()) 
+        {
             collision.emplace(_collision_ { collision_point.value(), collider });
             break; // we expect only one collision
         }

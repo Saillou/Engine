@@ -8,7 +8,8 @@
 
 enum class SampleId {
 	Cube,		Train,		Forest, 
-	Particles,	Mandala,	Pong
+	Particles,	Mandala,	Pong,
+	Breaker
 };
 
 struct Sample : Event::Subscriber {

@@ -62,6 +62,9 @@ void AppMenu::_prepare()
         if (ImGui::MenuItem("Pong revisited")) {
             Service<App>::get().changeSample(SampleId::Pong);
         }
+        if (ImGui::MenuItem("Breaker")) {
+            Service<App>::get().changeSample(SampleId::Breaker);
+        }
         ImGui::EndMenu();
     }
 
