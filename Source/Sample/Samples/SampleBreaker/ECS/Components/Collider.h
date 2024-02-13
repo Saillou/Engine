@@ -1,15 +1,14 @@
 #pragma once
 
 #include <memory>
-#include <Engine/Graphic/Base/Model/Entity.hpp>
-
-#include "Sample/Samples/SampleBreaker/ECS/Core/Types.h"
+#include <Engine/Framework/Core/ECSTypes.hpp>
+#include <Engine/Graphic/Base/Model/Model.hpp>
 
 struct ColliderComponent
 {
     float searchDistance = 3.f;
-    std::shared_ptr<Entity> collisionBox = nullptr;
+    Model::Ref collisionBox = nullptr;
 
     bool hasCollision = false;
-    Thomas::Entity collidedEntity;
+    Entity collidedEntity;
 };

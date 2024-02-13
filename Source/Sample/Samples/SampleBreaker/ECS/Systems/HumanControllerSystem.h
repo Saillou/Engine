@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Sample/Samples/SampleBreaker/ECS/Core/Types.h"
+#include <Engine/Framework/Core/System.hpp>
 
-struct HumanControllerSystem : public Thomas::System
+struct HumanControllerSystem : public System
 {
     void init();
     void update(const int key);

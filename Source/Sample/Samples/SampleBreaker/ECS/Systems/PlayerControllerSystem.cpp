@@ -1,26 +1,26 @@
 #include "PlayerControllerSystem.h"
 
-#include "Sample/Samples/SampleBreaker/ECS/Core/ECS.h"
+#include <Engine/Framework/Core/ECS.hpp>
 
 #include "Sample/Samples/SampleBreaker/ECS/Components/Transform.h"
 #include "Sample/Samples/SampleBreaker/ECS/Components/PlayerController.h"
 
 void PlayerControllerSystem::init()
 {
-    Thomas::Signature signature;
+    Signature signature;
 
-    signature.set(Thomas::ECS::getComponentType<PlayerController>());
-    signature.set(Thomas::ECS::getComponentType<Thomas::Transform>());
+    signature.set(ECS::getComponentType<PlayerController>());
+    signature.set(ECS::getComponentType<Breaker::Transform>());
 
-    Thomas::ECS::setSystemSignature<PlayerControllerSystem>(signature);
+    ECS::setSystemSignature<PlayerControllerSystem>(signature);
 }
 
 void PlayerControllerSystem::update(float dt)
 {
     for (auto& entity : m_entities)
     {
-        PlayerController& controller = Thomas::ECS::getComponent<PlayerController>(entity);
-        Thomas::Transform& transform = Thomas::ECS::getComponent<Thomas::Transform>(entity);
+        PlayerController& controller = ECS::getComponent<PlayerController>(entity);
+        Breaker::Transform& transform = ECS::getComponent<Breaker::Transform>(entity);
 
         switch (controller.action)
         {

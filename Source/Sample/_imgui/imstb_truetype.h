@@ -55,7 +55,7 @@
 //       David Given                Sergey Popov
 //       Ivan-Assen Ivanov          Giumo X. Clanjor
 //       Anthony Pesch              Higor Euripedes
-//       Johan Duparc               Thomas Fields
+//       Johan Duparc               Breaker Fields
 //       Hou Qiming                 Derek Vinyard
 //       Rob Loach                  Cort Stratton
 //       Kenney Phillis Jr.         Brian Costabile

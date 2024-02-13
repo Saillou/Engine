@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Sample/Samples/SampleBreaker/ECS/Core/Types.h"
+#include <Engine/Framework/Core/System.hpp>
 
-struct PlayerControllerSystem : public Thomas::System 
+struct PlayerControllerSystem : public System 
 {
     void init();
     void update(float dt);

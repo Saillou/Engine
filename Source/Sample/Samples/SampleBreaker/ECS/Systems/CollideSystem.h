@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Sample/Samples/SampleBreaker/ECS/Core/Types.h"
+#include <Engine/Framework/Core/System.hpp>
 
-struct CollideSystem : public Thomas::System 
+struct CollideSystem : public System 
 {
     void init();
     void update(float dt);

@@ -4,7 +4,7 @@
 #include <memory>
 
 #include <Engine/Utils/Timer.hpp>
-#include <Engine/Framework/ECS/ECS.hpp>
+#include <Engine/Framework/Core/ECS.hpp>
 #include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Base/Model/Model.hpp>
 

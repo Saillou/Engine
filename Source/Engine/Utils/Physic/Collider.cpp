@@ -72,14 +72,14 @@ std::optional<glm::vec3> Collider::Check(
 	return {};
 }
 
-std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Entity& e1, const glm::mat4& q1, const Entity& e2, const glm::mat4& q2)
+std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Model::Ref model1, const glm::mat4& q1, const Model::Ref model2, const glm::mat4& q2)
 {
 	// TODO: do better - here just checking root's model's obb
-	const mat4& obb_1 = e1.model().root()->meshes.front()->obb();
-	const mat4& obb_2 = e2.model().root()->meshes.front()->obb();
+	const mat4& obb_1 = model1->root->meshes.front()->obb();
+	const mat4& obb_2 = model2->root->meshes.front()->obb();
 
-	const mat4 tq_1 = q1 * e1.model().localPose() * e1.model().root()->transform * obb_1;
-	const mat4 tq_2 = q2 * e2.model().localPose() * e2.model().root()->transform * obb_2;
+	const mat4 tq_1 = q1 * model1->localPose * model1->root->transform * obb_1;
+	const mat4 tq_2 = q2 * model2->localPose * model2->root->transform * obb_2;
 
 	return Collider::CheckMultiple(*Cube::GetOne(), tq_1, *Cube::GetOne(), tq_2);
 }

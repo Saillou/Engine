@@ -1,27 +1,26 @@
 #include "HumanControllerSystem.h"
 
-#include "Engine/Events/Common.hpp"
-
-#include "Sample/Samples/SampleBreaker/ECS/Core/ECS.h"
+#include <Engine/Events/Common.hpp>
+#include <Engine/Framework/Core/ECS.hpp>
 
 #include "Sample/Samples/SampleBreaker/ECS/Components/HumanController.h"
 #include "Sample/Samples/SampleBreaker/ECS/Components/PlayerController.h"
 
 void HumanControllerSystem::init()
 {
-    Thomas::Signature signature;
+    Signature signature;
 
-    signature.set(Thomas::ECS::getComponentType<PlayerController>());
-    signature.set(Thomas::ECS::getComponentType<HumanController>());
+    signature.set(ECS::getComponentType<PlayerController>());
+    signature.set(ECS::getComponentType<HumanController>());
 
-    Thomas::ECS::setSystemSignature<HumanControllerSystem>(signature);
+    ECS::setSystemSignature<HumanControllerSystem>(signature);
 }
 
 void HumanControllerSystem::update(const int key) 
 {
     for (auto& entity : m_entities)
     {
-        PlayerController& controller = Thomas::ECS::getComponent<PlayerController>(entity);
+        PlayerController& controller = ECS::getComponent<PlayerController>(entity);
 
         switch (key) 
         {

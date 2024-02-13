@@ -18,12 +18,12 @@ namespace Collider {
 	);
 
 	std::optional<std::vector<glm::vec3>> CheckMultiple(
-		const Entity& e1, const glm::mat4& q1,
-		const Entity& e2, const glm::mat4& q2
+		const Model::Ref model1, const glm::mat4& q1,
+		const Model::Ref model2, const glm::mat4& q2
 	);
 
 	std::optional<std::vector<glm::vec3>> CheckMultiple(
-		const Mesh& e1, const glm::mat4& q1,
-		const Mesh& e2, const glm::mat4& q2
+		const Mesh& mesh1, const glm::mat4& q1,
+		const Mesh& mesh2, const glm::mat4& q2
 	);
 }

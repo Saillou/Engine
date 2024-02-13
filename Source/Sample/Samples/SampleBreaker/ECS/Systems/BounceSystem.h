@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Sample/Samples/SampleBreaker/ECS/Core/Types.h"
+#include <Engine/Framework/Core/System.hpp>
 
-struct BounceSystem : public Thomas::System 
+struct BounceSystem : public System 
 {
     void init();
     void update(float dt);

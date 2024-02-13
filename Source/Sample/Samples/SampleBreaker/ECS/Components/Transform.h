@@ -1,9 +1,9 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-namespace Thomas
+namespace Breaker
 {
     struct Transform
     {
@@ -36,4 +36,4 @@ namespace Thomas
             model = newModel;
         }
     };
-} // namespace Thomas
+} // namespace Breaker

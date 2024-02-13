@@ -2,9 +2,9 @@
 
 #include <Engine/Graphic/Base/Model/Material.hpp>
 
-namespace Thomas
+namespace Breaker
 {
-    enum class ModelId
+    enum ModelId
     {
         None = 0,
         Locomotive,
@@ -32,4 +32,4 @@ namespace Thomas
         Mobility    mobility        = Mobility::Static;
         Material    material        = { {1.f, 1.f, 1.f, 1.f}, true };
     };
-} // namespace Thomas
+} // namespace Breaker

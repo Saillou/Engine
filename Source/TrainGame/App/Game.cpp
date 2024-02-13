@@ -1,6 +1,6 @@
 #include "Game.hpp"
 
-#include <Engine/Framework/ECS/ECS.hpp>
+#include <Engine/Framework/Core/ECS.hpp>
 #include <Engine/Framework/Service.hpp>
 
 #include "TrainGame/TrainGame/Grid.hpp"

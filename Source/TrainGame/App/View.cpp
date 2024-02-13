@@ -10,7 +10,7 @@
 
 #include <Engine/Events/CommonEvents.hpp>
 #include <Engine/Utils/Physic/RayCaster.hpp>
-#include <Engine/Framework/ECS/ECS.hpp>
+#include <Engine/Framework/Core/ECS.hpp>
 
 #include "TrainGame/App/GameEvents.hpp"
 #include "TrainGame/Engine/Components/Transform.h"

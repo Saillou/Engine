@@ -3,34 +3,33 @@
 #include <stdio.h>
 
 // -- debug
-#include <Engine/Utils/Service.hpp>
+#include <Engine/Framework/Service.hpp>
 #include <Engine/Graphic/Base/Scene.hpp>
 #include <Engine/Graphic/Window.hpp>
 // end debug
 
 #include <Engine/Utils/Physic/Collider.hpp>
-
-#include "Sample/Samples/SampleBreaker/ECS/Core/ECS.h"
+#include <Engine/Framework/Core/ECS.hpp>
 
 #include "Sample/Samples/SampleBreaker/ECS/Components/Transform.h"
 #include "Sample/Samples/SampleBreaker/ECS/Components/Collider.h"
 
 void CollideSystem::init()
 {
-    Thomas::Signature signature;
+    Signature signature;
 
-    signature.set(Thomas::ECS::getComponentType<ColliderComponent>());
-    signature.set(Thomas::ECS::getComponentType<Thomas::Transform>());
+    signature.set(ECS::getComponentType<ColliderComponent>());
+    signature.set(ECS::getComponentType<Breaker::Transform>());
 
-    Thomas::ECS::setSystemSignature<CollideSystem>(signature);
+    ECS::setSystemSignature<CollideSystem>(signature);
 }
 
 void CollideSystem::update(float dt)
 {
     for (auto& entity : m_entities)
     {
-        Thomas::Transform& transform    = Thomas::ECS::getComponent<Thomas::Transform>(entity);
-        ColliderComponent& collider     = Thomas::ECS::getComponent<ColliderComponent>(entity);
+        Breaker::Transform& transform    = ECS::getComponent<Breaker::Transform>(entity);
+        ColliderComponent& collider     = ECS::getComponent<ColliderComponent>(entity);
 
         if (!collider.collisionBox)
             continue;
@@ -38,16 +37,16 @@ void CollideSystem::update(float dt)
         if (collider.hasCollision)
             continue;
 
-        collider.collisionBox->poses() = { {transform.getMat4()} };
+        collider.collisionBox->poses = { {transform.getMat4()} };
 
-        Entity hitbox(Entity::Cube);
-        hitbox.localMaterial().diffuse_color = { 0.7f, 0.2f,0.2f,1.f };
-        hitbox.poses() = {
+        Model::Ref hitbox = Model::Create(Model::Cube);
+        hitbox->localMaterial.diffuse_color = { 0.7f, 0.2f,0.2f,1.f };
+        hitbox->poses = {
             {
                 transform.getMat4() *
-                collider.collisionBox->model().localPose() *
-                collider.collisionBox->model().root()->transform *
-                collider.collisionBox->model().root()->meshes.front()->obb()
+                collider.collisionBox->localPose *
+                collider.collisionBox->root->transform *
+                collider.collisionBox->root->meshes.front()->obb()
             }
         };
 
@@ -60,45 +59,45 @@ void CollideSystem::update(float dt)
             if (entity == anotherEntity)
                 continue;
 
-            Thomas::Transform& anotherTransform = Thomas::ECS::getComponent<Thomas::Transform>(anotherEntity);
+            Breaker::Transform& anotherTransform = ECS::getComponent<Breaker::Transform>(anotherEntity);
 
             // ignore far entities
             if (glm::distance(transform.position, anotherTransform.position) > collider.searchDistance)
                 continue;
 
-            ColliderComponent& anotherCollider = Thomas::ECS::getComponent<ColliderComponent>(entity);
+            ColliderComponent& anotherCollider = ECS::getComponent<ColliderComponent>(entity);
 
             if (!anotherCollider.collisionBox)
                 continue;
 
-            anotherCollider.collisionBox->poses() = { {anotherTransform.getMat4()} };
+            anotherCollider.collisionBox->poses = { {anotherTransform.getMat4()} };
 
-            Entity hitboxanother(Entity::Cube);
-            hitboxanother.localMaterial().diffuse_color = { 0.2f, 0.2f,0.7f,1.f };
-            hitboxanother.poses() = {
+            Model::Ref hitboxanother = Model::Create(Model::Cube);
+            hitboxanother->localMaterial.diffuse_color = { 0.2f, 0.2f,0.7f,1.f };
+            hitboxanother->poses = {
                 {
                     anotherTransform.getMat4() *
-                    anotherCollider.collisionBox->model().localPose() *
-                    anotherCollider.collisionBox->model().root()->transform *
-                    anotherCollider.collisionBox->model().root()->meshes.front()->obb()
+                    anotherCollider.collisionBox->localPose *
+                    anotherCollider.collisionBox->root->transform *
+                    anotherCollider.collisionBox->root->meshes.front()->obb()
                 }
             };
 
             scene.renderer().draw(Render::DrawType::Geometry, hitboxanother);
 
             const auto collisionPoint = Collider::CheckMultiple(
-                *collider.collisionBox,         transform.getMat4(),
-                *anotherCollider.collisionBox,  anotherTransform.getMat4()
+                collider.collisionBox,         transform.getMat4(),
+                anotherCollider.collisionBox,  anotherTransform.getMat4()
             );
 
             if (collisionPoint.has_value()) 
             {
-                Entity point(Entity::Sphere);
-                point.localMaterial().diffuse_color = { 0.7f, 0.2f,0.2f,1.f };
-                point.localPose() = glm::scale(glm::mat4(1.f), glm::vec3(0.1f));
+                Model::Ref point = Model::Create(Model::Sphere);
+                point->localMaterial.diffuse_color = { 0.7f, 0.2f,0.2f,1.f };
+                point->localPose = glm::scale(glm::mat4(1.f), glm::vec3(0.1f));
                 for (auto p : collisionPoint.value())
                 {
-                    point.poses().push_back(glm::translate(glm::mat4(1.f), p));
+                    point->poses.push_back(glm::translate(glm::mat4(1.f), p));
                 }
 
                 scene.renderer().draw(Render::DrawType::Geometry, point);

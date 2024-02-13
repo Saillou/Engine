@@ -1,9 +1,9 @@
 #include "SampleBreaker.hpp"
 
-#include <Engine/Utils/Service.hpp>
+#include <Engine/Framework/Service.hpp>
+#include <Engine/Framework/Core/ECS.hpp>
 #include <Engine/Utils/Physic/Collider.hpp>
 
-#include "ECS/Core/ECS.h"
 #include "ECS/Components/Transform.h"
 #include "ECS/Components/RenderComponent.h"
 #include "ECS/Components/HumanController.h"
@@ -46,20 +46,20 @@ void SampleBreaker::initCamera()
 
 void SampleBreaker::initECS()
 {
-    Thomas::ECS::registerComponent<Thomas::Transform>();
-    Thomas::ECS::registerComponent<Thomas::RenderComponent>();
-    Thomas::ECS::registerComponent<PlayerController>();
-    Thomas::ECS::registerComponent<HumanController>();
-    Thomas::ECS::registerComponent<Force>();
-    Thomas::ECS::registerComponent<Bounce>();
-    Thomas::ECS::registerComponent<ColliderComponent>();
+    ECS::registerComponent<Breaker::Transform>();
+    ECS::registerComponent<Breaker::RenderComponent>();
+    ECS::registerComponent<PlayerController>();
+    ECS::registerComponent<HumanController>();
+    ECS::registerComponent<Force>();
+    ECS::registerComponent<Bounce>();
+    ECS::registerComponent<ColliderComponent>();
 
-    m_renderSystem              = Thomas::ECS::registerSystem<RenderSystem>();
-    m_playerControllerSystem    = Thomas::ECS::registerSystem<PlayerControllerSystem>();
-    m_humanControllerSystem     = Thomas::ECS::registerSystem<HumanControllerSystem>();
-    m_forceSystem               = Thomas::ECS::registerSystem<ForceSystem>();
-    m_bounceSystem              = Thomas::ECS::registerSystem<BounceSystem>();
-    m_colliderSystem            = Thomas::ECS::registerSystem<CollideSystem>();
+    m_renderSystem              = ECS::registerSystem<RenderSystem>();
+    m_playerControllerSystem    = ECS::registerSystem<PlayerControllerSystem>();
+    m_humanControllerSystem     = ECS::registerSystem<HumanControllerSystem>();
+    m_forceSystem               = ECS::registerSystem<ForceSystem>();
+    m_bounceSystem              = ECS::registerSystem<BounceSystem>();
+    m_colliderSystem            = ECS::registerSystem<CollideSystem>();
 
     m_renderSystem->init();
     m_playerControllerSystem->init();
