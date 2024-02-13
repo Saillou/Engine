@@ -11,7 +11,7 @@
 
 // App
 App::App():
-    m_curr_sample(std::make_unique<SamplePong>())
+    m_curr_sample(std::make_unique<SampleParticles>())
 {
 }
 

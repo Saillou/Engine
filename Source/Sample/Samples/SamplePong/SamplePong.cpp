@@ -68,7 +68,7 @@ void SamplePong::_create_entities() {
     m_models[_Ball::Entity_Name] = Model::Create(Model::Sphere);
     {
         m_models[_Ball::Entity_Name]->localMaterial.diffuse_color = glm::vec4(1.0f);
-        m_models[_Ball::Entity_Name]->localPose = { glm::scale(glm::mat4(1.0f), glm::vec3(0.1f)) };
+        m_models[_Ball::Entity_Name]->localPose = { glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)) };
     }
 
     // Populate entities
@@ -93,9 +93,6 @@ void SamplePong::_ia() {
 }
 
 void SamplePong::_physics(float dt_ms) {
-    if (m_ui.stop_time)
-        return;
-
     // Integrate pos
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
@@ -124,20 +121,31 @@ void SamplePong::_physics(float dt_ms) {
         const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), collider.pos);
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
-        auto collision_point = Collider::Check(
+        auto collision_point = Collider::CheckMultiple(
             m_models[collider.name],      body_quat,
             m_models[_Ball::Entity_Name], ball_quat
         );
 
-        if (collision_point.has_value()) 
-        {
-            collision.emplace(_collision_ { collision_point.value(), collider });
-            break; // we expect only one collision
+
+        if (m_ui.show_debug) {
+            _draw_contacts( !collision_point.has_value() ? 
+                std::vector<glm::vec3>{} : 
+                collision_point.value()
+            );
         }
+
+        if (!collision_point.has_value())
+            continue;
+
+        //m_ui.stop_time = true;
+
+        collision.emplace(_collision_ { collision_point.value().front(), collider});
+        break; // we expect only one collision
     }
 
     // Solve
-    if (collision.has_value()) {
+    if (collision.has_value()) 
+    {
         if (collision.value().collider.name == _Player::Entity_Name) {
             m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - collision.value().collider.pos);
         }
@@ -148,6 +156,9 @@ void SamplePong::_physics(float dt_ms) {
     }
 
     // Apply
+    if (m_ui.stop_time)
+        return;
+
     m_ball.pos = new_ball_pos;
 }
 
@@ -164,24 +175,24 @@ void SamplePong::_update_entities() {
 
 void SamplePong::_draw() {
     for (auto& entity : m_models) {
-        if (entity.first == "debug")
+        if (entity.first.find("debug") != std::string::npos)
             continue;
 
         m_scene.renderer().draw(Render::Shadows, entity.second);
     }
 
     if (m_ui.show_debug) {
-        _draw_debug();
+        _draw_hitbox();
     }
 
     m_ui.show();
 }
 
-void SamplePong::_draw_debug() {
+void SamplePong::_draw_hitbox() {
     // Create debug box
-    if (m_models.find("debug") == m_models.cend()) {
-        m_models["debug"] = Model::Create(Model::Cube);
-        m_models["debug"]->localMaterial = Material{ glm::vec4(1, 0, 0, 1), false };
+    if (m_models.find("debug_cube") == m_models.cend()) {
+        m_models["debug_cube"] = Model::Create(Model::Cube);
+        m_models["debug_cube"]->localMaterial = Material{ glm::vec4(1, 0, 0, 1), false };
     }
 
     // Get first mesh's obb of an entity
@@ -194,7 +205,7 @@ void SamplePong::_draw_debug() {
     };
 
     // Draw hitboxes
-    m_models["debug"]->poses =
+    m_models["debug_cube"]->poses =
     {
         __get_hitbox(_Player::Entity_Name, m_player_ia.pos),
         __get_hitbox(_Player::Entity_Name, m_player_human.pos),
@@ -203,7 +214,30 @@ void SamplePong::_draw_debug() {
         __get_hitbox(_Ball::Entity_Name, m_ball.pos)
     };
 
-    m_scene.renderer().draw(Render::Geometry, m_models["debug"]);
+    m_scene.renderer().draw(Render::Geometry, m_models["debug_cube"]);
+}
+
+void SamplePong::_draw_contacts(const std::vector<glm::vec3>& points)
+{
+    // Create debug box
+    if (m_models.find("debug_sphere") == m_models.cend()) 
+    {
+        m_models["debug_sphere"] = Model::Create(Model::Sphere);
+        m_models["debug_sphere"]->localMaterial = Material{ glm::vec4(1, 1, 0, 0.5f), false };
+    }
+
+    // Draw contact points
+    if(!points.empty())
+        m_models["debug_sphere"]->poses.clear();
+
+    for (const glm::vec3& pt : points) 
+    {
+        m_models["debug_sphere"]->poses.push_back(
+            glm::scale(glm::translate(glm::mat4(1.0f), pt), glm::vec3(0.05f))
+        );
+    }
+
+    m_scene.renderer().draw(Render::Basic, m_models["debug_sphere"]);
 }
 
 void SamplePong::_apply_actions(_Player& player) 

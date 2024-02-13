@@ -54,8 +54,9 @@ std::optional<glm::vec3> Collider::Check(
 				const glm::vec3& origin = triangle2[i];
 				const glm::vec3& target = triangle2[(i+1)%3];
 				const glm::vec3 ray = target - origin;
+				const glm::vec3 uray = glm::normalize(ray);
 
-				std::optional<vec4> project_intersect_result = RayCaster::Intersect(origin, ray, triangle1);
+				std::optional<vec4> project_intersect_result = RayCaster::Intersect(origin, uray, triangle1);
 
 				// Potential intersection
 				if (project_intersect_result.has_value()) {
@@ -114,18 +115,20 @@ std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Mesh& m1, co
 				const glm::vec3& origin = triangle2[i];
 				const glm::vec3& target = triangle2[(i + 1) % 3];
 				const glm::vec3 ray = target - origin;
-				const glm::vec3 normilised = glm::normalize(ray);
+				const glm::vec3 uray = glm::normalize(ray);
 
-				std::optional<vec4> project_intersect_result = RayCaster::Intersect(origin, normilised, triangle1);
+				std::optional<vec4> project_intersect_result = RayCaster::Intersect(origin, uray, triangle1);
 
 				// Potential intersection
-				if (project_intersect_result.has_value()) {
-					// Too far, no interesect (idk why the /2. perhaps logic, perhaps mistake)
-					if (project_intersect_result.value().w > length(ray))
-						continue;
+				if (!project_intersect_result.has_value())
+					continue;
 
-					hitPoints.push_back(glm::vec3(project_intersect_result.value()));
-				}
+				// Too far, no interesect (idk why the /2. perhaps logic, perhaps mistake)
+				if (abs(project_intersect_result.value().w) > length(ray)/2.0f)
+					continue;
+
+				// Add to list
+				hitPoints.push_back(glm::vec3(project_intersect_result.value()));
 			}
 		}
 	}

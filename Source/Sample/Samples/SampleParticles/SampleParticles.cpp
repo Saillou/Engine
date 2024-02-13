@@ -19,12 +19,23 @@ SampleParticles::SampleParticles() :
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Particles shape
-    m_models["particle"] = Model::Create(Model::Quad);
-    m_models["particle"]->localMaterial.diffuse_color = glm::vec4(0.2f, 1.0f, 0.9f, 0.9f);
+    m_models["particle"]                                     = Model::Create(Model::Quad);
+    m_models["particle"]->localPose                          = glm::scale(glm::mat4(1.0f), glm::vec3(0.03f));
+    m_models["particle"]->localMaterial.diffuse_color        = glm::vec4(0.7f, 1.0f, 0.9f, 0.5f);
 
-    m_models["particle_custom"] = Model::Create(Model::Quad);
-    m_models["particle_custom"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(5.0f));
-    m_models["particle_custom"]->localMaterial.diffuse_color = glm::vec4(0.7f, 1.0f, 0.9f, 0.4f);
+    m_models["particle_custom"]                              = Model::Create(Model::Quad);
+    m_models["particle_custom"]->localPose                   = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
+    m_models["particle_custom"]->localMaterial.diffuse_color = glm::vec4(1.0f, 1.0f, 1.0f, 0.4f);
+
+    m_models["razengan_geom"]                                = Model::Create(Model::Sphere);
+    m_models["razengan_geom"]->localPose                     = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+    m_models["razengan_geom"]->localMaterial.diffuse_color   = glm::vec4(0.7f, 1.0f, 0.9f, 0.9f);
+    m_models["razengan_geom"]->poses                         = { glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f) };
+
+    m_models["razengan_shape"]                               = Model::Create(Model::Sphere);
+    m_models["razengan_shape"]->localPose                    = glm::scale(glm::mat4(1.0f), glm::vec3(0.499f));
+    m_models["razengan_shape"]->localMaterial.diffuse_color  = glm::vec4(0.2f, 0.5f, 0.6f, 1.0f);
+    m_models["razengan_shape"]->poses                        = { glm::mat4(1.0f) };
 
     // Custom shader for particules
     _add_custom_shader("custom_particule_shader");
@@ -49,24 +60,40 @@ void SampleParticles::_draw(const SceneEvents::Draw&)
     _update_particle(_particles,        m_models["particle"]->poses);
     _update_particle(_particles_custom, m_models["particle_custom"]->poses);
 
+    float dt_s = m_timer.elapsed<Timer::millisecond>() / 1000.0f;
+    glm::vec3 angular_speed = glm::vec3(2.f, 3.f, 5.f);
+
+    glm::mat4& pose_0 = m_models["razengan_geom"]->poses.at(0);
+    pose_0 = glm::rotate(pose_0, angular_speed.x * dt_s, glm::vec3(1, 0, 0));
+
+    glm::mat4& pose_1 = m_models["razengan_geom"]->poses.at(1);
+    pose_1 = glm::rotate(pose_1, angular_speed.y * dt_s, glm::vec3(0, 1, 0));
+
+    glm::mat4& pose_2 = m_models["razengan_geom"]->poses.at(2);
+    pose_2 = glm::rotate(pose_2, angular_speed.z * dt_s, glm::vec3(0, 0, 1));
+
     // Draw items
     m_scene.renderer().draw(Render::DrawType::Particle, m_models["particle"]);
-    m_scene.renderer().draw("custom_particule_shader",  m_models["particle_custom"]);
+    m_scene.renderer().draw("custom_particule_shader", m_models["particle_custom"]);
+
+    m_scene.renderer().draw(Render::DrawType::Geometry, m_models["razengan_geom"]);
+    m_scene.renderer().draw(Render::DrawType::Basic,    m_models["razengan_shape"]);
+
 
     // Prepare next
     static const _conditions _particles_conditions = {
-        /*.number_limit = */ 10'000,
-        /*.p_start      = */ glm::vec3(0.0f,   0.0f,  -900.0f),
-        /*.p_range      = */ glm::vec3(300.0f, 10.0f, 0),
-        /*.v_dir        = */ glm::vec3(0,0,1),
-        /*.v_max        = */ 1.0f,
+        /*.number_limit = */ 150,
+        /*.p_start      = */ glm::vec3(0.0f, 0.0f, 0.0f),
+        /*.p_range      = */ glm::vec3(1.0f, 1.0f, 1.0f),
+        /*.v_dir        = */ glm::vec3(0.1f,0.1f,0.1f),
+        /*.v_max        = */ 0.01f,
     };
     static const _conditions _custom_particles_conditions = {
-        /*.number_limit = */ 250,
-        /*.p_start      = */ glm::vec3(-300.0f, -10.0f, -400.0f),
-        /*.p_range      = */ glm::vec3(10.0f,   10.0f, 100.0f),
-        /*.v_dir        = */ glm::vec3(1, 0.05f, 0.2f),
-        /*.v_max        = */ 0.2f,
+        /*.number_limit = */ 150,
+        /*.p_start      = */ glm::vec3(0.0f, 0.0f, 0.0f),
+        /*.p_range      = */ glm::vec3(1.0f, 1.0f, 1.0f),
+        /*.v_dir        = */ glm::vec3(0.1f,0.1f,0.1f),
+        /*.v_max        = */ 0.1f,
     };
 
     _generate_particle(_particles, _particles_conditions);
@@ -80,7 +107,11 @@ void SampleParticles::_generate_particle(std::deque<_particle>& container, const
 {
     container.push_back({
         /* .particle.pose  = */ glm::translate(glm::mat4(1.0f), cnd.p_start + cnd.p_range * (dstr_one(gen) - 0.5f)),
-        /* .particle.speed = */ cnd.v_dir * cnd.v_max * dstr_one(gen)
+        /* .particle.speed = */ cnd.v_dir * cnd.v_max * glm::vec3(
+            (dstr_one(gen) - 0.5f),
+            (dstr_one(gen) - 0.5f),
+            (dstr_one(gen) - 0.5f)
+        )
     });
 
     while (container.size() > cnd.number_limit)
@@ -190,20 +221,7 @@ void SampleParticles::_create_shader(const std::string& name)
             .add_func("void", "main", "", R"_main_(
                 float dist = distance(Center, FragPos);
                 float smooth_dist = Radius * 4.0 / 100.0;
-                float smooth_fact = 1.0;
-
-                // None
-                if(dist > Radius) {
-                    discard;
-                }
-
-                // Smooth
-                else if(dist > Radius - smooth_dist)
-                    smooth_fact = (Radius - dist) / smooth_dist;
-
-                // Solid
-                else
-                    smooth_fact = 1.0;
+                float smooth_fact = 1.0 - abs(Radius - dist) / smooth_dist;
                 
                 FragColor = vec4(Color.rgb, Color.a * smooth_fact);
             )_main_")
