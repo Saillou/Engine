@@ -1,7 +1,7 @@
 #include "TrainControllerSystem.h"
 
 #include <glm/gtx/vector_angle.hpp>
-#include <Engine/Framework/ECS/ECS.hpp>
+#include <Engine/Framework/Core/ECS.hpp>
 
 #include "TrainGame/Engine/Components/Transform.h"
 #include "TrainGame/Engine/Components/TrainController.h"

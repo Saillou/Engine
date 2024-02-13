@@ -2,7 +2,7 @@
 
 #include <map>
 #include <glm/glm.hpp>
-#include <Engine/Framework/ECS/System.hpp>
+#include <Engine/Framework/Core/System.hpp>
 
 namespace Thomas
 {

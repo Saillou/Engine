@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/Framework/ECS/System.hpp>
+#include <Engine/Framework/Core/System.hpp>
 
 namespace Thomas
 {
