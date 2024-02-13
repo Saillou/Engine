@@ -11,10 +11,6 @@ struct SceneEvents : public Event {
         RenderFinished_,
         SceneFinished_,
         Resized_,
-
-        EventSceneEnded,
-        EventSceneRefresh,
-        EventSceneFinishedRender,
     };
 
     // -- Inputs --
@@ -49,22 +45,6 @@ struct SceneEvents : public Event {
     struct SceneFinished : public _Base {
         SceneFinished() :
             _Base(_Type::SceneFinished_)
-        {};
-    };
-
-    struct SceneRefresh : public _Base {
-        SceneRefresh() :
-            _Base(_Type::EventSceneRefresh)
-        {};
-    };
-    struct SceneEnded : public _Base {
-        SceneEnded() :
-            _Base(_Type::EventSceneEnded)
-        {};
-    };
-    struct SceneFinishedRender : public _Base {
-        SceneFinishedRender() :
-            _Base(_Type::EventSceneFinishedRender)
         {};
     };
 };
