@@ -37,11 +37,11 @@ public:
 	Texture(unsigned int width, unsigned int height, GLenum texture_format, GLuint texture_type);
 	Texture(GLenum texture_type, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum texture_format, GLenum type, const void* pixels);
 	Texture(const aiTexture* rawTextureData);
+	Texture(const Texture&);
 
 	virtual ~Texture();
 
 	Texture& operator=(const Texture&)	= delete;
-	Texture(const Texture&)				= delete;
 	Texture(Texture&&)					= delete;
 
 	unsigned int id() const;
@@ -53,6 +53,7 @@ public:
 	void unbind() const;
 	static void unbind(GLuint texture_type);
 
+	void CopyTo(Texture&) const;
 	void load(GLuint target, const std::string& path, int* poutWidth = nullptr, int* poutHeight = nullptr, int* poutChans = nullptr);
 	void resize(unsigned int width, unsigned int height, void* data = nullptr, GLuint target = -1);
 

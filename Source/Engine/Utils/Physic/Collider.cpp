@@ -24,13 +24,12 @@ std::optional<std::vector<glm::vec3>> Collider::Check(
 		for (const glm::mat4& localPose2 : localPoses2) {
 			const glm::mat4& q2 = worldPose2 * localPose2;
 
-			//// First simple check
-			//if (!Collider::Check(*Cube::GetOne(), q1, *Cube::GetOne(), q2).has_value())
-			//	continue;
+			// First simple check
+			if (!Collider::Check(*Cube::GetOne(), q1, *Cube::GetOne(), q2).has_value())
+				continue;
 
 			// Accurate check
-			auto pt = Collider::Check(*Cube::GetOne(), q1, *Cube::GetOne(), q2);
-			//auto pt = Collider::Check(model1, q1, model2, q2);
+			auto pt = Collider::Check(model1, q1, model2, q2);
 			if (!result.has_value())
 				result = pt;
 			else

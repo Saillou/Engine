@@ -64,6 +64,7 @@ std::vector<TextureData>& Mesh::textures() {
     return m_textures;
 }
 
+
 // initializes all the buffer objects/arrays
 void Mesh::sendToGpu() {
     m_vao.bind();

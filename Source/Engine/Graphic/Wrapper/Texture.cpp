@@ -134,6 +134,18 @@ Texture::Texture(const aiTexture* rawTexture):
 	_setParameters();
 }
 
+Texture::Texture(const Texture& inTexture) :
+	m_textureId(0),
+	m_width(inTexture.m_width),
+	m_height(inTexture.m_height),
+	m_texture_format(inTexture.m_texture_format),
+	m_texture_type(inTexture.m_texture_type)
+{
+	glGenTextures(1, &m_textureId);
+	bind();
+	_setParameters();
+}
+
 
 Texture::~Texture() {
 	glDeleteTextures(1, &m_textureId);

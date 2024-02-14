@@ -39,6 +39,7 @@ public:
     void drawElements(Shader& shader) const;
 
     // Helpers
+    Ref Clone() const;
     std::vector<glm::mat4> GetMeshesPoses() const;
 
     // Data tree for storing organized meshes
@@ -65,6 +66,7 @@ protected:
     void _loadModel(const std::string& path);
     void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
     void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
+    static void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
 
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
     void _updateInternalBatch(); // _setBatch with poses and materials members

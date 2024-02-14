@@ -121,6 +121,43 @@ void Model::drawElements(Shader& shader) const {
     }
 }
 
+Model::Ref Model::Clone() const
+{
+    Model::Ref model_copied = Create();
+
+    std::stack<const std::unique_ptr<Node>*> st;
+    std::stack<std::unique_ptr<Node>*> st_copied;
+
+    st.push(&root);
+    st_copied.push(&(model_copied->root));
+
+    while (!st.empty()) {
+        // Get next in line
+        const auto currNode = st.top();
+        st.pop();
+
+        auto currNodeCopied = st_copied.top();
+        st_copied.pop();
+
+        // Clone meshes
+        (*currNodeCopied)->transform = (*currNode)->transform;
+        for (const auto& mesh : (*currNode)->meshes) {
+            (*currNodeCopied)->meshes.push_back(std::make_unique<Mesh>());
+            _cloneMesh(mesh, (*currNodeCopied)->meshes.back());
+        }
+
+        // Add children
+        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
+            (*currNodeCopied)->children.push_back(std::make_unique<Node>());
+
+            st.push(&(*currNode)->children[i]);
+            st_copied.push(&(*currNodeCopied)->children[i]);
+        }
+    }
+
+    return model_copied;
+}
+
 std::vector<glm::mat4> Model::GetMeshesPoses() const
 {
     std::vector<glm::mat4> quats;
@@ -255,7 +292,26 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
         outMesh.m_textures.push_back(TextureData{
             "texture_diffuse",
             std::make_unique<Texture>(rawTextureData)
-            });
+        });
+    }
+
+    outMesh.sendToGpu();
+    outMesh.compute_obb();
+}
+
+void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
+{
+    const Mesh& inMesh = *src;
+    Mesh& outMesh = *dst;
+
+    outMesh.m_vertices = inMesh.m_vertices;
+    outMesh.m_indices  = inMesh.m_indices;
+
+    for (const TextureData& inTexture : inMesh.m_textures) {
+        outMesh.m_textures.push_back(TextureData{
+            inTexture.type,
+            std::make_unique<Texture>(*inTexture.data.get())
+        });
     }
 
     outMesh.sendToGpu();
