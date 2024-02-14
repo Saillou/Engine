@@ -175,7 +175,16 @@ void SampleSnow::_draw_hitbox(const std::string& model_name)
     if (!model->root || model->poses.empty())
         return;
 
-    // Create debug box
+    // Create models
+    // - hitbox
+    const std::string debug_box_name = "debug_box_" + model_name;
+
+    if (m_models.find(debug_box_name) == m_models.cend()) {
+        m_models[debug_box_name] = Model::Create(Model::Cube);
+        m_models[debug_box_name]->localMaterial = Material{ glm::vec4(1, 1, 0, 1), false };
+    }
+
+    // - model
     const std::string debug_name = "debug_" + model_name;
 
     if (m_models.find(debug_name) == m_models.cend()) {
@@ -187,10 +196,13 @@ void SampleSnow::_draw_hitbox(const std::string& model_name)
     const glm::mat4& worldPose = model->poses.front();
 
     m_models[debug_name]->poses.clear();
+    m_models[debug_box_name]->poses.clear();
     for (const glm::mat4& localPose : model->GetMeshesPoses()) {
         m_models[debug_name]->poses.push_back(worldPose * localPose);
+        m_models[debug_box_name]->poses.push_back(worldPose * localPose);
     }
 
     // Draw
     m_scene.renderer().draw(Render::Geometry, m_models[debug_name]);
+    m_scene.renderer().draw(Render::Geometry, m_models[debug_box_name]);
 }

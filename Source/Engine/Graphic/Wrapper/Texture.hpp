@@ -53,7 +53,6 @@ public:
 	void unbind() const;
 	static void unbind(GLuint texture_type);
 
-	void CopyTo(Texture&) const;
 	void load(GLuint target, const std::string& path, int* poutWidth = nullptr, int* poutHeight = nullptr, int* poutChans = nullptr);
 	void resize(unsigned int width, unsigned int height, void* data = nullptr, GLuint target = -1);
 

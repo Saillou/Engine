@@ -135,15 +135,13 @@ Texture::Texture(const aiTexture* rawTexture):
 }
 
 Texture::Texture(const Texture& inTexture) :
-	m_textureId(0),
+	m_textureId(inTexture.m_textureId),
 	m_width(inTexture.m_width),
 	m_height(inTexture.m_height),
 	m_texture_format(inTexture.m_texture_format),
 	m_texture_type(inTexture.m_texture_type)
 {
-	glGenTextures(1, &m_textureId);
-	bind();
-	_setParameters();
+	// This is a shallow copy.
 }
 
 
