@@ -33,7 +33,7 @@ SampleSnow::SampleSnow() :
 
     m_models["flake"] = Model::Create(Model::Sphere);
     {
-        m_models["flake"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f));
+        m_models["flake"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(0.03f));
         m_models["flake"]->localMaterial = Material{ glm::vec4(0.7f, 1.0f, 0.9f, 0.5f), false };
     }
 
@@ -64,12 +64,12 @@ void SampleSnow::_update(const CommonEvents::StateUpdated&)
 
 void SampleSnow::_draw(const SceneEvents::Draw&) 
 {
-    //m_scene.renderer().draw(Render::DrawType::Shadows,  m_models["socle"]);
-    //m_scene.renderer().draw(Render::DrawType::Lights,   m_models["tree"]);
+    m_scene.renderer().draw(Render::DrawType::Shadows,  m_models["socle"]);
+    m_scene.renderer().draw(Render::DrawType::Lights,   m_models["tree"]);
     m_scene.renderer().draw(Render::DrawType::Particle, m_models["flake"]);
 
-    _draw_hitbox("socle");
-    _draw_hitbox("tree");
+    //_draw_hitbox("socle");
+    //_draw_hitbox("tree");
 }
 
 void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
@@ -103,12 +103,12 @@ void SampleSnow::_generate_flakes()
 
     static size_t id_flake = 0;
 
-    if (!m_flakes.empty())
-        return;
+    //if (!m_flakes.empty())
+    //    return;
 
     // Generate one
     m_flakes.push_back(_Flake { 
-        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(0*dstr(gen), 0*dstr(gen), 1.0f)),
+        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.0f)),
         /* .id     = */ (id_flake + 1) % Max_Flakes,
         /* .moving = */ true 
     });
@@ -184,25 +184,15 @@ void SampleSnow::_draw_hitbox(const std::string& model_name)
         m_models[debug_box_name]->localMaterial = Material{ glm::vec4(1, 1, 0, 1), false };
     }
 
-    // - model
-    const std::string debug_name = "debug_" + model_name;
-
-    if (m_models.find(debug_name) == m_models.cend()) {
-        m_models[debug_name] = model->Clone();
-        m_models[debug_name]->localMaterial = Material{ glm::vec4(1, 0, 0, 1), false };
-    }
-
-    // Get all meshes' obb poses
+    // Get all meshes' poses
     const glm::mat4& worldPose = model->poses.front();
 
-    m_models[debug_name]->poses.clear();
     m_models[debug_box_name]->poses.clear();
+
     for (const glm::mat4& localPose : model->GetMeshesPoses()) {
-        m_models[debug_name]->poses.push_back(worldPose * localPose);
         m_models[debug_box_name]->poses.push_back(worldPose * localPose);
     }
 
     // Draw
-    m_scene.renderer().draw(Render::Geometry, m_models[debug_name]);
     m_scene.renderer().draw(Render::Geometry, m_models[debug_box_name]);
 }
