@@ -62,8 +62,11 @@ void AppMenu::_prepare()
         if (ImGui::MenuItem("Pong revisited")) {
             Service<App>::get().changeSample(SampleId::Pong);
         }
-        if (ImGui::MenuItem("Breaker")) {
+        if (ImGui::MenuItem("Have a break")) {
             Service<App>::get().changeSample(SampleId::Breaker);
+        }
+        if (ImGui::MenuItem("Is it snow?")) {
+            Service<App>::get().changeSample(SampleId::Snow);
         }
         ImGui::EndMenu();
     }

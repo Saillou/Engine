@@ -9,7 +9,7 @@
 enum class SampleId {
 	Cube,		Train,		Forest, 
 	Particles,	Mandala,	Pong,
-	Breaker
+	Breaker,	Snow
 };
 
 struct Sample : Event::Subscriber {

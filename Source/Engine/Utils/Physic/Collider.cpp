@@ -4,25 +4,47 @@
 #include "../../Graphic/Base/Model/Primitive/Cube.hpp"
 
 #include <stack>
+#include <algorithm>
 #include <glm/gtx/string_cast.hpp>
 
 using namespace glm;
 
 // Public
-std::optional<std::vector<glm::vec3>> Collider::Check(const Model::Ref model1, const glm::mat4& q1, const Model::Ref model2, const glm::mat4& q2)
-{
-	// TODO: do better - here just checking root's model's obb
-	const mat4& obb_1 = model1->root->meshes.front()->obb();
-	const mat4& obb_2 = model2->root->meshes.front()->obb();
+std::optional<std::vector<glm::vec3>> Collider::Check(
+	const Model::Ref model1, const glm::mat4& worldPose1, 
+	const Model::Ref model2, const glm::mat4& worldPose2
+) {
+	std::optional<std::vector<glm::vec3>> result;
+	std::vector<glm::mat4> localPoses1 = model1->GetMeshesPoses();
+	std::vector<glm::mat4> localPoses2 = model2->GetMeshesPoses();
 
-	const mat4 tq_1 = q1 * model1->localPose * model1->root->transform * obb_1;
-	const mat4 tq_2 = q2 * model2->localPose * model2->root->transform * obb_2;
+	for (const glm::mat4& localPose1 : localPoses1) {
+		const glm::mat4& q1 = worldPose1 * localPose1;
 
-	return Collider::Check(*Cube::GetOne(), tq_1, *Cube::GetOne(), tq_2);
+		for (const glm::mat4& localPose2 : localPoses2) {
+			const glm::mat4& q2 = worldPose2 * localPose2;
+
+			//// First simple check
+			//if (!Collider::Check(*Cube::GetOne(), q1, *Cube::GetOne(), q2).has_value())
+			//	continue;
+
+			// Accurate check
+			auto pt = Collider::Check(*Cube::GetOne(), q1, *Cube::GetOne(), q2);
+			//auto pt = Collider::Check(model1, q1, model2, q2);
+			if (!result.has_value())
+				result = pt;
+			else
+				result.value().insert(result.value().cend(), pt.value().cbegin(), pt.value().cend());
+		}
+	}
+
+	return result;
 }
 
-std::optional<std::vector<glm::vec3>> Collider::Check(const Mesh& m1, const glm::mat4& q1, const Mesh& m2, const glm::mat4& q2)
-{
+std::optional<std::vector<glm::vec3>> Collider::Check(
+	const Mesh& m1, const glm::mat4& q1, 
+	const Mesh& m2, const glm::mat4& q2
+) {
 	std::vector<glm::vec3> hitPoints;
 
 	const auto& idx1 = m1.indices();

@@ -38,6 +38,9 @@ public:
     void draw(Shader& shader) const;
     void drawElements(Shader& shader) const;
 
+    // Helpers
+    std::vector<glm::mat4> GetMeshesPoses() const;
+
     // Data tree for storing organized meshes
     struct Node {
         glm::mat4 transform = glm::mat4(1.0f);

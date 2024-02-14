@@ -121,6 +121,37 @@ void Model::drawElements(Shader& shader) const {
     }
 }
 
+std::vector<glm::mat4> Model::GetMeshesPoses() const
+{
+    std::vector<glm::mat4> quats;
+    if (!root)
+        return {};
+
+    std::stack<std::unique_ptr<Model::Node> const*> st;
+    st.push(&root);
+
+    while (!st.empty()) {
+        // Get next in line
+        const auto currNode = st.top();
+        st.pop();
+
+        // Check all meshes of this node
+        for (const auto& mesh : (*currNode)->meshes) {
+            quats.push_back(
+                localPose * (*currNode)->transform * mesh->obb()
+            );
+        }
+
+        // Add children
+        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
+            st.push(&(*currNode)->children[i]);
+        }
+    }
+
+    return quats;
+}
+
+
 void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
     std::stack<const std::unique_ptr<Node>*> st;
     st.push(&root);
