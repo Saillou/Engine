@@ -11,7 +11,7 @@
 
 // App
 App::App():
-    m_curr_sample(std::make_unique<SampleParticles>())
+    m_curr_sample(std::make_unique<SamplePong>())
 {
 }
 
@@ -20,13 +20,13 @@ void App::changeSample(const SampleId& sample_id) {
 
 	switch (sample_id)
 	{
-		case SampleId::Cube:		m_curr_sample = std::make_unique<SampleCube>();			break;
-		case SampleId::Pong:		m_curr_sample = std::make_unique<SamplePong>();			break;
-		case SampleId::Train:		m_curr_sample = std::make_unique<SampleTrain>();		break;
-		case SampleId::Forest:		m_curr_sample = std::make_unique<SampleForest>();		break;
-		case SampleId::Mandala:		m_curr_sample = std::make_unique<SampleMandala>();		break;
-		case SampleId::Particles:   m_curr_sample = std::make_unique<SampleParticles>();	break;
-		case SampleId::Breaker:		m_curr_sample = std::make_unique<SampleBreaker>();		break;
+		case SampleId::Cube:		m_curr_sample = std::make_unique<SampleCube>();		 break;
+		case SampleId::Pong:		m_curr_sample = std::make_unique<SamplePong>();		 break;
+		case SampleId::Train:		m_curr_sample = std::make_unique<SampleTrain>();	 break;
+		case SampleId::Forest:		m_curr_sample = std::make_unique<SampleForest>();	 break;
+		case SampleId::Mandala:		m_curr_sample = std::make_unique<SampleMandala>();	 break;
+		case SampleId::Particles:   m_curr_sample = std::make_unique<SampleParticles>(); break;
+		case SampleId::Breaker:		m_curr_sample = std::make_unique<SampleBreaker>();	 break;
 	}
 }
 

@@ -29,7 +29,7 @@ void SamplePong::_init_game_elements() {
     m_player_ia.pos    = glm::vec3(0.0f, 0.0f, +2.0f);
 
     m_ball.pos         = glm::vec3(0.0f, 0.0f, 0.0f);
-    m_ball.speed       = glm::vec3(0.0f, 0.0f, -0.0015f);
+    m_ball.speed       = glm::vec3(+0.003f, 0.0f, -0.001f);
 
     m_wall_1.pos       = glm::vec3(-2.0f, 0.0f, 0.0f);
     m_wall_2.pos       = glm::vec3(+2.0f, 0.0f, 0.0f);
@@ -121,23 +121,13 @@ void SamplePong::_physics(float dt_ms) {
         const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), collider.pos);
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
-        auto collision_point = Collider::CheckMultiple(
+        auto collision_point = Collider::Check(
             m_models[collider.name],      body_quat,
             m_models[_Ball::Entity_Name], ball_quat
         );
 
-
-        if (m_ui.show_debug) {
-            _draw_contacts( !collision_point.has_value() ? 
-                std::vector<glm::vec3>{} : 
-                collision_point.value()
-            );
-        }
-
         if (!collision_point.has_value())
             continue;
-
-        //m_ui.stop_time = true;
 
         collision.emplace(_collision_ { collision_point.value().front(), collider});
         break; // we expect only one collision
@@ -215,29 +205,6 @@ void SamplePong::_draw_hitbox() {
     };
 
     m_scene.renderer().draw(Render::Geometry, m_models["debug_cube"]);
-}
-
-void SamplePong::_draw_contacts(const std::vector<glm::vec3>& points)
-{
-    // Create debug box
-    if (m_models.find("debug_sphere") == m_models.cend()) 
-    {
-        m_models["debug_sphere"] = Model::Create(Model::Sphere);
-        m_models["debug_sphere"]->localMaterial = Material{ glm::vec4(1, 1, 0, 0.5f), false };
-    }
-
-    // Draw contact points
-    if(!points.empty())
-        m_models["debug_sphere"]->poses.clear();
-
-    for (const glm::vec3& pt : points) 
-    {
-        m_models["debug_sphere"]->poses.push_back(
-            glm::scale(glm::translate(glm::mat4(1.0f), pt), glm::vec3(0.05f))
-        );
-    }
-
-    m_scene.renderer().draw(Render::Basic, m_models["debug_sphere"]);
 }
 
 void SamplePong::_apply_actions(_Player& player) 

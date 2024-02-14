@@ -15,8 +15,9 @@ std::unique_ptr<Mesh> Quad::CreateMesh(bool sendToGpu)
 
     // Send to gpu
     if (sendToGpu)
-        setupGPU(*quad_mesh);
+        quad_mesh->sendToGpu();
 
+    quad_mesh->compute_obb();
     return quad_mesh;
 }
 

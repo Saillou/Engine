@@ -35,24 +35,24 @@ public:
     virtual ~Model() = default;
 
     // Methods
-    void draw        (Shader& shader) const;
+    void draw(Shader& shader) const;
     void drawElements(Shader& shader) const;
 
     // Data tree for storing organized meshes
     struct Node {
         glm::mat4 transform = glm::mat4(1.0f);
-        std::vector<std::unique_ptr<Mesh>> meshes   = {};
+        std::vector<std::unique_ptr<Mesh>> meshes = {};
         std::vector<std::unique_ptr<Node>> children = {};
     };
 
     std::unique_ptr<Node> root = nullptr;
 
     // Local info
-    glm::mat4 localPose    = glm::mat4(1.0f);
+    glm::mat4 localPose = glm::mat4(1.0f);
     Material localMaterial = {};
 
     // World info
-    std::vector<Pose>     poses     = {};
+    std::vector<Pose>     poses = {};
     std::vector<Material> materials = {};
 
 protected:

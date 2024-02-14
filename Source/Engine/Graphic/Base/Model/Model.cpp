@@ -11,10 +11,12 @@
 
 #include <glm/gtx/string_cast.hpp>
 
+using namespace glm;
+
 // Helper
-inline glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
+inline mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
 {
-    glm::mat4 to;
+    mat4 to;
 
     to[0][0] = (GLfloat)from.a1; to[0][1] = (GLfloat)from.b1;  to[0][2] = (GLfloat)from.c1; to[0][3] = (GLfloat)from.d1;
     to[1][0] = (GLfloat)from.a2; to[1][1] = (GLfloat)from.b2;  to[1][2] = (GLfloat)from.c2; to[1][3] = (GLfloat)from.d2;
@@ -25,7 +27,7 @@ inline glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
 }
 
 // Creators
-Model::Ref Model::Create(SimpleShape shape) 
+Model::Ref Model::Create(SimpleShape shape)
 {
     struct ModelInstance : public Model {
         ModelInstance(SimpleShape s) : Model(s) { }
@@ -33,7 +35,7 @@ Model::Ref Model::Create(SimpleShape shape)
 
     return std::make_shared<ModelInstance>(shape);
 }
-Model::Ref Model::Create(const std::string& path) 
+Model::Ref Model::Create(const std::string& path)
 {
     struct ModelInstance : public Model {
         ModelInstance(const std::string& p) : Model(p) { }
@@ -43,10 +45,10 @@ Model::Ref Model::Create(const std::string& path)
 }
 
 // Instance
-Model::Model(SimpleShape shape):
+Model::Model(SimpleShape shape) :
     root(std::make_unique<Model::Node>())
 {
-    switch (shape) 
+    switch (shape)
     {
     case Quad:
         root->meshes.push_back(Quad::CreateMesh());
@@ -79,7 +81,7 @@ void Model::draw(Shader& shader) const {
         // Draw
         for (const auto& mesh : (*currNode)->meshes) {
             shader.use();
-            if(shader.has("LocalModel"))
+            if (shader.has("LocalModel"))
                 shader.set("LocalModel", localPose * (*currNode)->transform);
 
             mesh->bindTextures(shader);
@@ -119,7 +121,7 @@ void Model::drawElements(Shader& shader) const {
     }
 }
 
-void Model::_setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors) {
+void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
     std::stack<const std::unique_ptr<Node>*> st;
     st.push(&root);
 
@@ -141,7 +143,7 @@ void Model::_setBatch(const std::vector<glm::mat4>& models, const std::vector<gl
 }
 
 void Model::_updateInternalBatch() {
-    _setBatch(std::vector<glm::mat4>(poses.cbegin(), poses.cend()), Material::ExtractColors(materials));
+    _setBatch(std::vector<mat4>(poses.cbegin(), poses.cend()), Material::ExtractColors(materials));
 }
 
 void Model::_loadModel(const std::string& path) {
@@ -222,8 +224,9 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
         outMesh.m_textures.push_back(TextureData{
             "texture_diffuse",
             std::make_unique<Texture>(rawTextureData)
-        });
+            });
     }
 
-    outMesh._setup();
+    outMesh.sendToGpu();
+    outMesh.compute_obb();
 }

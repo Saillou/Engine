@@ -28,6 +28,8 @@ struct Mesh {
     friend struct PrimitiveHelper;
 
     Mesh();
+    void sendToGpu();
+    void compute_obb();
 
     void updateBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
 
@@ -36,11 +38,18 @@ struct Mesh {
 
     void drawElements() const;
 
-    const std::vector<Vertex>&       vertices() const;
+    const std::vector<Vertex>& vertices() const;
     const std::vector<unsigned int>& indices()  const;
-    const glm::mat4&                 obb()      const;
+    const glm::mat4& obb()      const;
 
     std::vector<TextureData>& textures();
+
+    enum DrawMode : unsigned int
+    {
+        Point = GL_POINTS,
+        Line = GL_LINES,
+        Triangle = GL_TRIANGLES,
+    } drawMode = Triangle;
 
 private:
     // Gpu data
@@ -52,13 +61,9 @@ private:
 
     // Cpu data
     std::vector<Vertex>       m_vertices = {};
-    std::vector<unsigned int> m_indices  = {};
+    std::vector<unsigned int> m_indices = {};
     std::vector<TextureData>  m_textures = {};
 
     // Simplification
     glm::mat4 m_obb = glm::mat4(1.0f);
-
-    // Bind data Cpu to Gpu
-    void _setup();
-    void _compute_obb();
 };

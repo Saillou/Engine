@@ -47,7 +47,6 @@ private:
 
     void _draw();
     void _draw_hitbox();
-    void _draw_contacts(const std::vector<glm::vec3>& points);
 
     // Events
     void _update(const SceneEvents::Draw&);

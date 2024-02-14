@@ -31,7 +31,8 @@ std::unique_ptr<Mesh> Sphere::CreateMesh(int smoothness)
     setVertices(*sphereMesh, m_vertices, m_normals, m_uvs);
 
     // Send to gpu
-    setupGPU(*sphereMesh);
+    sphereMesh->sendToGpu();
+    sphereMesh->compute_obb();
 
     return sphereMesh;
 }

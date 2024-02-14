@@ -66,7 +66,3 @@ void PrimitiveHelper::setVertices(Mesh& mesh, const std::vector<float>& vx, cons
         mesh.m_vertices.push_back(vertex);
     }
 }
-
-void PrimitiveHelper::setupGPU(Mesh& mesh) {
-    mesh._setup();
-}

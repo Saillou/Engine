@@ -23,8 +23,6 @@ struct PrimitiveHelper
 	static void setIndices	(Mesh&, const std::vector<unsigned int>&);
 	static void setVertices	(Mesh&, const std::vector<float>& vx, const std::vector<float>& nx, const std::vector<float>& ux);
 
-	static void setupGPU	(Mesh&);
-
 	// For inhertied instances
 	virtual ~PrimitiveHelper() = default;
 };

@@ -9,9 +9,7 @@
 using namespace glm;
 
 // Public
-std::optional<glm::vec3> Collider::Check(
-	const Model::Ref model1, const mat4& q1,
-	const Model::Ref model2, const mat4& q2)
+std::optional<std::vector<glm::vec3>> Collider::Check(const Model::Ref model1, const glm::mat4& q1, const Model::Ref model2, const glm::mat4& q2)
 {
 	// TODO: do better - here just checking root's model's obb
 	const mat4& obb_1 = model1->root->meshes.front()->obb();
@@ -23,69 +21,7 @@ std::optional<glm::vec3> Collider::Check(
 	return Collider::Check(*Cube::GetOne(), tq_1, *Cube::GetOne(), tq_2);
 }
 
-std::optional<glm::vec3> Collider::Check(
-	const Mesh& mesh1, const mat4& q1,
-	const Mesh& mesh2, const mat4& q2)
-{
-	// TODO: do better - here just the first intersection, but there are (potentially) multiple ones
-	const auto& idx1 = mesh1.indices();
-	const auto& idx2 = mesh2.indices();
-	const auto& v1   = mesh1.vertices();
-	const auto& v2   = mesh2.vertices();
-
-	for (size_t i1 = 0; i1 < idx1.size(); i1 += 3) {
-		// Get triangle from mesh #1
-		PrimitiveHelper::Triangle triangle1 {
-			vec3(q1 * vec4(v1[idx1[i1 + 0]].Position, +1.0f)),
-			vec3(q1 * vec4(v1[idx1[i1 + 1]].Position, +1.0f)),
-			vec3(q1 * vec4(v1[idx1[i1 + 2]].Position, +1.0f))
-		};
-
-		// Get triangle from mesh #2
-		for (size_t i2 = 0; i2 < idx2.size(); i2 += 3) {
-			PrimitiveHelper::Triangle triangle2{
-				vec3(q2 * vec4(v2[idx2[i2 + 0]].Position, +1.0f)),
-				vec3(q2 * vec4(v2[idx2[i2 + 1]].Position, +1.0f)),
-				vec3(q2 * vec4(v2[idx2[i2 + 2]].Position, +1.0f))
-			};
-
-			// Check if one side of triangle #2 intersects triangle #1
-			for (size_t i = 0; i < 3; i++) {
-				const glm::vec3& origin = triangle2[i];
-				const glm::vec3& target = triangle2[(i+1)%3];
-				const glm::vec3 ray = target - origin;
-				const glm::vec3 uray = glm::normalize(ray);
-
-				std::optional<vec4> project_intersect_result = RayCaster::Intersect(origin, uray, triangle1);
-
-				// Potential intersection
-				if (project_intersect_result.has_value()) {
-					// Too far, no interesect (idk why the /2. perhaps logic, perhaps mistake)
-					if (abs(project_intersect_result.value().w) > length(ray)/2.0f)
-						continue;
-
-					return project_intersect_result;
-				}
-			}
-		}
-	}
-
-	return {};
-}
-
-std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Model::Ref model1, const glm::mat4& q1, const Model::Ref model2, const glm::mat4& q2)
-{
-	// TODO: do better - here just checking root's model's obb
-	const mat4& obb_1 = model1->root->meshes.front()->obb();
-	const mat4& obb_2 = model2->root->meshes.front()->obb();
-
-	const mat4 tq_1 = q1 * model1->localPose * model1->root->transform * obb_1;
-	const mat4 tq_2 = q2 * model2->localPose * model2->root->transform * obb_2;
-
-	return Collider::CheckMultiple(*Cube::GetOne(), tq_1, *Cube::GetOne(), tq_2);
-}
-
-std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Mesh& m1, const glm::mat4& q1, const Mesh& m2, const glm::mat4& q2)
+std::optional<std::vector<glm::vec3>> Collider::Check(const Mesh& m1, const glm::mat4& q1, const Mesh& m2, const glm::mat4& q2)
 {
 	std::vector<glm::vec3> hitPoints;
 
@@ -112,10 +48,10 @@ std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Mesh& m1, co
 
 			// Check if one side of triangle #2 intersects triangle #1
 			for (size_t i = 0; i < 3; i++) {
-				const glm::vec3& origin = triangle2[i];
-				const glm::vec3& target = triangle2[(i + 1) % 3];
-				const glm::vec3 ray = target - origin;
-				const glm::vec3 uray = glm::normalize(ray);
+				const vec3& origin = triangle2[i];
+				const vec3& target = triangle2[(i + 1) % 3];
+				const vec3 ray = target - origin;
+				const vec3 uray = glm::normalize(ray);
 
 				std::optional<vec4> project_intersect_result = RayCaster::Intersect(origin, uray, triangle1);
 
@@ -123,18 +59,26 @@ std::optional<std::vector<glm::vec3>> Collider::CheckMultiple(const Mesh& m1, co
 				if (!project_intersect_result.has_value())
 					continue;
 
-				// Too far, no interesect (idk why the /2. perhaps logic, perhaps mistake)
-				if (abs(project_intersect_result.value().w) > length(ray)/2.0f)
+				const glm::vec3& projected_point = project_intersect_result.value();
+				float dop = length(origin - projected_point);
+				float dtp = length(projected_point - target);
+				float dot = length(origin - target);
+
+				// Too far
+				if (dop + dtp > dot)
 					continue;
 
 				// Add to list
-				hitPoints.push_back(glm::vec3(project_intersect_result.value()));
+				hitPoints.push_back(projected_point);
 			}
 		}
 	}
-
 	if (hitPoints.empty())
 		return {};
 
 	return hitPoints;
+}
+
+bool Collider::EqualEnough(const glm::vec3& a, const glm::vec3& b, const float epsilon) {
+	return glm::all(glm::lessThan(glm::abs(a-b), glm::vec3(epsilon)));
 }

@@ -44,15 +44,17 @@ std::unique_ptr<Mesh> Cube::CreateMesh(bool sendToGpu) {
     createQuad(*cubeMesh, pA, pB, pF, pE, +v, tA, tB, tC, tD);
 
     // Send to gpu
-    if(sendToGpu)
-        setupGPU(*cubeMesh);
+    if (sendToGpu)
+        cubeMesh->sendToGpu();
 
+    cubeMesh->compute_obb();
 	return cubeMesh;
 }
 
 std::shared_ptr<Mesh> Cube::GetOne() {
     // Create cube mesh if needed
     static std::shared_ptr<Mesh> s_cubeMesh = CreateMesh(false);
+    s_cubeMesh->compute_obb();
 
     return s_cubeMesh;
 }

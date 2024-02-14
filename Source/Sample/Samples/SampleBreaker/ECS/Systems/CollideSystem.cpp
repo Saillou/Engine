@@ -85,7 +85,7 @@ void CollideSystem::update(float dt)
 
             scene.renderer().draw(Render::DrawType::Geometry, hitboxanother);
 
-            const auto collisionPoint = Collider::CheckMultiple(
+            const auto collisionPoint = Collider::Check(
                 collider.collisionBox,         transform.getMat4(),
                 anotherCollider.collisionBox,  anotherTransform.getMat4()
             );
