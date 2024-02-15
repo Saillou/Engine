@@ -30,5 +30,6 @@ int main() {
     Service<AppMenu>::destroy();
     Service<App>::destroy();
     Service<Window>::destroy();
+
     return 0;
 }

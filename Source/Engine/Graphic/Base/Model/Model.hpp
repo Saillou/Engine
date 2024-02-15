@@ -26,7 +26,6 @@ struct Model
     };
 
     typedef std::shared_ptr<Model> Ref;
-
 public:
     // Constructors
     static Ref Create(SimpleShape shape = SimpleShape::Custom);

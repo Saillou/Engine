@@ -9,17 +9,17 @@ SampleSnow::SampleSnow() :
 {
     // Scene
     m_scene.lights() = {
-        Light(glm::vec3{ 0.2f,  -0.5f, 4.0f }, glm::vec4{ 0.0f, 0.85f, 1.0f, 1 }) 
+        Light(glm::vec3{ 0.2f,  -0.5f, 2.0f }, glm::vec4{ 0.0f, 0.85f, 1.0f, 1 }) 
     };
 
     m_scene.camera().up        = glm::vec3(0, 0, 1);
-    m_scene.camera().position  = glm::vec3(0.0f, m_cam_distance, 3.0f);
+    m_scene.camera().position  = glm::vec3(0.0f, m_cam_distance, 1.5f);
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Models
     m_models["socle"] = Model::Create(Model::Cube);
     {
-        m_models["socle"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(0.75f, 0.75f, 0.05f));
+        m_models["socle"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(1.f, 1.f, 0.05f));
         m_models["socle"]->localMaterial = Material{ glm::vec4(0.8f, 0.9f, 1.0f, 0.7f), false };
     }
     
@@ -65,11 +65,12 @@ void SampleSnow::_update(const CommonEvents::StateUpdated&)
 void SampleSnow::_draw(const SceneEvents::Draw&) 
 {
     m_scene.renderer().draw(Render::DrawType::Shadows,  m_models["socle"]);
-    m_scene.renderer().draw(Render::DrawType::Lights,   m_models["tree"]);
     m_scene.renderer().draw(Render::DrawType::Particle, m_models["flake"]);
+    m_scene.renderer().draw(Render::DrawType::Lights,   m_models["tree"]);
 
     //_draw_hitbox("socle");
     //_draw_hitbox("tree");
+    //_draw_hitbox("flake");
 }
 
 void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
@@ -95,7 +96,7 @@ void SampleSnow::_generate_flakes()
 {
     static const glm::mat4 Identity(1.0f);
 
-    static constexpr size_t Max_Flakes = 500;
+    static constexpr size_t Max_Flakes = 10000;
     static constexpr float Spread      = 2.0f;
 
     static std::default_random_engine gen;
@@ -103,7 +104,7 @@ void SampleSnow::_generate_flakes()
 
     static size_t id_flake = 0;
 
-    //if (!m_flakes.empty())
+    //if (m_flakes.size() > 0)
     //    return;
 
     // Generate one
@@ -153,13 +154,15 @@ bool SampleSnow::_is_flake_colliding(const glm::mat4& flake_pose) const
 
     return
         Collider::Check(
-            m_models.at("flake"), flake_pose, 
-            m_models.at("socle"), socle_pose
+            m_models.at("flake"), flake_pose,
+            m_models.at("socle"), socle_pose,
+            true
         ).has_value() 
         ||
         Collider::Check(
             m_models.at("flake"), flake_pose, 
-            m_models.at("tree"),  tree_pose
+            m_models.at("tree"),  tree_pose,
+            true
         ).has_value()
      ;
 }

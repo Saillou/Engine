@@ -9,7 +9,8 @@
 namespace Collider {
 	std::optional<std::vector<glm::vec3>> Check(
 		const Model::Ref model1, const glm::mat4& q1,
-		const Model::Ref model2, const glm::mat4& q2
+		const Model::Ref model2, const glm::mat4& q2,
+		bool accurate = false
 	);
 
 	std::optional<std::vector<glm::vec3>> Check(

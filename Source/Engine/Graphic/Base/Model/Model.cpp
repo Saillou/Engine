@@ -1,4 +1,5 @@
 #include "Model.hpp"
+#include "MeshIterator.hpp"
 
 #include "Primitive/Quad.hpp"
 #include "Primitive/Cube.hpp"
@@ -69,56 +70,30 @@ Model::Model(const std::string& path)
     _loadModel(path);
 }
 
-void Model::draw(Shader& shader) const {
-    std::stack<const std::unique_ptr<Node>*> st;
-    st.push(&root);
+void Model::draw(Shader& shader) const 
+{
+    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) 
+    {
+        shader.use();
+        if (shader.has("LocalModel"))
+            shader.set("LocalModel", localPose * node_acc.transform);
 
-    while (!st.empty()) {
-        // Get next in line
-        const auto currNode = st.top();
-        st.pop();
-
-        // Draw
-        for (const auto& mesh : (*currNode)->meshes) {
-            shader.use();
-            if (shader.has("LocalModel"))
-                shader.set("LocalModel", localPose * (*currNode)->transform);
-
-            mesh->bindTextures(shader);
-            mesh->drawElements();
-            mesh->unbindTextures();
-        }
-
-        // Add children
-        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
-            st.push(&(*currNode)->children[i]);
-        }
-    }
+        mesh->bindTextures(shader);
+        mesh->drawElements();
+        mesh->unbindTextures();
+    });
 }
 
-void Model::drawElements(Shader& shader) const {
-    std::stack<const std::unique_ptr<Node>*> st;
-    st.push(&root);
+void Model::drawElements(Shader& shader) const 
+{
+    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
+    {
+        shader.use();
+        if (shader.has("LocalModel"))
+            shader.set("LocalModel", localPose * node_acc.transform);
 
-    while (!st.empty()) {
-        // Get next in line
-        const auto currNode = st.top();
-        st.pop();
-
-        // Draw
-        for (const auto& mesh : (*currNode)->meshes) {
-            shader.use();
-            if (shader.has("LocalModel"))
-                shader.set("LocalModel", localPose * (*currNode)->transform);
-
-            mesh->drawElements();
-        }
-
-        // Add children
-        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
-            st.push(&(*currNode)->children[i]);
-        }
-    }
+        mesh->drawElements();
+    });
 }
 
 Model::Ref Model::Clone() const
@@ -161,53 +136,22 @@ Model::Ref Model::Clone() const
 std::vector<glm::mat4> Model::GetMeshesPoses() const
 {
     std::vector<glm::mat4> quats;
-    if (!root)
-        return {};
 
-    std::stack<std::unique_ptr<Model::Node> const*> st;
-    st.push(&root);
-
-    while (!st.empty()) {
-        // Get next in line
-        const auto currNode = st.top();
-        st.pop();
-
-        // Check all meshes of this node
-        for (const auto& mesh : (*currNode)->meshes) {
-            quats.push_back(
-                localPose * (*currNode)->transform * mesh->obb()
-            );
-        }
-
-        // Add children
-        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
-            st.push(&(*currNode)->children[i]);
-        }
-    }
+    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
+    {
+        quats.push_back(
+            localPose * node_acc.transform * mesh->obb()
+        );
+    });
 
     return quats;
 }
 
-
 void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
-    std::stack<const std::unique_ptr<Node>*> st;
-    st.push(&root);
-
-    while (!st.empty()) {
-        // Get next in line
-        const auto currNode = st.top();
-        st.pop();
-
-        // Draw
-        for (const auto& mesh : (*currNode)->meshes) {
-            mesh->updateBatch(models, colors);
-        }
-
-        // Add children
-        for (size_t i = 0; i < (*currNode)->children.size(); i++) {
-            st.push(&(*currNode)->children[i]);
-        }
-    }
+    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
+    {
+        mesh->updateBatch(models, colors);
+    });
 }
 
 void Model::_updateInternalBatch() {
