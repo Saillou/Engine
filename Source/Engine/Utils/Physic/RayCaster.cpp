@@ -1,4 +1,5 @@
 #include "RayCaster.hpp"
+#include "../../Graphic/Base/Model/MeshIterator.hpp"
 
 #include "../../Graphic/Base/Model/Primitive/Cube.hpp"
 
@@ -36,34 +37,23 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 // Public
 std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Model::Ref model , const glm::mat4& quat)
 {
+	std::optional<glm::vec4> optIntersect;
+
 	// Mouse out screen
 	if (!PointInRect(mousePos, vec2(0, 0), vec2(1, 1)))
 		return {};
 
 	// Traverse model's nodes
-	std::stack<std::unique_ptr<Model::Node> const*> st;
-	st.push(&model->root);
 
-	while (!st.empty()) {
-		// Get next in line
-		const auto currNode = st.top();
-		st.pop();
+    MeshIterator::forEachMesh(*model, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
+    {
+		if (optIntersect.has_value())
+			return;
 
-		// Check all meshes of this node
-		for (const auto& mesh : (*currNode)->meshes) {
-			auto optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * model->localPose * (*currNode)->transform);
+		optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * model->localPose * node_acc.transform);
+    });
 
-			if (optIntersect.has_value())
-				return optIntersect;
-		}
-
-		// Add children
-		for (size_t i = 0; i < (*currNode)->children.size(); i++) {
-			st.push(&(*currNode)->children[i]);
-		}
-	}
-
-	return {};
+	return optIntersect;
 }
 
 std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const Camera& camera, const Mesh& mesh, const glm::mat4& quat)
