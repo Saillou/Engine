@@ -30,7 +30,7 @@ private:
     std::unordered_map<std::string, Model::Ref> m_models;
 
     float m_cam_theta = 0.0f;
-    float m_cam_distance = -7.0f;
+    float m_cam_distance = -4.0f;
 
     struct _Flake {
         glm::mat4 pose = glm::mat4(1.0f);

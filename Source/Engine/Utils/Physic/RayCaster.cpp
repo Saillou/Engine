@@ -92,7 +92,7 @@ float RayCaster::ApproxDistance(const glm::vec3& origin, const Model::Ref model,
 
 	// Check all meshes of root
 	float avg_distance = 0.0f;
-	const glm::mat4 Q = quat * model->root->transform * model->localPose;
+	const glm::mat4 Q = quat * model->localPose * model->root->transform;
 
 	for (const auto& mesh : model->root->meshes) {
 		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);
