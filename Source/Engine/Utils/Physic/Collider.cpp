@@ -2,6 +2,7 @@
 #include "RayCaster.hpp"
 
 #include "../../Graphic/Base/Model/Primitive/Cube.hpp"
+#include "../../Graphic/Base/Model/MeshIterator.hpp"
 
 #include <stack>
 #include <algorithm>
@@ -50,6 +51,10 @@ static optional<Point> __find_intersection_point(const Triangle& t1, const Trian
 	if (pt.has_value())
 		return pt;
 
+	pt = __intersect_triangles(t1, t2);
+	if (pt.has_value())
+		return pt;
+
 	return {};
 }
 
@@ -59,40 +64,56 @@ std::optional<std::vector<glm::vec3>> Collider::Check(
 	const Model::Ref model2, const glm::mat4& worldPose2,
 	bool accurate
 ) {
+	const Mesh& cube = *Cube::GetOne();
+
 	std::optional<std::vector<glm::vec3>> result;
 
-	//for (auto it1 = Model::MeshIteratorBegin(model1); it1 != Model::MeshIteratorEnd(model1); it1++) {
-	//	const glm::mat4& q1 = worldPose1 * it1->localPose;
+	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1) 
+	{
+		// Already got a value: break; (may try a go to?)
+		if (!accurate && result.has_value())
+			return;
 
-	//	for (auto it2 = Model::MeshIteratorBegin(model2); it2 != Model::MeshIteratorEnd(model2); it2++) {
-	//		const glm::mat4& q2 = worldPose1 * it2->localPose;
-	//	}
-	//}
+		const glm::mat4& mesh_pose1 = worldPose1 * model1->localPose * acc1.transform;
 
-	std::vector<glm::mat4> localPoses1 = model1->GetMeshesPoses();
-	std::vector<glm::mat4> localPoses2 = model2->GetMeshesPoses();
+		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2) 
+		{
+			// Already got a value: break; (may try a go to?)
+			if (!accurate && result.has_value())
+				return;
 
-	for (const glm::mat4& localPose1 : localPoses1) {
-		const glm::mat4& q1 = worldPose1 * localPose1;
+			const glm::mat4& mesh_pose2 = worldPose2 * model2->localPose * acc2.transform;
 
-		for (const glm::mat4& localPose2 : localPoses2) {
-			const glm::mat4& q2 = worldPose2 * localPose2;
+			// First simple check: hitbox
+			auto pt = Collider::Check(
+				cube, mesh_pose1 * mesh1->obb(),
+				cube, mesh_pose2 * mesh2->obb()
+			);
 
-			// First simple check
-			auto pt = Collider::Check(*Cube::GetOne(), q1, *Cube::GetOne(), q2);
 			if (!pt.has_value())
-				continue;
+				return;
 
-			if (!accurate)
-				return pt;
-
-			// Accurate
-			if (!result.has_value())
+			// Fast check: just get first colliding point
+			if (!accurate) {
 				result = pt;
+				return;
+			}
+
+			// Accurate slow check: meshes
+			auto pt_acc = Collider::Check(
+				*mesh1, mesh_pose1,
+				*mesh2, mesh_pose2
+			);
+
+			if (!pt_acc.has_value())
+				return;
+
+			if (!result.has_value())
+				result = pt_acc;
 			else
-				result.value().insert(result.value().cend(), pt.value().cbegin(), pt.value().cend());
-		}
-	}
+				result.value().insert(result.value().cend(), pt_acc.value().cbegin(), pt_acc.value().cend());
+		});
+    });
 
 	return result;
 }

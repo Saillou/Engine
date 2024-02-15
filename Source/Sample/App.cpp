@@ -28,7 +28,7 @@ void App::changeSample(const SampleId& sample_id) {
 		case SampleId::Mandala:		m_curr_sample = std::make_unique<SampleMandala>();	 break;
 		case SampleId::Particles:   m_curr_sample = std::make_unique<SampleParticles>(); break;
 		case SampleId::Breaker:		m_curr_sample = std::make_unique<SampleBreaker>();	 break;
-		case SampleId::Snow:		m_curr_sample = std::make_unique<SampleSnow>();	 break;
+		case SampleId::Snow:		m_curr_sample = std::make_unique<SampleSnow>();		 break;
 	}
 }
 

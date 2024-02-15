@@ -1,6 +1,7 @@
 #include "SampleSnow.hpp"
 
 #include <Engine/Utils/Physic/Collider.hpp>
+#include <Engine/Graphic/Base/Model/MeshIterator.hpp>
 #include <random>
 
 // Particles
@@ -9,7 +10,7 @@ SampleSnow::SampleSnow() :
 {
     // Scene
     m_scene.lights() = {
-        Light(glm::vec3{ 0.2f,  -0.5f, 2.0f }, glm::vec4{ 0.0f, 0.85f, 1.0f, 1 }) 
+        Light(glm::vec3{ 0.2f,  -0.5f, 1.0f }, glm::vec4{ 0.0f, 0.85f, 1.0f, 1 }) 
     };
 
     m_scene.camera().up        = glm::vec3(0, 0, 1);
@@ -31,9 +32,11 @@ SampleSnow::SampleSnow() :
         pose = glm::rotate(pose, glm::half_pi<float>(), glm::vec3(1, 0, 0));
     }
 
-    m_models["flake"] = Model::Create(Model::Sphere);
+    m_models["flake"] = Model::Create(Model::Cube);
     {
-        m_models["flake"]->localPose = glm::scale(glm::mat4(1.0f), glm::vec3(0.03f));
+        glm::mat4& pose = m_models["flake"]->localPose;
+        pose = glm::scale(pose, glm::vec3(0.03f));
+        pose = glm::rotate(pose, glm::pi<float>()/4.0f, glm::vec3(1, 0, 0));
         m_models["flake"]->localMaterial = Material{ glm::vec4(0.7f, 1.0f, 0.9f, 0.5f), false };
     }
 
@@ -65,8 +68,8 @@ void SampleSnow::_update(const CommonEvents::StateUpdated&)
 void SampleSnow::_draw(const SceneEvents::Draw&) 
 {
     m_scene.renderer().draw(Render::DrawType::Shadows,  m_models["socle"]);
-    m_scene.renderer().draw(Render::DrawType::Particle, m_models["flake"]);
     m_scene.renderer().draw(Render::DrawType::Lights,   m_models["tree"]);
+    m_scene.renderer().draw(Render::DrawType::Particle, m_models["flake"]);
 
     //_draw_hitbox("socle");
     //_draw_hitbox("tree");
@@ -97,7 +100,7 @@ void SampleSnow::_generate_flakes()
     static const glm::mat4 Identity(1.0f);
 
     static constexpr size_t Max_Flakes = 10000;
-    static constexpr float Spread      = 2.0f;
+    static constexpr float Spread      = 1.5f;
 
     static std::default_random_engine gen;
     static std::uniform_real_distribution<float> dstr(-0.5f, 0.5f);
@@ -109,7 +112,7 @@ void SampleSnow::_generate_flakes()
 
     // Generate one
     m_flakes.push_back(_Flake { 
-        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.0f)),
+        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 0.75f)),
         /* .id     = */ (id_flake + 1) % Max_Flakes,
         /* .moving = */ true 
     });
@@ -178,8 +181,7 @@ void SampleSnow::_draw_hitbox(const std::string& model_name)
     if (!model->root || model->poses.empty())
         return;
 
-    // Create models
-    // - hitbox
+    // Create hitboxes model
     const std::string debug_box_name = "debug_box_" + model_name;
 
     if (m_models.find(debug_box_name) == m_models.cend()) {
@@ -188,12 +190,12 @@ void SampleSnow::_draw_hitbox(const std::string& model_name)
     }
 
     // Get all meshes' poses
-    const glm::mat4& worldPose = model->poses.front();
-
     m_models[debug_box_name]->poses.clear();
 
-    for (const glm::mat4& localPose : model->GetMeshesPoses()) {
-        m_models[debug_box_name]->poses.push_back(worldPose * localPose);
+    for (const glm::mat4& worldPose : model->poses) {
+        MeshIterator::forEachMesh(*model, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) {
+            m_models[debug_box_name]->poses.push_back(worldPose * model->localPose * node_acc.transform * mesh->obb());
+        });
     }
 
     // Draw

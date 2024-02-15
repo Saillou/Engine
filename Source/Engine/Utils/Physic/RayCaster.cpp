@@ -1,6 +1,6 @@
 #include "RayCaster.hpp"
-#include "../../Graphic/Base/Model/MeshIterator.hpp"
 
+#include "../../Graphic/Base/Model/MeshIterator.hpp"
 #include "../../Graphic/Base/Model/Primitive/Cube.hpp"
 
 using namespace glm;
@@ -44,7 +44,6 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 		return {};
 
 	// Traverse model's nodes
-
     MeshIterator::forEachMesh(*model, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
 		if (optIntersect.has_value())
