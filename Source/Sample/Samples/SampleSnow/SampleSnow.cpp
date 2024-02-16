@@ -4,6 +4,133 @@
 #include <Engine/Graphic/Base/Model/MeshIterator.hpp>
 #include <random>
 
+#define DISABLE_REAL
+#ifdef DISABLE_REAL
+SampleSnow::SampleSnow() :
+    m_scene(Service<Window>::get().scene())
+{
+    // Enable events
+    _subscribe(&SampleSnow::_update);
+    _subscribe(&SampleSnow::_draw);
+    _subscribe(&SampleSnow::_on_key_pressed);
+
+    // Create model
+    Model::Ref modelTriangle = Model::Create();
+    std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
+
+    modelTriangle->root->meshes.push_back(std::move(meshTriangle));
+    m_models["triangle"] = modelTriangle;
+
+    // Shader
+    m_shaders["triangle"]
+        .attachSource(Shader::Vertex, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("layout (location = 1) in", "vec3", "aNormal")
+            .add_var("layout (location = 2) in", "vec2", "aTexCoords")
+            .add_var("layout (location = 3) in", "vec4", "aColor")
+            .add_var("layout (location = 4) in", "mat4", "aModel")
+
+            .add_var("uniform", "mat4", "Projection")
+            .add_var("uniform", "mat4", "View")
+            .add_var("uniform", "mat4", "LocalModel")
+            .add_var("uniform", "vec4", "diffuse_color")
+
+            .add_var("out", "VS_OUT", R"_struct_({
+                vec3 FragPos;
+                vec4 Color;
+            } vs_out)_struct_")
+
+            .add_func("void", "main", "", R"_main_(
+                vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Color   = max(aColor, diffuse_color);
+
+                gl_Position    = Projection * View * vec4(vs_out.FragPos, 1.0);
+            )_main_")
+        )
+        .attachSource(Shader::Geometry, ShaderSource{}
+            .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(triangle_strip, max_vertices = 3)")
+
+            .add_var("in", "VS_OUT", R"_struct_({
+                vec3 FragPos;
+                vec4 Color;
+            } gs_in[])_struct_")
+
+            .add_var("out", "vec3", "Center")
+            .add_var("out", "vec3", "FragPos")
+            .add_var("out", "vec4", "Color")
+            .add_var("out", "float", "Radius")
+
+            .add_func("void", "main", "", R"_main_(
+                // Compute circle dimensions (by our current quad definition: gs_in[1] is the right angle apex)
+                Center = 0.5 * (gs_in[0].FragPos + gs_in[2].FragPos);
+                Radius = 0.5 * distance(gs_in[0].FragPos, gs_in[1].FragPos);
+
+                // Emit triangle
+                for(int i = 0; i < 3; i++) {
+                    FragPos = gs_in[i].FragPos;
+                    Color   = gs_in[i].Color;
+
+                    gl_Position = gl_in[i].gl_Position;
+                    EmitVertex();
+                }
+    
+                EndPrimitive();
+            )_main_")
+        )
+        .attachSource(Shader::Fragment, ShaderSource{}
+            .add_var("in", "vec3", "Center")
+            .add_var("in", "vec3", "FragPos")
+            .add_var("in", "vec4", "Color")
+            .add_var("in", "float", "Radius")
+
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                float dist = distance(Center, FragPos);
+                float smooth_dist = Radius * 4.0 / 100.0;
+                float smooth_fact = 1.0 - abs(Radius - dist) / smooth_dist;
+                
+                FragColor = vec4(Color.rgb, Color.a * smooth_fact);
+            )_main_")
+        )
+        .link()
+    ;
+
+    // Render callbacks
+    Renderer::ShaderGetter getter = [=]() -> Shader& {
+        return m_shaders["triangle"];
+    };
+
+    Renderer::ShaderSetter setter = [=](const Model::Ref& model) -> void {
+        getter().use()
+            .set("Projection",    m_scene.camera().projection)
+            .set("View",          m_scene.camera().modelview)
+            .set("diffuse_color", model->localMaterial.diffuse_color);
+    };
+
+    // Add to list
+    m_scene.renderer().add_shader("triangle", getter, setter);
+}
+
+// Events
+void SampleSnow::_update(const CommonEvents::StateUpdated&)
+{
+
+}
+
+void SampleSnow::_draw(const SceneEvents::Draw&)
+{
+    m_scene.renderer().draw("triangle", m_models["triangle"]);
+}
+
+void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt)
+{
+
+}
+
+#else
+
 // Particles
 SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
@@ -32,7 +159,7 @@ SampleSnow::SampleSnow() :
         pose = glm::rotate(pose, glm::half_pi<float>(), glm::vec3(1, 0, 0));
     }
 
-    m_models["flake"] = Model::Create(Model::Cube);
+    m_models["flake"] = Model::Create(Model::Quad);
     {
         glm::mat4& pose = m_models["flake"]->localPose;
         pose = glm::scale(pose, glm::vec3(0.03f));
@@ -201,3 +328,5 @@ void SampleSnow::_draw_hitbox(const std::string& model_name)
     // Draw
     m_scene.renderer().draw(Render::Geometry, m_models[debug_box_name]);
 }
+
+#endif

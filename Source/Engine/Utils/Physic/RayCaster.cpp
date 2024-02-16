@@ -13,8 +13,8 @@ static inline std::optional<glm::vec4> _intersect_mesh(
 	const Mesh& mesh, 
 	const glm::mat4& quat)
 {
-	const auto& idx = mesh.indices();
-	const auto& v   = mesh.vertices();
+	const auto& idx = mesh.indices;
+	const auto& v   = mesh.vertices;
 
 	std::optional<glm::vec4> result;
 

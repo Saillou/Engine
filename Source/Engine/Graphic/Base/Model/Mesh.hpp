@@ -24,9 +24,6 @@ struct TextureData {
 };
 
 struct Mesh {
-    friend struct Model;
-    friend struct PrimitiveHelper;
-
     Mesh();
     void sendToGpu();
     void compute_obb();
@@ -38,12 +35,14 @@ struct Mesh {
 
     void drawElements() const;
 
-    const std::vector<Vertex>& vertices() const;
-    const std::vector<unsigned int>& indices()  const;
-    const glm::mat4& obb()      const;
+    // Cpu data
+    std::vector<Vertex>       vertices;
+    std::vector<unsigned int> indices;
+    std::vector<TextureData>  textures;
 
-    std::vector<TextureData>& textures();
+    const glm::mat4& obb() const;
 
+    // Gpu instructions
     enum DrawMode : unsigned int
     {
         Point = GL_POINTS,
@@ -59,11 +58,6 @@ private:
     Buffer m_colors;    // TODO: Change for material
     Buffer m_instances;
 
-    // Cpu data
-    std::vector<Vertex>       m_vertices = {};
-    std::vector<unsigned int> m_indices = {};
-    std::vector<TextureData>  m_textures = {};
-
-    // Simplification
+    // Cached computations
     glm::mat4 m_obb = glm::mat4(1.0f);
 };

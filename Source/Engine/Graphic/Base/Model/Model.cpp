@@ -197,22 +197,22 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
     Mesh& outMesh = *pOutMesh;
 
     // Mesh's vertices
-    outMesh.m_vertices.resize(inMesh->mNumVertices);
+    outMesh.vertices.resize(inMesh->mNumVertices);
 
     for (unsigned int i = 0; i < inMesh->mNumVertices; i++) {
-        outMesh.m_vertices[i].Position = {
+        outMesh.vertices[i].Position = {
             inMesh->mVertices[i].x, inMesh->mVertices[i].y, inMesh->mVertices[i].z
         };
 
         // normals
         if (inMesh->HasNormals()) {
-            outMesh.m_vertices[i].Normal = {
+            outMesh.vertices[i].Normal = {
                 inMesh->mNormals[i].x, inMesh->mNormals[i].y, inMesh->mNormals[i].z
             };
         }
         // texture coordinates (contains up to 8 different texture coordinates. We'll only take the 0th.)
         if (inMesh->mTextureCoords[0] != nullptr) {
-            outMesh.m_vertices[i].TexCoords = {
+            outMesh.vertices[i].TexCoords = {
                 inMesh->mTextureCoords[0][i].x, inMesh->mTextureCoords[0][i].y
             };
         }
@@ -223,7 +223,7 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
         const aiFace& face = inMesh->mFaces[i];
 
         for (unsigned int j = 0; j < face.mNumIndices; j++) {
-            outMesh.m_indices.push_back(face.mIndices[j]);
+            outMesh.indices.push_back(face.mIndices[j]);
         }
     }
 
@@ -233,7 +233,7 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
 
     material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
     if (const aiTexture* rawTextureData = scene->GetEmbeddedTexture(texture_file.C_Str())) {
-        outMesh.m_textures.push_back(TextureData{
+        outMesh.textures.push_back(TextureData{
             "texture_diffuse",
             std::make_unique<Texture>(rawTextureData)
         });
@@ -248,11 +248,11 @@ void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& 
     const Mesh& inMesh = *src;
     Mesh& outMesh = *dst;
 
-    outMesh.m_vertices = inMesh.m_vertices;
-    outMesh.m_indices  = inMesh.m_indices;
+    outMesh.vertices = inMesh.vertices;
+    outMesh.indices  = inMesh.indices;
 
-    for (const TextureData& inTexture : inMesh.m_textures) {
-        outMesh.m_textures.push_back(TextureData{
+    for (const TextureData& inTexture : inMesh.textures) {
+        outMesh.textures.push_back(TextureData{
             inTexture.type,
             std::make_unique<Texture>(*inTexture.data.get())
         });

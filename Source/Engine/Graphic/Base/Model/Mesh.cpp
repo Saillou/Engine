@@ -25,43 +25,31 @@ void Mesh::updateBatch(const std::vector<mat4>& models, const std::vector<vec4>&
 
 // render the mesh
 void Mesh::bindTextures(Shader& shader) const {
-    for (unsigned int i = 0; i < m_textures.size(); i++) {
-        if (!shader.has(m_textures[i].type))
+    for (unsigned int i = 0; i < textures.size(); i++) {
+        if (!shader.has(textures[i].type))
             continue;
 
         Texture::activate(GL_TEXTURE0 + i);
-        shader.set(m_textures[i].type, (int)i);
-        m_textures[i].data->bind();
+        shader.set(textures[i].type, (int)i);
+        textures[i].data->bind();
     }
 }
 
 void Mesh::unbindTextures() const {
-    for (unsigned int i = 0; i < m_textures.size(); i++) {
-        m_textures[i].data->unbind();
+    for (unsigned int i = 0; i < textures.size(); i++) {
+        textures[i].data->unbind();
     }
 }
 
 void Mesh::drawElements() const {
     m_vao.bind();
-    glDrawElementsInstanced(drawMode, (int)m_indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)m_instances.size() / sizeof(mat4));
+    glDrawElementsInstanced(drawMode, (int)indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)m_instances.size() / sizeof(mat4));
     m_vao.unbind();
 }
 
 // Getters
-const std::vector<Vertex>& Mesh::vertices() const {
-    return m_vertices;
-}
-
-const std::vector<unsigned int>& Mesh::indices() const {
-    return m_indices;
-}
-
 const mat4& Mesh::obb() const {
     return m_obb;
-}
-
-std::vector<TextureData>& Mesh::textures() {
-    return m_textures;
 }
 
 
@@ -69,8 +57,8 @@ std::vector<TextureData>& Mesh::textures() {
 void Mesh::sendToGpu() {
     m_vao.bind();
 
-    m_ebo.bindData(m_indices);
-    m_vbo.bindData(m_vertices);
+    m_ebo.bindData(indices);
+    m_vbo.bindData(vertices);
     m_colors.bindData(sizeof(vec4));
     m_instances.bindData(sizeof(mat4));
 
@@ -102,15 +90,15 @@ void Mesh::sendToGpu() {
 void Mesh::compute_obb() {
     // Get the centroid
     vec3 centroid(0.0f);
-    vec3 min_vert = m_vertices.front().Position;
-    vec3 max_vert = m_vertices.front().Position;
+    vec3 min_vert = vertices.front().Position;
+    vec3 max_vert = vertices.front().Position;
 
-    for (const Vertex& vertex : m_vertices) {
+    for (const Vertex& vertex : vertices) {
         centroid += vertex.Position;
         min_vert = min(min_vert, vertex.Position);
         max_vert = max(max_vert, vertex.Position);
     }
-    centroid /= (float)(m_vertices.size());
+    centroid /= (float)(vertices.size());
 
     // Extends
     vec3 ext_vert = max_vert - min_vert;

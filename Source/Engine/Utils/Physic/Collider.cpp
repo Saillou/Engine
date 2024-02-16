@@ -124,10 +124,10 @@ std::optional<std::vector<glm::vec3>> Collider::Check(
 ) {
 	std::vector<glm::vec3> hitPoints;
 
-	const auto& idx1 = m1.indices();
-	const auto& idx2 = m2.indices();
-	const auto& v1 = m1.vertices();
-	const auto& v2 = m2.vertices();
+	const auto& idx1 = m1.indices;
+	const auto& idx2 = m2.indices;
+	const auto& v1 = m1.vertices;
+	const auto& v2 = m2.vertices;
 
 	for (size_t i1 = 0; i1 < idx1.size(); i1 += 3) {
 		// Get triangle from mesh #1

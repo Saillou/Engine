@@ -28,6 +28,7 @@ private:
     Scene& m_scene;
     Timer::Chronometre m_timer;
     std::unordered_map<std::string, Model::Ref> m_models;
+    std::unordered_map<std::string, Shader> m_shaders;
 
     float m_cam_theta = 0.0f;
     float m_cam_distance = -4.0f;

@@ -35,7 +35,7 @@ Model::Ref HelperTrain::tile_with_texture(const std::string& texturePath) {
     model->localMaterial = Material{ glm::vec4(0, 0, 0, 0.9f) };
 
     // Set texture on the first (and only) mesh
-    model->root->meshes.front()->textures().push_back(
+    model->root->meshes.front()->textures.push_back(
         TextureData{ "texture_diffuse", std::make_unique<Texture>(texturePath) }
     );
 

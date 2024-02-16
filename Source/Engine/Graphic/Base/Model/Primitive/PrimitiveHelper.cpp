@@ -4,23 +4,23 @@ using namespace glm;
 
 int PrimitiveHelper::addPoint(Mesh& mesh, const glm::vec3& vec)
 {
-    mesh.m_vertices.push_back(Vertex{ vec, {}, {} });
-    return (int)mesh.m_vertices.size() - 1;
+    mesh.vertices.push_back(Vertex{ vec, {}, {} });
+    return (int)mesh.vertices.size() - 1;
 }
 
 int PrimitiveHelper::addPoint(Mesh& mesh,
     const glm::vec3& vec, const glm::vec3& norm, const glm::vec2& uv)
 {
-    mesh.m_vertices.push_back(Vertex{ vec, norm, uv });
-    return (int)mesh.m_vertices.size() - 1;
+    mesh.vertices.push_back(Vertex{ vec, norm, uv });
+    return (int)mesh.vertices.size() - 1;
 }
 
 void PrimitiveHelper::addAsTriangle(Mesh& mesh, 
     unsigned int i0, unsigned int i1, unsigned int i2)
 {
-    mesh.m_indices.push_back(i0);
-    mesh.m_indices.push_back(i1);
-    mesh.m_indices.push_back(i2);
+    mesh.indices.push_back(i0);
+    mesh.indices.push_back(i1);
+    mesh.indices.push_back(i2);
 }
 
 void PrimitiveHelper::createQuad(Mesh& mesh, const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, const glm::vec3& P3)
@@ -51,7 +51,7 @@ void PrimitiveHelper::createQuad(Mesh& mesh,
 
 void PrimitiveHelper::setIndices(Mesh& mesh, const std::vector<unsigned int>& idx)
 {
-    mesh.m_indices = idx;
+    mesh.indices = idx;
 }
 
 void PrimitiveHelper::setVertices(Mesh& mesh, const std::vector<float>& vx, const std::vector<float>& nx, const std::vector<float>& ux)
@@ -63,6 +63,6 @@ void PrimitiveHelper::setVertices(Mesh& mesh, const std::vector<float>& vx, cons
         vertex.Normal    = { nx[i + 0], nx[i + 1], nx[i + 2] };
         vertex.TexCoords = { ux[j + 0], ux[j + 1] };
 
-        mesh.m_vertices.push_back(vertex);
+        mesh.vertices.push_back(vertex);
     }
 }
