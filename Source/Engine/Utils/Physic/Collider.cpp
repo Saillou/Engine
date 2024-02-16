@@ -156,7 +156,3 @@ std::optional<std::vector<glm::vec3>> Collider::Check(
 
 	return hitPoints;
 }
-
-bool Collider::EqualEnough(const glm::vec3& a, const glm::vec3& b, const float epsilon) {
-	return glm::all(glm::lessThan(glm::abs(a-b), glm::vec3(epsilon)));
-}

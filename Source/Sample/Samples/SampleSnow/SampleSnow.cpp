@@ -5,6 +5,9 @@
 #include <Engine/Graphic/Base/Model/Primitive/PrimitiveHelper.hpp>
 #include <random>
 
+static Shader& _create_triangle_shader(Shader&);
+static void _push_triangle_mesh(std::unique_ptr<Model::Node>&, const PrimitiveHelper::Triangle&);
+
 #define DISABLE_REAL
 #ifdef DISABLE_REAL
 SampleSnow::SampleSnow() :
@@ -12,7 +15,7 @@ SampleSnow::SampleSnow() :
 {
     // Scene
     m_scene.camera().up = glm::vec3(0, 0, 1);
-    m_scene.camera().position  = glm::vec3(0.0f, -3.0f, 0.0f);
+    m_scene.camera().position  = glm::vec3(0.0f, -3.0f, 2.0f);
     m_scene.camera().direction = glm::vec3(0, 0, 0);
 
     // Enable events
@@ -20,64 +23,37 @@ SampleSnow::SampleSnow() :
     _subscribe(&SampleSnow::_draw);
     _subscribe(&SampleSnow::_on_key_pressed);
 
-    // Create model
-    m_models["triangle"] = Model::Create();
+    // Load tree
+    m_models["tree"] = Model::Create("Resources/objects/tree/tree.glb");
+    m_models["tree"]->materials = { Material{ glm::vec4(1, 0, 0, 1), false } };
+    m_models["tree"]->poses = { glm::mat4(1.0f) };
     {
-        std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
-        {
-            int pt0 = PrimitiveHelper::addPoint(*meshTriangle, glm::vec3(-0.5f, 0,  0));
-            int pt1 = PrimitiveHelper::addPoint(*meshTriangle, glm::vec3( 0.0f, 0, +0.5f));
-            int pt2 = PrimitiveHelper::addPoint(*meshTriangle, glm::vec3(+0.5f, 0,  0));
-
-            PrimitiveHelper::addAsTriangle(*meshTriangle, pt0, pt1, pt2);
-        }
-        meshTriangle->sendToGpu();
-        meshTriangle->compute_obb();
-
-        m_models["triangle"]->root->meshes.push_back(std::move(meshTriangle));
+        glm::mat4& pose = m_models["tree"]->localPose;
+        pose = glm::translate(pose, glm::vec3(0, 0.50f, +0.20f));
+        pose = glm::scale(pose, glm::vec3(2.0f));
+        pose = glm::rotate(pose, glm::half_pi<float>(), glm::vec3(1, 0, 0));
     }
-    m_models["triangle"]->localMaterial.diffuse_color = glm::vec4(1, 0, 0, 1);
-    m_models["triangle"]->poses = { glm::mat4(1.0f) };
+
+    // Create debug model
+    m_models["triangle"] = Model::Create();
+    m_models["triangle"]->materials = { Material{ glm::vec4(1, 0, 0, 1), false } };
+    m_models["triangle"]->poses     = { glm::mat4(1.0f) };
+
+    MeshIterator::forEachMesh(*m_models["tree"], [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& acc) {
+        const glm::mat4& q = glm::mat4(1.0f) * m_models["tree"]->localPose * acc.transform;
+
+        for (size_t i1 = 0; i1 < mesh->indices.size(); i1 += 3) {
+            _push_triangle_mesh(m_models["triangle"]->root,
+            {
+                glm::vec3(q * glm::vec4(mesh->vertices[mesh->indices[i1 + 0]].Position, +1.0f)),
+                glm::vec3(q * glm::vec4(mesh->vertices[mesh->indices[i1 + 1]].Position, +1.0f)),
+                glm::vec3(q * glm::vec4(mesh->vertices[mesh->indices[i1 + 2]].Position, +1.0f))
+            });
+        }
+    });
 
     // Create shader
-    m_shaders["triangle"]
-        .attachSource(GL_VERTEX_SHADER,
-            Cookable::_init_vertex()
-
-            .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos  = vec3(aModel * LocalModel * vec4(aPos, 1.0));
-                vs_out.Color    = aColor;
-
-                gl_Position     = Projection * View * vec4(vs_out.FragPos, 1.0);
-            )_main_")
-        )
-        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
-            .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
-
-            .add_func("void", "main", "", R"_main_(
-                gl_Position     = gl_in[0].gl_Position; EmitVertex();
-                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
-                EndPrimitive();
-
-                gl_Position     = gl_in[1].gl_Position; EmitVertex();
-                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
-                EndPrimitive();
-
-                gl_Position     = gl_in[2].gl_Position; EmitVertex();
-                gl_Position     = gl_in[0].gl_Position; EmitVertex(); 
-                EndPrimitive();
-            )_main_")
-        )
-        .attachSource(GL_FRAGMENT_SHADER,
-            Cookable::_init_fragment()
-
-            .add_func("void", "main", "", R"_main_(
-                FragColor = diffuse_color;
-            )_main_")
-        )
-        .link()
-    ;
+    _create_triangle_shader(m_shaders["triangle"]).link();
 
     // Render callbacks
     Renderer::ShaderGetter getter = [=]() -> Shader& {
@@ -109,6 +85,62 @@ void SampleSnow::_draw(const SceneEvents::Draw&)
 void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt)
 {
 
+}
+
+// ---
+void _push_triangle_mesh(std::unique_ptr<Model::Node>& node, const PrimitiveHelper::Triangle& triangle) 
+{
+    std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
+    PrimitiveHelper::createTriangle(*meshTriangle, triangle);
+    meshTriangle->sendToGpu();
+    meshTriangle->compute_obb();
+
+    node->meshes.push_back(std::move(meshTriangle));
+}
+
+Shader& _create_triangle_shader(Shader& shader)
+{
+    shader
+        .attachSource(GL_VERTEX_SHADER,
+            Cookable::_init_vertex()
+
+            .add_var("uniform", "vec4", "diffuse_color")
+
+            .add_func("void", "main", "", R"_main_(
+                vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Color   = max(aColor, diffuse_color);
+                gl_Position    = Projection * View * vec4(vs_out.FragPos, 1.0);
+            )_main_")
+        )
+        .attachSource(GL_GEOMETRY_SHADER, 
+            Cookable::_init_geometry()
+
+            .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
+            .add_var("out", "vec4", "Color")
+
+            .add_func("void", "main", "", R"_main_(
+                for(int i = 0; i < 3; i++) 
+                {
+                    Color = gs_in[i].Color;
+
+                    gl_Position = gl_in[(i+0)%3].gl_Position; EmitVertex();
+                    gl_Position = gl_in[(i+1)%3].gl_Position; EmitVertex(); 
+
+                    EndPrimitive();
+                }
+            )_main_")
+        )
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec4", "Color")
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                FragColor = Color;
+            )_main_")
+        );
+
+    return shader;
 }
 
 #else

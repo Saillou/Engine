@@ -17,6 +17,4 @@ namespace Collider {
 		const Mesh& mesh1, const glm::mat4& q1,
 		const Mesh& mesh2, const glm::mat4& q2
 	);
-
-	static bool EqualEnough(const glm::vec3& a, const glm::vec3& b, const float epsilon = 1e-3f);
 }

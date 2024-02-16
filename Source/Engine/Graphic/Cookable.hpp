@@ -29,6 +29,7 @@ struct Cookable {
     UShader& get(CookType type);
 
     static ShaderSource _init_vertex();
+    static ShaderSource _init_geometry();
     static ShaderSource _init_fragment();
 
 protected:

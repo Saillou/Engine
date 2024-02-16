@@ -92,6 +92,18 @@ ShaderSource Cookable::_init_vertex() {
     ;
 }
 
+ShaderSource Cookable::_init_geometry()
+{
+    return ShaderSource{}
+        .add_var("in", "VS_OUT", R"_struct_({
+            vec3 FragPos;
+            vec3 Normal;
+            vec2 TexCoords;
+            vec4 Color;
+        } gs_in[])_struct_")
+    ;
+}
+
 ShaderSource Cookable::_init_fragment() {
     return ShaderSource{}
         .add_var("in", "VS_OUT", R"_struct_({
