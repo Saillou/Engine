@@ -16,6 +16,8 @@ private:
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Methods
+    void _init_shaders();
+
     void _generate_flakes();
     void _compute_physics(float delta_time_seconds);
     void _update_models();

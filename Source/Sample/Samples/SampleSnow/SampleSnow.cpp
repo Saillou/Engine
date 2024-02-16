@@ -5,53 +5,127 @@
 #include <Engine/Graphic/Base/Model/Primitive/PrimitiveHelper.hpp>
 #include <random>
 
+//#define DISABLE_REAL
+#ifdef DISABLE_REAL
+
 static Shader& _create_triangle_shader(Shader&);
 static void _push_triangle_mesh(std::unique_ptr<Model::Node>&, const PrimitiveHelper::Triangle&);
 
-#define DISABLE_REAL
-#ifdef DISABLE_REAL
+static glm::vec3 _pos = { 0, 0, 0 };
 SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
 {
+    _init_shaders();
+
     // Scene
     m_scene.camera().up = glm::vec3(0, 0, 1);
-    m_scene.camera().position  = glm::vec3(0.0f, -3.0f, 2.0f);
-    m_scene.camera().direction = glm::vec3(0, 0, 0);
+    m_scene.camera().position  = glm::vec3(0.0f, m_cam_distance, 2.0f);
+    m_scene.camera().direction = glm::vec3(0, 0, 0.5f);
 
     // Enable events
     _subscribe(&SampleSnow::_update);
     _subscribe(&SampleSnow::_draw);
     _subscribe(&SampleSnow::_on_key_pressed);
 
-    // Load tree
-    m_models["tree"] = Model::Create("Resources/objects/tree/tree.glb");
-    m_models["tree"]->materials = { Material{ glm::vec4(1, 0, 0, 1), false } };
-    m_models["tree"]->poses = { glm::mat4(1.0f) };
+    // Create debug models
+    //m_models["model"]                = Model::Create(Model::Cube);
+    //m_models["model"]->poses         = { glm::mat4(1.0f) };
+    //m_models["model"]->materials     = { Material{ glm::vec4(1, 0, 0, 1), false } };
+    //m_models["model"]->localPose     = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f));
+
+    m_models["model"]                = Model::Create("Resources/objects/tree/tree.glb");
+    m_models["model"]->poses         = { glm::mat4(1.0f) };
+    m_models["model"]->materials     = { Material{ glm::vec4(1, 0, 0, 1), false } };
     {
-        glm::mat4& pose = m_models["tree"]->localPose;
+        glm::mat4& pose = m_models["model"]->localPose;
         pose = glm::translate(pose, glm::vec3(0, 0.50f, +0.20f));
         pose = glm::scale(pose, glm::vec3(2.0f));
         pose = glm::rotate(pose, glm::half_pi<float>(), glm::vec3(1, 0, 0));
     }
 
-    // Create debug model
-    m_models["triangle"] = Model::Create();
-    m_models["triangle"]->materials = { Material{ glm::vec4(1, 0, 0, 1), false } };
-    m_models["triangle"]->poses     = { glm::mat4(1.0f) };
+    m_models["target"]               = Model::Create();
+    m_models["target"]->poses        = { glm::mat4(1.0f) };
+    m_models["target"]->materials    = { Material{ glm::vec4(0, 1, 1, 1), false } };
 
-    MeshIterator::forEachMesh(*m_models["tree"], [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& acc) {
-        const glm::mat4& q = glm::mat4(1.0f) * m_models["tree"]->localPose * acc.transform;
+    m_models["point"]                = Model::Create(Model::Sphere);
+    m_models["point"]->localMaterial = { Material{ glm::vec4(1, 0, 1, 1), false } };
+    m_models["point"]->localPose     = { glm::scale(glm::mat4(1.0f), glm::vec3(0.03f)) };
 
-        for (size_t i1 = 0; i1 < mesh->indices.size(); i1 += 3) {
-            _push_triangle_mesh(m_models["triangle"]->root,
-            {
-                glm::vec3(q * glm::vec4(mesh->vertices[mesh->indices[i1 + 0]].Position, +1.0f)),
-                glm::vec3(q * glm::vec4(mesh->vertices[mesh->indices[i1 + 1]].Position, +1.0f)),
-                glm::vec3(q * glm::vec4(mesh->vertices[mesh->indices[i1 + 2]].Position, +1.0f))
-            });
-        }
+    _push_triangle_mesh(m_models["target"]->root, {
+        glm::vec3(-0.2f, 0.0f, -0.1f),
+        glm::vec3(0,     0.0f, -0.3f),
+        glm::vec3(+0.2f, 0.0f, -0.1f)
     });
+}
 
+// Events
+void SampleSnow::_update(const CommonEvents::StateUpdated&)
+{
+    m_models["point"]->poses.clear();
+    m_models["target"]->poses.front() = glm::translate(glm::mat4(1.0f), _pos);
+
+    auto collision_points = Collider::CheckAccurate(
+        m_models["target"], m_models["target"]->poses.front(),
+        m_models["model"],  m_models["model"]->poses.front()
+    );
+
+    if (!collision_points.has_value())
+        return;
+
+    for (const glm::vec3& point : collision_points.value()) {
+        m_models["point"]->poses.push_back(glm::translate(glm::mat4(1.0f), point));
+    }
+}
+
+void SampleSnow::_draw(const SceneEvents::Draw&)
+{
+    m_scene.renderer().draw(Render::Particle, m_models["point"]);
+    m_scene.renderer().draw("triangle",       m_models["model"]);
+    m_scene.renderer().draw("triangle",       m_models["target"]);
+}
+
+void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt)
+{
+    static bool shift = false;
+
+    if (evt.key == KeyCode::ShiftLeft) {
+        shift = evt.action != InputAction::Released;
+    }
+
+    if (evt.action == InputAction::Released)
+        return;
+
+    switch (evt.key)
+    {
+        case KeyCode::ArrowDown:  shift ? (_pos.y -= 0.02f):(_pos.z -= 0.02f); break;
+        case KeyCode::ArrowUp:    shift ? (_pos.y += 0.02f):(_pos.z += 0.02f); break;
+
+        case KeyCode::ArrowRight: _pos.x += 0.02f; break;
+        case KeyCode::ArrowLeft:  _pos.x -= 0.02f; break;
+
+        case 'A': m_cam_theta += 0.01f; break;
+        case 'D': m_cam_theta -= 0.01f; break;
+        case 'W': m_cam_distance -= 0.05f; break;
+        case 'S': m_cam_distance += 0.05f; break;
+    }
+
+    m_scene.camera().position.x = m_cam_distance * sin(m_cam_theta);
+    m_scene.camera().position.y = m_cam_distance * cos(m_cam_theta);
+}
+
+// -------------------------------------- debug ------------------------------------
+void _push_triangle_mesh(std::unique_ptr<Model::Node>& node, const PrimitiveHelper::Triangle& triangle) 
+{
+    std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
+
+    PrimitiveHelper::createTriangle(*meshTriangle, triangle);
+    meshTriangle->sendToGpu();
+    meshTriangle->compute_obb();
+
+    node->meshes.push_back(std::move(meshTriangle));
+}
+
+void SampleSnow::_init_shaders() {
     // Create shader
     _create_triangle_shader(m_shaders["triangle"]).link();
 
@@ -62,40 +136,13 @@ SampleSnow::SampleSnow() :
 
     Renderer::ShaderSetter setter = [=](const Model::Ref& model) -> void {
         getter().use()
-            .set("Projection",    m_scene.camera().projection)
-            .set("View",          m_scene.camera().modelview)
+            .set("Projection", m_scene.camera().projection)
+            .set("View", m_scene.camera().modelview)
             .set("diffuse_color", model->localMaterial.diffuse_color);
     };
 
     // Add to list
     m_scene.renderer().add_shader("triangle", getter, setter);
-}
-
-// Events
-void SampleSnow::_update(const CommonEvents::StateUpdated&)
-{
-
-}
-
-void SampleSnow::_draw(const SceneEvents::Draw&)
-{
-    m_scene.renderer().draw("triangle", m_models["triangle"]);
-}
-
-void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt)
-{
-
-}
-
-// ---
-void _push_triangle_mesh(std::unique_ptr<Model::Node>& node, const PrimitiveHelper::Triangle& triangle) 
-{
-    std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
-    PrimitiveHelper::createTriangle(*meshTriangle, triangle);
-    meshTriangle->sendToGpu();
-    meshTriangle->compute_obb();
-
-    node->meshes.push_back(std::move(meshTriangle));
 }
 
 Shader& _create_triangle_shader(Shader& shader)
@@ -141,6 +188,37 @@ Shader& _create_triangle_shader(Shader& shader)
         );
 
     return shader;
+}
+
+void SampleSnow::_draw_hitbox(const std::string& model_name)
+{
+    // Check anti-stupidity
+    if (m_models.find(model_name) == m_models.cend())
+        return;
+
+    const Model::Ref& model = m_models[model_name];
+    if (!model->root || model->poses.empty())
+        return;
+
+    // Create hitboxes model
+    const std::string debug_box_name = "debug_box_" + model_name;
+
+    if (m_models.find(debug_box_name) == m_models.cend()) {
+        m_models[debug_box_name] = Model::Create(Model::Cube);
+        m_models[debug_box_name]->localMaterial = Material{ glm::vec4(1, 1, 0, 1), false };
+    }
+
+    // Get all meshes' poses
+    m_models[debug_box_name]->poses.clear();
+
+    for (const glm::mat4& worldPose : model->poses) {
+        MeshIterator::forEachMesh(*model, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) {
+            m_models[debug_box_name]->poses.push_back(worldPose * model->localPose * node_acc.transform * mesh->obb());
+            });
+    }
+
+    // Draw
+    m_scene.renderer().draw(Render::Geometry, m_models[debug_box_name]);
 }
 
 #else
@@ -211,10 +289,6 @@ void SampleSnow::_draw(const SceneEvents::Draw&)
     m_scene.renderer().draw(Render::DrawType::Shadows,  m_models["socle"]);
     m_scene.renderer().draw(Render::DrawType::Lights,   m_models["tree"]);
     m_scene.renderer().draw(Render::DrawType::Particle, m_models["flake"]);
-
-    //_draw_hitbox("socle");
-    //_draw_hitbox("tree");
-    //_draw_hitbox("flake");
 }
 
 void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
@@ -240,7 +314,7 @@ void SampleSnow::_generate_flakes()
 {
     static const glm::mat4 Identity(1.0f);
 
-    static constexpr size_t Max_Flakes = 10000;
+    static constexpr size_t Max_Flakes = 250;
     static constexpr float Spread      = 1.5f;
 
     static std::default_random_engine gen;
@@ -248,18 +322,18 @@ void SampleSnow::_generate_flakes()
 
     static size_t id_flake = 0;
 
-    //if (m_flakes.size() > 0)
-    //    return;
+    if (m_flakes.size() >= Max_Flakes)
+        return;
 
     // Generate one
     m_flakes.push_back(_Flake { 
-        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 0.75f)),
+        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.75f)),
         /* .id     = */ (id_flake + 1) % Max_Flakes,
         /* .moving = */ true 
     });
 
     // Limits
-    while (m_flakes.size() >= Max_Flakes) {
+    while (m_flakes.size() > Max_Flakes) {
         m_flakes.pop_front();
     }
 }
@@ -297,50 +371,16 @@ bool SampleSnow::_is_flake_colliding(const glm::mat4& flake_pose) const
     const glm::mat4& tree_pose  = m_models.at("tree")->poses.front();
 
     return
-        Collider::Check(
+        Collider::CheckHitboxes(
             m_models.at("flake"), flake_pose,
-            m_models.at("socle"), socle_pose,
-            true
+            m_models.at("socle"), socle_pose
         ).has_value() 
         ||
-        Collider::Check(
+        Collider::CheckAccurate(
             m_models.at("flake"), flake_pose, 
-            m_models.at("tree"),  tree_pose,
-            true
+            m_models.at("tree"),  tree_pose
         ).has_value()
      ;
-}
-
-// -- debug --
-void SampleSnow::_draw_hitbox(const std::string& model_name) 
-{
-    // Check anti-stupidity
-    if (m_models.find(model_name) == m_models.cend())
-        return;
-
-    const Model::Ref& model = m_models[model_name];
-    if (!model->root || model->poses.empty())
-        return;
-
-    // Create hitboxes model
-    const std::string debug_box_name = "debug_box_" + model_name;
-
-    if (m_models.find(debug_box_name) == m_models.cend()) {
-        m_models[debug_box_name] = Model::Create(Model::Cube);
-        m_models[debug_box_name]->localMaterial = Material{ glm::vec4(1, 1, 0, 1), false };
-    }
-
-    // Get all meshes' poses
-    m_models[debug_box_name]->poses.clear();
-
-    for (const glm::mat4& worldPose : model->poses) {
-        MeshIterator::forEachMesh(*model, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) {
-            m_models[debug_box_name]->poses.push_back(worldPose * model->localPose * node_acc.transform * mesh->obb());
-        });
-    }
-
-    // Draw
-    m_scene.renderer().draw(Render::Geometry, m_models[debug_box_name]);
 }
 
 #endif

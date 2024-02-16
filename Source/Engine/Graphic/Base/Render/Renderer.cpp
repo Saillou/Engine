@@ -15,6 +15,9 @@ void Renderer::quad(const Quad& surface) {
 }
 
 void Renderer::draw(Render::DrawType type, Model::Ref model) {
+    if (!model)
+        return;
+
     if (!_deferred)
         return _drawEntitySync(type, model);
 

@@ -121,7 +121,7 @@ void SamplePong::_physics(float dt_ms) {
         const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), collider.pos);
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
-        auto collision_point = Collider::Check(
+        auto collision_point = Collider::CheckHitboxes(
             m_models[collider.name],      body_quat,
             m_models[_Ball::Entity_Name], ball_quat
         );
@@ -129,7 +129,7 @@ void SamplePong::_physics(float dt_ms) {
         if (!collision_point.has_value())
             continue;
 
-        collision.emplace(_collision_ { collision_point.value().front(), collider});
+        collision.emplace(_collision_ { collision_point.value(), collider});
         break; // we expect only one collision
     }
 

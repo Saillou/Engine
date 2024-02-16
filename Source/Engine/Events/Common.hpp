@@ -10,7 +10,10 @@ enum KeyCode {
     ArrowDown  = 264,
     ArrowUp    = 265,
 
-	Numpad_0   = 320
+	Numpad_0   = 320,
+
+	ShiftLeft  = 340,
+	ShiftRight = 344,
 };
 
 enum MouseButton {

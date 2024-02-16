@@ -85,7 +85,7 @@ void CollideSystem::update(float dt)
 
             scene.renderer().draw(Render::DrawType::Geometry, hitboxanother);
 
-            const auto collisionPoint = Collider::Check(
+            const auto collisionPoint = Collider::CheckHitboxes(
                 collider.collisionBox,         transform.getMat4(),
                 anotherCollider.collisionBox,  anotherTransform.getMat4()
             );
@@ -95,10 +95,7 @@ void CollideSystem::update(float dt)
                 Model::Ref point = Model::Create(Model::Sphere);
                 point->localMaterial.diffuse_color = { 0.7f, 0.2f,0.2f,1.f };
                 point->localPose = glm::scale(glm::mat4(1.f), glm::vec3(0.1f));
-                for (auto p : collisionPoint.value())
-                {
-                    point->poses.push_back(glm::translate(glm::mat4(1.f), p));
-                }
+                point->poses.push_back(glm::translate(glm::mat4(1.f), collisionPoint.value()));
 
                 scene.renderer().draw(Render::DrawType::Geometry, point);
 
