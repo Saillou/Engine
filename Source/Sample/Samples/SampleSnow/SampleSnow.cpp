@@ -2,6 +2,7 @@
 
 #include <Engine/Utils/Physic/Collider.hpp>
 #include <Engine/Graphic/Base/Model/MeshIterator.hpp>
+#include <Engine/Graphic/Base/Model/Primitive/PrimitiveHelper.hpp>
 #include <random>
 
 #define DISABLE_REAL
@@ -9,89 +10,70 @@
 SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
 {
+    // Scene
+    m_scene.camera().up = glm::vec3(0, 0, 1);
+    m_scene.camera().position  = glm::vec3(0.0f, -3.0f, 0.0f);
+    m_scene.camera().direction = glm::vec3(0, 0, 0);
+
     // Enable events
     _subscribe(&SampleSnow::_update);
     _subscribe(&SampleSnow::_draw);
     _subscribe(&SampleSnow::_on_key_pressed);
 
     // Create model
-    Model::Ref modelTriangle = Model::Create();
-    std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
+    m_models["triangle"] = Model::Create();
+    {
+        std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
+        {
+            int pt0 = PrimitiveHelper::addPoint(*meshTriangle, glm::vec3(-0.5f, 0,  0));
+            int pt1 = PrimitiveHelper::addPoint(*meshTriangle, glm::vec3( 0.0f, 0, +0.5f));
+            int pt2 = PrimitiveHelper::addPoint(*meshTriangle, glm::vec3(+0.5f, 0,  0));
 
-    modelTriangle->root->meshes.push_back(std::move(meshTriangle));
-    m_models["triangle"] = modelTriangle;
+            PrimitiveHelper::addAsTriangle(*meshTriangle, pt0, pt1, pt2);
+        }
+        meshTriangle->sendToGpu();
+        meshTriangle->compute_obb();
 
-    // Shader
+        m_models["triangle"]->root->meshes.push_back(std::move(meshTriangle));
+    }
+    m_models["triangle"]->localMaterial.diffuse_color = glm::vec4(1, 0, 0, 1);
+    m_models["triangle"]->poses = { glm::mat4(1.0f) };
+
+    // Create shader
     m_shaders["triangle"]
-        .attachSource(Shader::Vertex, ShaderSource{}
-            .add_var("layout (location = 0) in", "vec3", "aPos")
-            .add_var("layout (location = 1) in", "vec3", "aNormal")
-            .add_var("layout (location = 2) in", "vec2", "aTexCoords")
-            .add_var("layout (location = 3) in", "vec4", "aColor")
-            .add_var("layout (location = 4) in", "mat4", "aModel")
-
-            .add_var("uniform", "mat4", "Projection")
-            .add_var("uniform", "mat4", "View")
-            .add_var("uniform", "mat4", "LocalModel")
-            .add_var("uniform", "vec4", "diffuse_color")
-
-            .add_var("out", "VS_OUT", R"_struct_({
-                vec3 FragPos;
-                vec4 Color;
-            } vs_out)_struct_")
+        .attachSource(GL_VERTEX_SHADER,
+            Cookable::_init_vertex()
 
             .add_func("void", "main", "", R"_main_(
-                vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));
-                vs_out.Color   = max(aColor, diffuse_color);
+                vs_out.FragPos  = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Color    = aColor;
 
-                gl_Position    = Projection * View * vec4(vs_out.FragPos, 1.0);
+                gl_Position     = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_")
         )
-        .attachSource(Shader::Geometry, ShaderSource{}
+        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
             .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(triangle_strip, max_vertices = 3)")
-
-            .add_var("in", "VS_OUT", R"_struct_({
-                vec3 FragPos;
-                vec4 Color;
-            } gs_in[])_struct_")
-
-            .add_var("out", "vec3", "Center")
-            .add_var("out", "vec3", "FragPos")
-            .add_var("out", "vec4", "Color")
-            .add_var("out", "float", "Radius")
+            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
 
             .add_func("void", "main", "", R"_main_(
-                // Compute circle dimensions (by our current quad definition: gs_in[1] is the right angle apex)
-                Center = 0.5 * (gs_in[0].FragPos + gs_in[2].FragPos);
-                Radius = 0.5 * distance(gs_in[0].FragPos, gs_in[1].FragPos);
+                gl_Position     = gl_in[0].gl_Position; EmitVertex();
+                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
+                EndPrimitive();
 
-                // Emit triangle
-                for(int i = 0; i < 3; i++) {
-                    FragPos = gs_in[i].FragPos;
-                    Color   = gs_in[i].Color;
+                gl_Position     = gl_in[1].gl_Position; EmitVertex();
+                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
+                EndPrimitive();
 
-                    gl_Position = gl_in[i].gl_Position;
-                    EmitVertex();
-                }
-    
+                gl_Position     = gl_in[2].gl_Position; EmitVertex();
+                gl_Position     = gl_in[0].gl_Position; EmitVertex(); 
                 EndPrimitive();
             )_main_")
         )
-        .attachSource(Shader::Fragment, ShaderSource{}
-            .add_var("in", "vec3", "Center")
-            .add_var("in", "vec3", "FragPos")
-            .add_var("in", "vec4", "Color")
-            .add_var("in", "float", "Radius")
-
-            .add_var("out", "vec4", "FragColor")
+        .attachSource(GL_FRAGMENT_SHADER,
+            Cookable::_init_fragment()
 
             .add_func("void", "main", "", R"_main_(
-                float dist = distance(Center, FragPos);
-                float smooth_dist = Radius * 4.0 / 100.0;
-                float smooth_fact = 1.0 - abs(Radius - dist) / smooth_dist;
-                
-                FragColor = vec4(Color.rgb, Color.a * smooth_fact);
+                FragColor = diffuse_color;
             )_main_")
         )
         .link()

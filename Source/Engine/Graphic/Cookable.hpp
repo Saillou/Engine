@@ -28,10 +28,10 @@ struct Cookable {
     bool has(CookType type) const;
     UShader& get(CookType type);
 
-protected:
     static ShaderSource _init_vertex();
     static ShaderSource _init_fragment();
 
+protected:
     static void _set_shader_basic(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
     static void _set_shader_shape(Shader& shader);
