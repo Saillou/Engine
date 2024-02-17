@@ -76,7 +76,7 @@ void Model::draw(Shader& shader) const
     {
         shader.use();
         if (shader.has("LocalModel"))
-            shader.set("LocalModel", localPose * node_acc.transform);
+            shader.set("LocalModel", localTransform * node_acc.transform);
 
         mesh->bindTextures(shader);
         mesh->drawElements();
@@ -90,7 +90,7 @@ void Model::drawElements(Shader& shader) const
     {
         shader.use();
         if (shader.has("LocalModel"))
-            shader.set("LocalModel", localPose * node_acc.transform);
+            shader.set("LocalModel", localTransform * node_acc.transform);
 
         mesh->drawElements();
     });
@@ -140,7 +140,7 @@ std::vector<glm::mat4> Model::GetMeshesPoses() const
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
         quats.push_back(
-            localPose * node_acc.transform * mesh->obb()
+            localTransform * node_acc.transform * mesh->obb()
         );
     });
 
@@ -148,14 +148,11 @@ std::vector<glm::mat4> Model::GetMeshesPoses() const
 }
 
 void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
+    // TODO not for each mesh
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
         mesh->updateBatch(models, colors);
     });
-}
-
-void Model::_updateInternalBatch() {
-    _setBatch(std::vector<mat4>(poses.cbegin(), poses.cend()), Material::ExtractColors(materials));
 }
 
 void Model::_loadModel(const std::string& path) {

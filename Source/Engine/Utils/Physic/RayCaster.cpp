@@ -49,7 +49,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 		if (optIntersect.has_value())
 			return;
 
-		optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * model->localPose * node_acc.transform);
+		optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * model->localTransform * node_acc.transform);
     });
 
 	return optIntersect;
@@ -81,7 +81,7 @@ float RayCaster::ApproxDistance(const glm::vec3& origin, const Model::Ref model,
 
 	// Check all meshes of root
 	float avg_distance = 0.0f;
-	const glm::mat4 Q = quat * model->localPose * model->root->transform;
+	const glm::mat4 Q = quat * model->localTransform * model->root->transform;
 
 	for (const auto& mesh : model->root->meshes) {
 		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);
@@ -145,8 +145,8 @@ bool RayCaster::PointInRect(const glm::vec2& point, const glm::vec2& rectTopLeft
 
 bool RayCaster::PointInRect(const glm::vec2& point, const Quad& quad)
 {
-	const glm::vec2 rectTopLeft  = glm::vec2(quad.x(), quad.y());
-	const glm::vec2 rectBotRight = rectTopLeft + glm::vec2(quad.w(), quad.h());
+	const glm::vec2 rectTopLeft  = glm::vec2(quad.x, quad.y);
+	const glm::vec2 rectBotRight = rectTopLeft + glm::vec2(quad.w, quad.h);
 
 	return PointInRect(point, rectTopLeft, rectBotRight);
 }

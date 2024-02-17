@@ -12,9 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Pose.hpp"
 #include "Mesh.hpp"
-#include "Material.hpp"
 
 struct Model
 {
@@ -44,19 +42,20 @@ public:
     // Data tree for storing organized meshes
     struct Node {
         glm::mat4 transform = glm::mat4(1.0f);
-        std::vector<std::unique_ptr<Mesh>> meshes = {};
+        std::vector<std::unique_ptr<Mesh>> meshes   = {};
         std::vector<std::unique_ptr<Node>> children = {};
     };
 
     std::unique_ptr<Node> root = nullptr;
 
-    // Local info
-    glm::mat4 localPose = glm::mat4(1.0f);
-    Material localMaterial = {};
+    // Local info 
+    // - TODO: remove and add as RenderComponent -
+    glm::mat4 localTransform = glm::mat4(1.0f);
+    glm::vec4 localMaterial  = glm::vec4(0.0f);
 
-    // World info
-    std::vector<Pose>     poses = {};
-    std::vector<Material> materials = {};
+    std::vector<glm::mat4> transforms = {};
+    std::vector<glm::vec4> materials  = {};
+    // ----------------------------------------
 
 protected:
     Model(SimpleShape shape = SimpleShape::Custom);
@@ -68,5 +67,4 @@ protected:
     static void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
 
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
-    void _updateInternalBatch(); // _setBatch with poses and materials members
 };

@@ -17,12 +17,12 @@ void Button::draw(Scene& scene) {
 
     if (isMouseClicked())
     {
-        _surface->material.diffuse_color = style().clicked_background();
+        _surface->diffuse_color = style().clicked_background();
         content.style().foreground.setValue(style().clicked_foreground());
     }
     else
     {
-        _surface->material.diffuse_color = isMouseOver() ? style().hovered_background() : style().background();
+        _surface->diffuse_color = isMouseOver() ? style().hovered_background() : style().background();
         content.style().foreground.setValue(isMouseOver() ? style().hovered_foreground() : style().foreground());
     }
 

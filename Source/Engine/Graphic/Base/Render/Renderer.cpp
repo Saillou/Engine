@@ -137,22 +137,22 @@ void Renderer::_compute()
         //  - transparent: furthest first
         di.priority = std::numeric_limits<float>::max();
 
-        if (di.model->localMaterial.diffuse_color.a < 1.0f || di.model->localMaterial.force_reorder) {
+        if (di.model->localMaterial.a < 1.0f) {
             // Sort also poses in batch
-            using dist_entity = std::tuple<float, Pose, Material>;
+            using dist_entity = std::tuple<float, glm::mat4, glm::vec4>;
             std::vector<dist_entity> all_dist_entity;
             all_dist_entity.reserve(di.model->materials.size());
 
             size_t i_element = 0;
             auto& materials = di.model->materials;
 
-            for (const Pose& pose : di.model->poses) {
-                float entity_distance = RayCaster::ApproxDistance(_camera.position, di.model, pose);
+            for (const glm::mat4& transform : di.model->transforms) {
+                float entity_distance = RayCaster::ApproxDistance(_camera.position, di.model, transform);
 
                 all_dist_entity.push_back({
                     entity_distance, 
-                    pose, 
-                    i_element < materials.size() ? materials[i_element] : Material{{0,0,0,0}}
+                    transform,
+                    i_element < materials.size() ? materials[i_element] : glm::vec4(0,0,0,0)
                 });
 
                 di.priority = std::min(entity_distance, di.priority);
@@ -164,20 +164,19 @@ void Renderer::_compute()
                 return std::get<0>(di1) > std::get<0>(di2);
             });
 
-            std::vector<Pose> sorted_poses;          sorted_poses.reserve(all_dist_entity.size());
-            std::vector<Material> sorted_materials;  sorted_materials.reserve(all_dist_entity.size());
+            std::vector<glm::mat4> sorted_transforms; sorted_transforms.reserve(all_dist_entity.size());
+            std::vector<glm::vec4> sorted_materials;  sorted_materials.reserve(all_dist_entity.size());
 
             for (const dist_entity& de: all_dist_entity) {
-                sorted_poses.push_back(std::get<1>(de));
+                sorted_transforms.push_back(std::get<1>(de));
                 sorted_materials.push_back(std::get<2>(de));
             }
 
-            di.model->poses = sorted_poses;
+            di.model->transforms = sorted_transforms;
             di.model->materials = sorted_materials;
         }
 
-        // Update model buffers
-        di.model->_updateInternalBatch();
+        di.model->_setBatch(di.model->transforms, di.model->materials);
     }
 
     // Re-order vector from last to first
@@ -188,8 +187,9 @@ void Renderer::_compute()
     // Shadows
     _shadower.render(_camera, _lights, [=](Shader& sh) {
         for (_DrawEntity& di : _heapEntities) {
-            if (!di.model->localMaterial.cast_shadow)
-                continue;
+            // TODO 
+            //if (!di.model->localMaterial.cast_shadow)
+            //    continue;
 
             if (di.priority < 0.0f)
                 break;
@@ -218,16 +218,16 @@ void Renderer::_drawQuadSync(const Quad& surface) {
     Shader& sh = get(Cookable::CookType::Shape)->use()
         .set("LocalModel",       surface.absolute_dimmensions ? 
             glm::translate(glm::scale(glm::mat4(1.0f), 
-                glm::vec3(surface.w()/2.0f, surface.h()/2.0f, 0.0f)),
+                glm::vec3(surface.w/2.0f, surface.h/2.0f, 0.0f)),
                 glm::vec3(
-                    +1.0f + surface.x()/(surface.w() / 2.0f), 
-                    -1.0f + (_camera.screenSize.y - surface.y())/(surface.h() / 2.0f),
-                0)) : surface.pose())
+                    +1.0f + surface.x/(surface.w / 2.0f), 
+                    -1.0f + (_camera.screenSize.y - surface.y)/(surface.h / 2.0f),
+                0)) : surface.transform())
         .set("projection",       surface.absolute_dimmensions ?
             glm::ortho(0.0f, _camera.screenSize.x, 0.0f, _camera.screenSize.y):
             glm::mat4(1.0f))
         .set("quadTexture",      surface.texture_location)
-        .set("background_color", surface.material.diffuse_color);
+        .set("background_color", surface.diffuse_color);
 
     surface.drawElements();
 }
@@ -236,7 +236,7 @@ void Renderer::_drawEntitySync(Render::DrawType type, Model::Ref model, bool upd
     Shader placeHolder;
 
     if(update_buffer)
-        model->_updateInternalBatch();
+        model->_setBatch(model->transforms, model->materials);
 
     if(type < Render::Custom) {
         model->draw([&]() -> Shader& {
@@ -247,7 +247,7 @@ void Renderer::_drawEntitySync(Render::DrawType type, Model::Ref model, bool upd
                 case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
                 case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
             } return placeHolder;
-        }().set("diffuse_color", model->localMaterial.diffuse_color));
+        }().set("diffuse_color", model->localMaterial));
     }
     else {
         if (_userShadersName.find(type) == _userShadersName.cend())

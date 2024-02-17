@@ -1,8 +1,6 @@
 #pragma once
 
 #include "PrimitiveHelper.hpp"
-#include "../Material.hpp"
-#include "../Pose.hpp"
 #include "../Mesh.hpp"
 #include "../../../Wrapper/Shader.hpp"
 
@@ -18,23 +16,17 @@ struct Quad :
 
     void drawElements() const;
 
-    float x() const;
-    float y() const;
-    float w() const;
-    float h() const;
-
-    float& x();
-    float& y();
-    float& w();
-    float& h();
+    float x;
+    float y;
+    float w;
+    float h;
+    glm::mat4 transform() const;
 
     // Draw instructions
     bool absolute_dimmensions = false;
-    int texture_location = 0;
-    Material material    = {};
-    Pose pose() const;
+    int texture_location      = 0;
+    glm::vec4 diffuse_color   = {};
 
 private:
-    float _x, _y, _w, _h;
     std::unique_ptr<Mesh> _quad_mesh;
 };

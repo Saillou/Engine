@@ -7,7 +7,7 @@ SampleMandala::SampleMandala() {
     Scene& scene(Service<Window>::get().scene());
 
     scene.lights() = { };
-    scene.camera().position = glm::vec3(0, -1.0f, 0);
+    scene.camera().position = glm::vec3(0, -5.0f, 0);
     scene.camera().direction = glm::vec3(0, 0, 0);
 
     Model::Ref& mandala = m_models["mandala"];
@@ -21,10 +21,10 @@ SampleMandala::SampleMandala() {
     _subscribe([&](const CommonEvents::KeyPressed& evt) {
         glm::vec2 dir(0,0);
         switch (evt.key) {
-            case KeyCode::ArrowLeft:  dir.x = -1.0f; break;
-            case KeyCode::ArrowRight: dir.x = +1.0f; break;
-            case KeyCode::ArrowUp:    dir.y = +1.0f; break;
-            case KeyCode::ArrowDown:  dir.y = -1.0f; break;
+            case KeyCode::ArrowLeft:  dir.x = +1.0f; break;
+            case KeyCode::ArrowRight: dir.x = -1.0f; break;
+            case KeyCode::ArrowUp:    dir.y = -1.0f; break;
+            case KeyCode::ArrowDown:  dir.y = +1.0f; break;
         }
         scene.camera().position  += 1e-3f * glm::vec3(dir.x, 0, dir.y);
         scene.camera().direction += 1e-3f * glm::vec3(dir.x, 0, dir.y);
