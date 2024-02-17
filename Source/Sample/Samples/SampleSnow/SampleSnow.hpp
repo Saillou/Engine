@@ -1,13 +1,13 @@
 #pragma once
 
+#include "../../_imgui/imgui.h"
 #include "../Sample.hpp"
-
-#include <deque>
 
 struct SampleSnow : 
     public Sample 
 {
      SampleSnow();
+     ~SampleSnow();
 
 private:
     // Events
@@ -16,7 +16,9 @@ private:
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Methods
-    void _init_shaders();
+    void _add_shaders(const std::string&);
+    Shader& _create_triangle_shader(Shader&);
+    void _push_triangle_mesh(std::unique_ptr<Model::Node>&, const PrimitiveHelper::Triangle&);
 
     void _generate_flakes();
     void _compute_physics(float delta_time_seconds);
@@ -24,7 +26,8 @@ private:
 
     bool _is_flake_colliding(const glm::mat4& flake_pose, bool accurate_check) const;
 
-    void _draw_hitbox(const std::string& model_name);
+    void _draw_debug(const std::string& model_name);
+
 
     // Members
     Scene& m_scene;
@@ -42,4 +45,20 @@ private:
         bool moving    = true;
     };
     std::deque<_Flake> m_flakes;
+
+    // -- Ui --
+    struct Ui
+    {
+        void show();
+
+        bool show_debug = false;
+
+#ifdef _DEBUG 
+        bool loop = false;
+        int flakes_number = 50;
+#else 
+        bool loop = true;
+        int flakes_number = 1500;
+#endif
+    } m_ui;
 };
