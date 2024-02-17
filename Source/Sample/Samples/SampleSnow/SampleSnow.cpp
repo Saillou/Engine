@@ -311,7 +311,7 @@ void SampleSnow::Ui::show() {
 #ifdef _DEBUG
     #define MAX_FLAKES 500
 #else
-    #define MAX_FLAKES 15000
+    #define MAX_FLAKES 25000
 #endif
 
     ImGui::Begin("Actions");

@@ -45,7 +45,34 @@ static optional<Point> __intersect_triangles(const Triangle& t1, const Triangle&
 }
 
 // Public
-std::optional<std::vector<Point>> Collider::CheckAccurate(
+std::optional<Point> Collider::CheckAccurate(
+	const Model::Ref model1, const glm::mat4& worldPose1, 
+	const Model::Ref model2, const glm::mat4& worldPose2
+) {
+	std::optional<Point> result;
+
+	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1) 
+	{
+		if (result.has_value())
+			return;
+
+		const glm::mat4& mesh_pose1 = worldPose1 * model1->localPose * acc1.transform;
+
+		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2) 
+		{
+			if (result.has_value())
+				return;
+
+			const glm::mat4& mesh_pose2 = worldPose2 * model2->localPose * acc2.transform;
+
+			result = Collider::CheckMeshes(*mesh1, mesh_pose1, *mesh2, mesh_pose2);
+		});
+    });
+
+	return result;
+}
+
+std::optional<std::vector<Point>> Collider::CheckAccurateMultiple(
 	const Model::Ref model1, const glm::mat4& worldPose1, 
 	const Model::Ref model2, const glm::mat4& worldPose2
 ) {
@@ -63,7 +90,6 @@ std::optional<std::vector<Point>> Collider::CheckAccurate(
 			if (!pt_acc.has_value())
 				return;
 
-			// If multiple or not?
 			if (!result.has_value())
 				result = pt_acc;
 			else
@@ -74,7 +100,7 @@ std::optional<std::vector<Point>> Collider::CheckAccurate(
 	return result;
 }
 
-std::optional<glm::vec3> Collider::CheckHitboxes(
+std::optional<Point> Collider::CheckHitboxes(
 	const Model::Ref model1, const glm::mat4& worldPose1,
 	const Model::Ref model2, const glm::mat4& worldPose2)
 {
@@ -104,6 +130,39 @@ std::optional<glm::vec3> Collider::CheckHitboxes(
 				return;
 
 			result = pt;
+		});
+	});
+
+	return result;
+}
+
+std::optional<std::vector<Point>> Collider::CheckHitboxesMultiple(
+	const Model::Ref model1, const glm::mat4& worldPose1,
+	const Model::Ref model2, const glm::mat4& worldPose2)
+{
+	const Mesh& cube = *Cube::GetOne();
+
+	std::optional<std::vector<Point>> result;
+
+	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
+	{
+		const glm::mat4& mesh_pose1 = worldPose1 * model1->localPose * acc1.transform;
+
+		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
+		{
+			const glm::mat4& mesh_pose2 = worldPose2 * model2->localPose * acc2.transform;
+
+			auto pt = Collider::CheckMeshesMultiple(
+				cube, mesh_pose1 * mesh1->obb(),
+				cube, mesh_pose2 * mesh2->obb()
+			);
+			if (!pt.has_value())
+				return;
+
+			if (!result.has_value())
+				result = pt;
+			else
+				result.value().insert(result.value().cend(), pt.value().cbegin(), pt.value().cend());
 		});
 	});
 
