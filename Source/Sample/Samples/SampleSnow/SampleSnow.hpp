@@ -22,7 +22,7 @@ private:
     void _compute_physics(float delta_time_seconds);
     void _update_models();
 
-    bool _is_flake_colliding(const glm::mat4& flake_pose) const;
+    bool _is_flake_colliding(const glm::mat4& flake_pose, bool accurate_check) const;
 
     void _draw_hitbox(const std::string& model_name);
 
@@ -38,6 +38,7 @@ private:
     struct _Flake {
         glm::mat4 pose = glm::mat4(1.0f);
         size_t id      = 0;
+        bool accurate  = false;
         bool moving    = true;
     };
     std::deque<_Flake> m_flakes;

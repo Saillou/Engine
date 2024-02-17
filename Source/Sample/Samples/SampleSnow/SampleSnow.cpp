@@ -5,13 +5,14 @@
 #include <Engine/Graphic/Base/Model/Primitive/PrimitiveHelper.hpp>
 #include <random>
 
-//#define DISABLE_REAL
-#ifdef DISABLE_REAL
+//#define DRAW_DEBUG_COLLISION
+#ifdef DRAW_DEBUG_COLLISION
 
 static Shader& _create_triangle_shader(Shader&);
 static void _push_triangle_mesh(std::unique_ptr<Model::Node>&, const PrimitiveHelper::Triangle&);
 
-static glm::vec3 _pos = { 0, 0, 0 };
+static glm::vec3 _pos = { 0, -0.2f, 0.5f };
+
 SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
 {
@@ -28,11 +29,6 @@ SampleSnow::SampleSnow() :
     _subscribe(&SampleSnow::_on_key_pressed);
 
     // Create debug models
-    //m_models["model"]                = Model::Create(Model::Cube);
-    //m_models["model"]->poses         = { glm::mat4(1.0f) };
-    //m_models["model"]->materials     = { Material{ glm::vec4(1, 0, 0, 1), false } };
-    //m_models["model"]->localPose     = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f));
-
     m_models["model"]                = Model::Create("Resources/objects/tree/tree.glb");
     m_models["model"]->poses         = { glm::mat4(1.0f) };
     m_models["model"]->materials     = { Material{ glm::vec4(1, 0, 0, 1), false } };
@@ -82,6 +78,8 @@ void SampleSnow::_draw(const SceneEvents::Draw&)
     m_scene.renderer().draw(Render::Particle, m_models["point"]);
     m_scene.renderer().draw("triangle",       m_models["model"]);
     m_scene.renderer().draw("triangle",       m_models["target"]);
+
+    _draw_hitbox("model");
 }
 
 void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt)
@@ -113,7 +111,6 @@ void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt)
     m_scene.camera().position.y = m_cam_distance * cos(m_cam_theta);
 }
 
-// -------------------------------------- debug ------------------------------------
 void _push_triangle_mesh(std::unique_ptr<Model::Node>& node, const PrimitiveHelper::Triangle& triangle) 
 {
     std::unique_ptr<Mesh> meshTriangle = std::make_unique<Mesh>();
@@ -314,22 +311,31 @@ void SampleSnow::_generate_flakes()
 {
     static const glm::mat4 Identity(1.0f);
 
-    static constexpr size_t Max_Flakes = 250;
-    static constexpr float Spread      = 1.5f;
+#ifdef _DEBUG
+    #define N_FLAKES 50
+#else
+    #define N_FLAKES 1500
+#endif
+
+    static constexpr size_t Max_Flakes = N_FLAKES;
+    static constexpr float Spread      = 1.2f;
 
     static std::default_random_engine gen;
     static std::uniform_real_distribution<float> dstr(-0.5f, 0.5f);
 
     static size_t id_flake = 0;
 
-    if (m_flakes.size() >= Max_Flakes)
+    // Comment this to get snow in continue
+    if (m_flakes.size() >= Max_Flakes) {
         return;
+    }
 
     // Generate one
     m_flakes.push_back(_Flake { 
-        /* .pose   = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.75f)),
-        /* .id     = */ (id_flake + 1) % Max_Flakes,
-        /* .moving = */ true 
+        /* .pose     = */ glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.f)),
+        /* .id       = */ (id_flake + 1) % Max_Flakes,
+        /* .accurate = */ false,
+        /* .moving   = */ true
     });
 
     // Limits
@@ -346,11 +352,14 @@ void SampleSnow::_compute_physics(float delta_time_seconds)
         if (!flake.moving)
             continue;
 
-        if (!_is_flake_colliding(flake.pose)) {
+        if (!_is_flake_colliding(flake.pose, flake.accurate)) {
             flake.pose = glm::translate(flake.pose, delta_time_seconds * Gravity);
         }
         else {
-            flake.moving = false;
+            if (flake.accurate)
+                flake.moving = false;
+            else
+                flake.accurate = true;
         }
     }
 }
@@ -365,22 +374,27 @@ void SampleSnow::_update_models()
     }
 }
 
-bool SampleSnow::_is_flake_colliding(const glm::mat4& flake_pose) const
+bool SampleSnow::_is_flake_colliding(const glm::mat4& flake_pose, bool accurate) const
 {
     const glm::mat4& socle_pose = m_models.at("socle")->poses.front();
     const glm::mat4& tree_pose  = m_models.at("tree")->poses.front();
 
-    return
-        Collider::CheckHitboxes(
+    if (Collider::CheckHitboxes(
+        m_models.at("flake"), flake_pose, 
+        m_models.at("socle"), socle_pose).has_value()
+    ) 
+        return true;
+
+    if (!accurate)
+        return Collider::CheckHitboxes(
             m_models.at("flake"), flake_pose,
-            m_models.at("socle"), socle_pose
-        ).has_value() 
-        ||
-        Collider::CheckAccurate(
-            m_models.at("flake"), flake_pose, 
-            m_models.at("tree"),  tree_pose
-        ).has_value()
-     ;
+            m_models.at("tree"), tree_pose
+        ).has_value();
+
+    return Collider::CheckAccurate(
+        m_models.at("flake"), flake_pose,
+        m_models.at("tree"), tree_pose
+    ).has_value();
 }
 
 #endif
