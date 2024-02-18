@@ -15,6 +15,13 @@ SamplePong::SamplePong() :
     m_timer.tic();
 }
 
+SamplePong::~SamplePong()
+{
+    for (auto entity : m_entities) {
+        ECS::destroyEntity(entity.second);
+    }
+}
+
 void SamplePong::_init_game_elements() {
     // Scene
     m_scene.lights = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };

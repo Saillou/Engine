@@ -7,6 +7,7 @@ struct SamplePong :
     public Sample
 {
     SamplePong();
+    ~SamplePong();
 
 
 private:
