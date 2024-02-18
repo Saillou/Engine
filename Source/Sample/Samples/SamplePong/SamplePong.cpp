@@ -11,7 +11,6 @@ SamplePong::SamplePong() :
     // Enable events
     _subscribe(&SamplePong::_on_key_pressed);
     _subscribe(&SamplePong::_update);
-    //_subscribe(&SamplePong::_draw);
     _subscribe([=](const SceneEvents::RenderFinished&) { m_ui.show(); });
 
     // Go
@@ -197,38 +196,41 @@ void SamplePong::_update_entities()
     };
 }
 
-/*
-void SamplePong::_draw(const SceneEvents::Draw&) {
-    for (auto& entity : m_models) {
-        if (entity.first.find("debug") != std::string::npos)
-            continue;
 
-        //m_scene.renderer().draw(Render::Shadows, entity.second);
+void SamplePong::_update_hitboxes(bool show) {
+    // Create a debug box if non existing
+    if (m_entities.find("Hitbox") == m_entities.cend()) {
+        m_entities["Hitbox"] = ECS::createEntity();
+
+        RenderComponent render;
+        render.type = RenderComponent::Geometry;
+        render.model = Model::Create(Model::Cube);
+        render.model->localMaterial = glm::vec4(1, 0, 0, 1);
+
+        ECS::addComponent(m_entities["Hitbox"], render);
     }
 
-    if (m_ui.show_debug) {
-        _draw_hitbox();
-    }
-}
+    // Get component
+    RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(m_entities["Hitbox"]);
 
-void SamplePong::_draw_hitbox() {
-    // Create debug box
-    if (m_models.find("debug_cube") == m_models.cend()) {
-        m_models["debug_cube"] = Model::Create(Model::Cube);
-        m_models["debug_cube"]->localMaterial = glm::vec4(1, 0, 0, 1);
+    if (!show) {
+        renderComponent.transforms.clear();
+        return;
     }
 
     // Get first mesh's obb of an entity
     auto __get_hitbox = [=](const std::string& entity_name, const glm::vec3& pos) {
+        const RenderComponent& renderComponentEntity = ECS::getComponent<RenderComponent>(m_entities[entity_name]);
+
         return
             glm::translate(glm::mat4(1.0f), pos) *
-            m_models[entity_name]->localTransform *
-            m_models[entity_name]->root->transform *
-            m_models[entity_name]->root->meshes.front()->obb();
-        };
+            renderComponentEntity.model->localTransform *
+            renderComponentEntity.model->root->transform *
+            renderComponentEntity.model->root->meshes.front()->obb();
+    };
 
     // Draw hitboxes
-    m_models["debug_cube"]->transforms =
+    renderComponent.transforms =
     {
         __get_hitbox(_Player::Entity_Name, m_player_ia.pos),
         __get_hitbox(_Player::Entity_Name, m_player_human.pos),
@@ -236,10 +238,7 @@ void SamplePong::_draw_hitbox() {
         __get_hitbox(_Wall::Entity_Name, m_wall_2.pos),
         __get_hitbox(_Ball::Entity_Name, m_ball.pos)
     };
-
-    //m_scene.renderer().draw(Render::Geometry, m_models["debug_cube"]);
 }
-*/
 
 void SamplePong::_apply_actions(_Player& player)
 {
@@ -266,6 +265,7 @@ void SamplePong::_update(const CommonEvents::StateUpdated&)
 
     _physics(m_timer.elapsed<Timer::microsecond>() / 1000.0f);
     _update_entities();
+    _update_hitboxes(m_ui.show_debug);
 
     m_timer.tic();
 }

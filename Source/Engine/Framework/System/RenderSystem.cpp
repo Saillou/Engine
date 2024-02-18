@@ -84,6 +84,10 @@ void RenderSystem::_compute()
 {
     for (auto& entity : m_entities) {
         RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(entity);
+
+        if (renderComponent.type == RenderComponent::Hidden)
+            continue;
+
         renderComponent.model->_setBatch(renderComponent.transforms, renderComponent.materials);
     }
 
@@ -100,6 +104,9 @@ void RenderSystem::_drawShadows()
             for (auto& entity: m_entities) {
                 RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(entity);
 
+                if (renderComponent.type == RenderComponent::Hidden)
+                    continue;
+
                 //if (!renderComponent.model->localMaterial.cast_shadow)
                 //    continue;
 
@@ -115,6 +122,9 @@ void RenderSystem::_drawShadows()
 void RenderSystem::_drawEntity(Entity entity) 
 {
     RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(entity);
+
+    if (renderComponent.type == RenderComponent::Hidden)
+        return;
 
     if(renderComponent.type < RenderComponent::Custom) {
         renderComponent.model->draw([&]() -> Shader& {
@@ -213,56 +223,6 @@ void Renderer::remove_shader(const std::string& shaderName) {
 }
 
 // Private
-Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
-    addRecipe(type);
-
-    // Use
-    Shader& sh = get(type)->use();
-
-    switch (type) {
-    case Cookable::CookType::Basic:
-        {
-            // Check light capabilities
-            const ShaderSource& ssource = get(type)->source(ShaderSource::Type::Fragment);
-
-            // Need to edit shader
-            if (ssource.getVar("LightPos").count < lights.size()) {
-                editRecipe(type, ShaderSource::Type::Fragment, ShaderSource{}
-                    .add_var("uniform", "vec3", "LightPos", (int)lights.size())
-                    .add_var("uniform", "vec4", "LightColor", (int)lights.size())
-                    .add_var("uniform", "samplerCube", "depthMap", (int)lights.size())
-                );
-            }
-
-            // Bind shadow map
-            if (shadower)
-                shadower->bindTextures(GL_TEXTURE0 + 1);
-
-            // Set uniforms
-            sh.set("Projection",  camera.projection)
-              .set("View",        camera.modelview)
-              .set("CameraPos",   camera.position)
-              .set("far_plane",   camera.far_plane)
-              .set("use_shadow",  shadower != nullptr)
-              .set("LightNumber", (int)lights.size());
-
-            for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
-                sh.set("LightPos["    + std::to_string(iLight) + "]", lights[iLight].position)
-                  .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
-                  .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
-            }
-        }
-        break;
-
-    case Cookable::CookType::Particle:
-    case Cookable::CookType::Geometry:
-        sh.set("Projection", camera.projection)
-          .set("View",       camera.modelview);
-        break;
-    }
-    return sh;
-}
-
 void Renderer::_clear() {
     _heapEntities.clear();
     _heapText.clear();

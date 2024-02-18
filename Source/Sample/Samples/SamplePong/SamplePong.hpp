@@ -44,12 +44,10 @@ private:
     void _ia();
     void _apply_actions(_Player&);
     void _physics(float dt_ms);
-
-    //void _draw_hitbox();
+    void _update_hitboxes(bool show);
 
     // Events
     void _update(const CommonEvents::StateUpdated&);
-    //void _draw(const SceneEvents::Draw&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Scene
