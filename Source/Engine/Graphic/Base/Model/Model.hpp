@@ -34,11 +34,8 @@ public:
     // Methods
     void setMeshVao(Mesh& mesh) const;
 
-    void draw(Shader& shader) const;
-    void drawElements(Shader& shader) const;
-
-    // Helpers
-    Ref Clone() const;
+    void draw(Shader& shader, const glm::mat4& localTransform) const;
+    void drawElements(Shader& shader, const glm::mat4& localTransform) const;
 
     // Data tree for storing organized meshes
     struct Node {
@@ -49,10 +46,6 @@ public:
 
     std::unique_ptr<Node> root = nullptr;
 
-    // Local info 
-    glm::mat4 localTransform = glm::mat4(1.0f);
-    glm::vec4 localMaterial  = glm::vec4(1.0f);
-
 protected:
     Model(SimpleShape shape = SimpleShape::Custom);
     Model(const std::string& path);
@@ -60,7 +53,6 @@ protected:
     void _loadModel(const std::string& path);
     void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
     void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
-    void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst) const;
 
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
 

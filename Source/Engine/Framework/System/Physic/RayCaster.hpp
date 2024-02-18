@@ -2,9 +2,9 @@
 
 #include <optional>
 
-#include "../../Graphic/Camera.hpp"
-#include "../../Graphic/Base/Model/Model.hpp"
-#include "../../Graphic/Base/Model/Primitive/Quad.hpp"
+#include "../../../Graphic/Camera.hpp"
+#include "../../../Graphic/Base/Model/Model.hpp"
+#include "../../../Graphic/Base/Model/Primitive/Quad.hpp"
 
 namespace RayCaster {
 	// Note: return vec4: {vec3(Point.xyz), float distance}

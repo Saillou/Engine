@@ -6,9 +6,11 @@
 
 #include "../Core/ECS.hpp"
 #include "../Core/System.hpp"
-#include "../Component/RenderComponent.hpp"
+#include "../Component/BodyComponent.hpp"
+#include "../Component/DrawComponent.hpp"
+#include "../Component/BatchComponent.hpp"
 
-#include "ShadowRender.hpp"
+#include "Render/ShadowRender.hpp"
 #include "../../Graphic/TextEngine.hpp"
 #include "../../Graphic/Wrapper/Framebuffer.hpp"
 #include "../../Graphic/Camera.hpp"
@@ -19,6 +21,7 @@ struct RenderSystem : public System, Cookable {
 	RenderSystem(Camera& camera, std::vector<Light>& lights);
 	~RenderSystem() = default;
 
+	void init() override;
 	void update(); // delta time too?
 
 private:
@@ -44,7 +47,7 @@ private:
 	//struct _DrawEntity {
 	//	size_t drawId;
 	//	float priority;
-	//	RenderComponent::RenderType type;
+	//	BodyComponent::RenderType type;
 	//	Model::Ref model = nullptr;
 	//};
 
@@ -61,7 +64,7 @@ private:
 
 	//// External shaders
 	//struct _UserShaderMemo {
-	//	RenderComponent::RenderType type; // >= DrawType::Custom
+	//	BodyComponent::RenderType type; // >= DrawType::Custom
 	//	ShaderGetter getter;
 	//	ShaderSetter setter;
 	//};

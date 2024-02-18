@@ -1,7 +1,7 @@
 #include "RayCaster.hpp"
 
-#include "../../Graphic/Base/Model/MeshIterator.hpp"
-#include "../../Graphic/Base/Model/Primitive/Cube.hpp"
+#include "../../../Graphic/Base/Model/MeshIterator.hpp"
+#include "../../../Graphic/Base/Model/Primitive/Cube.hpp"
 
 using namespace glm;
 
@@ -49,7 +49,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 		if (optIntersect.has_value())
 			return;
 
-		optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * model->localTransform * node_acc.transform);
+		optIntersect = RayCaster::Intersect(mousePos, camera, *mesh, quat * node_acc.transform);
     });
 
 	return optIntersect;
@@ -81,7 +81,7 @@ float RayCaster::ApproxDistance(const glm::vec3& origin, const Model::Ref model,
 
 	// Check all meshes of root
 	float avg_distance = 0.0f;
-	const glm::mat4 Q = quat * model->localTransform * model->root->transform;
+	const glm::mat4 Q = quat * model->root->transform;
 
 	for (const auto& mesh : model->root->meshes) {
 		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);

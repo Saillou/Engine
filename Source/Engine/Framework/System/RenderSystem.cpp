@@ -2,7 +2,6 @@
 
 #include "../../Graphic/Base/Scene.hpp"
 #include "../../Utils/Timer.hpp"
-#include "../../Utils/Physic/RayCaster.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -11,7 +10,17 @@ RenderSystem::RenderSystem(Camera& camera, std::vector<Light>& lights) :
     _camera(camera),
     _lights(lights)
 {
-    ECS::registerComponent<RenderComponent>();
+}
+
+void RenderSystem::init() 
+{
+    Signature signature;
+
+    signature.set(ECS::getComponentType<BodyComponent>());
+    signature.set(ECS::getComponentType<DrawComponent>());
+    signature.set(ECS::getComponentType<BatchComponent>());
+
+    ECS::setSystemSignature<RenderSystem>(signature);
 }
 
 void RenderSystem::update()
@@ -83,17 +92,15 @@ Shader& RenderSystem::_setShader(Cookable::CookType type, const Camera& camera, 
 void RenderSystem::_compute() 
 {
     for (auto& entity : m_entities) {
-        RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(entity);
+        DrawComponent&  draw  = ECS::getComponent<DrawComponent>(entity);
+        BodyComponent&  body  = ECS::getComponent<BodyComponent>(entity);
+        BatchComponent& batch = ECS::getComponent<BatchComponent>(entity);
 
-        if (renderComponent.type == RenderComponent::Hidden)
+        if (draw.type == DrawComponent::Hidden)
             continue;
 
-        renderComponent.model->_setBatch(renderComponent.transforms, renderComponent.materials);
+        body.model->_setBatch(batch.transforms, batch.materials);
     }
-
-    //if(update_buffer)
-    //renderComponent.model->_setBatch(renderComponent.transforms, renderComponent.materials);
-
 }
 
 // Draws
@@ -102,18 +109,19 @@ void RenderSystem::_drawShadows()
     _shadower.render(_camera, _lights, [=](Shader& sh) 
         {
             for (auto& entity: m_entities) {
-                RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(entity);
+                DrawComponent& draw = ECS::getComponent<DrawComponent>(entity);
+                BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
 
-                if (renderComponent.type == RenderComponent::Hidden)
+                if (draw.type == DrawComponent::Hidden)
                     continue;
 
-                //if (!renderComponent.model->localMaterial.cast_shadow)
+                //if (!bodyComponent.model->localMaterial.cast_shadow)
                 //    continue;
 
                 //if (di.priority < 0.0f)
                 //    break;
 
-                renderComponent.model->drawElements(sh);
+                body.model->drawElements(sh, body.localTransform);
             }
         }
     );
@@ -121,21 +129,22 @@ void RenderSystem::_drawShadows()
 
 void RenderSystem::_drawEntity(Entity entity) 
 {
-    RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(entity);
+    DrawComponent& draw = ECS::getComponent<DrawComponent>(entity);
+    BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
 
-    if (renderComponent.type == RenderComponent::Hidden)
+    if (draw.type == DrawComponent::Hidden)
         return;
 
-    if(renderComponent.type < RenderComponent::Custom) {
-        renderComponent.model->draw([&]() -> Shader& {
-            switch (renderComponent.type) {
-                case RenderComponent::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
-                case RenderComponent::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
-                case RenderComponent::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
-                case RenderComponent::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
-                case RenderComponent::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
+    if(draw.type < DrawComponent::Custom) {
+        body.model->draw([&]() -> Shader& {
+            switch (draw.type) {
+                case DrawComponent::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
+                case DrawComponent::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
+                case DrawComponent::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
+                case DrawComponent::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
+                case DrawComponent::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
             } return _placeHolder;
-        }().set("diffuse_color", renderComponent.model->localMaterial));
+        }().set("diffuse_color", body.localMaterial), body.localTransform);
     }
     //else {
     //    if (_userShadersName.find(type) == _userShadersName.cend())

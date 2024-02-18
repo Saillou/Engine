@@ -1,5 +1,6 @@
 #include "Window.hpp"
 
+#include "../Framework/Core/ECS.hpp"
 #include "../Events/CommonEvents.hpp"
 
 #include <vector>
@@ -12,6 +13,8 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
     m_is_fullscreen(start_fs),
     m_title(title)
 {
+    ECS::init();
+
     // Create window
     _init(title);
 

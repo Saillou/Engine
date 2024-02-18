@@ -1,8 +1,21 @@
 #include "ECS.hpp"
 
+#include "../Component/BodyComponent.hpp"
+#include "../Component/DrawComponent.hpp"
+#include "../Component/BatchComponent.hpp"
+
+static bool initialized = false;
+
 void ECS::init()
 {
-    // init all other managers here, for now not needed
+    if (initialized)
+        return;
+
+    ECS::registerComponent<BodyComponent>();
+    ECS::registerComponent<DrawComponent>();
+    ECS::registerComponent<BatchComponent>();
+
+    initialized = true;
 }
 
 Entity ECS::createEntity()

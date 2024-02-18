@@ -1,7 +1,5 @@
 #include "SamplePong.hpp"
 
-#include <Engine/Utils/Physic/Collider.hpp>
-
 SamplePong::SamplePong() :
     m_scene(Service<Window>::get().scene())
 {
@@ -39,79 +37,96 @@ void SamplePong::_init_game_elements() {
 void SamplePong::_create_entities() {
     // ---- Field -----
     {
-        m_entities["field"] = ECS::createEntity();
+        DrawComponent draw;
+        draw.type = DrawComponent::Shadows;
 
-        RenderComponent render;
-        render.type  = RenderComponent::Shadows;
-        render.model = Model::Create(Model::Quad);
-        render.model->localMaterial = glm::vec4(1, 1, 1, 0.2f);
+        BodyComponent body;
+        body.model          = Model::Create(Model::Quad);
+        body.localMaterial  = glm::vec4(1, 1, 1, 0.2f);
 
-        glm::mat4& pose(render.model->localTransform);
+        glm::mat4& pose(body.localTransform);
         pose = glm::translate(pose, glm::vec3(0, 0.1f, 0));
         pose = glm::scale(pose, glm::vec3(2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
 
-        render.transforms = {
+        BatchComponent batch;
+        batch.transforms = {
             glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
         };
 
-        ECS::addComponent(m_entities["field"], render);
+        m_entities["field"] = ECS::createEntity();
+        ECS::addComponent(m_entities["field"], body);
+        ECS::addComponent(m_entities["field"], draw);
+        ECS::addComponent(m_entities["field"], batch);
     }
 
     // ---- Wall -----
     {
-        m_entities[_Wall::Entity_Name] = ECS::createEntity();
+        DrawComponent draw;
+        draw.type = DrawComponent::Shadows;
 
-        RenderComponent render;
-        render.type  = RenderComponent::Shadows;
-        render.model = Model::Create(Model::Quad);
-        render.model->localMaterial = glm::vec4(1, 1, 1, 0.5f);
+        BodyComponent body;
+        body.model          = Model::Create(Model::Quad);
+        body.localMaterial  = glm::vec4(1, 1, 1, 0.5f);
 
-        glm::mat4& pose(render.model->localTransform);
+        glm::mat4& pose(body.localTransform);
         pose = glm::translate(pose, glm::vec3(0, -0.1f, 0));
         pose = glm::scale(pose, glm::vec3(1.0f, 0.2f, 2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(0, 1, 0));
 
-        render.transforms = {
+        BatchComponent batch;
+        batch.transforms = {
             glm::translate(glm::mat4(1.0f), m_wall_1.pos),
             glm::translate(glm::mat4(1.0f), m_wall_2.pos)
         };
 
-        ECS::addComponent(m_entities[_Wall::Entity_Name], render);
+        m_entities[_Wall::Entity_Name] = ECS::createEntity();
+        ECS::addComponent(m_entities[_Wall::Entity_Name], body);
+        ECS::addComponent(m_entities[_Wall::Entity_Name], draw);
+        ECS::addComponent(m_entities[_Wall::Entity_Name], batch);
     }
 
     // ---- Player -----
     {
-        m_entities[_Player::Entity_Name] = ECS::createEntity();
+        DrawComponent draw;
+        draw.type = DrawComponent::Shadows;
 
-        RenderComponent render;
-        render.type = RenderComponent::Shadows;
-        render.model = Model::Create(Model::Cube);
-        render.model->localMaterial = glm::vec4(1.0f);
-        render.model->localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
+        BodyComponent body;
+        body.model          = Model::Create(Model::Cube);
+        body.localMaterial  = glm::vec4(1.0f);
+        body.localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
         
-        render.transforms = {
+        BatchComponent batch;
+        batch.transforms = {
             glm::translate(glm::mat4(1.0f), m_player_human.pos),
             glm::translate(glm::mat4(1.0f), m_player_ia.pos)
         };
 
-        ECS::addComponent(m_entities[_Player::Entity_Name], render);
+        m_entities[_Player::Entity_Name] = ECS::createEntity();
+        ECS::addComponent(m_entities[_Player::Entity_Name], body);
+        ECS::addComponent(m_entities[_Player::Entity_Name], draw);
+        ECS::addComponent(m_entities[_Player::Entity_Name], batch);
     }
 
     // ---- Ball -----
     {
-        m_entities[_Ball::Entity_Name] = ECS::createEntity();
+        DrawComponent draw;
+        draw.type = DrawComponent::Shadows;
 
-        RenderComponent render;
-        render.type  = RenderComponent::Shadows;
-        render.model = Model::Create(Model::Sphere);
-        render.model->localMaterial  = glm::vec4(1.0f);
-        render.model->localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
-        render.transforms = { 
+        BodyComponent body;
+        body.model          = Model::Create(Model::Sphere);
+        body.localMaterial  = glm::vec4(1.0f);
+        body.localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+
+        BatchComponent batch;
+        batch.transforms = {
             glm::translate(glm::mat4(1.0f), m_ball.pos) 
         };
 
-        ECS::addComponent(m_entities[_Ball::Entity_Name], render);
+        m_entities[_Ball::Entity_Name] = ECS::createEntity();
+        ECS::addComponent(m_entities[_Ball::Entity_Name], body);
+        ECS::addComponent(m_entities[_Ball::Entity_Name], draw);
+        ECS::addComponent(m_entities[_Ball::Entity_Name], batch);
     }
 }
 
@@ -153,9 +168,12 @@ void SamplePong::_physics(float dt_ms) {
         const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), collider.pos);
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
+        const auto& body_collider = ECS::getComponent<BodyComponent>(m_entities[collider.name]);
+        const auto& body_ball     = ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name]);
+
         auto collision_point = Collider::CheckHitboxes(
-            ECS::getComponent<RenderComponent>(m_entities[collider.name]).model, body_quat,
-            ECS::getComponent<RenderComponent>(m_entities[_Ball::Entity_Name]).model, ball_quat
+            body_collider.model, body_quat * body_collider.localTransform,
+            body_ball.model,     ball_quat * body_ball.localTransform
         );
 
         if (!collision_point.has_value())
@@ -186,12 +204,12 @@ void SamplePong::_physics(float dt_ms) {
 
 void SamplePong::_update_entities()
 {
-    ECS::getComponent<RenderComponent>(m_entities[_Player::Entity_Name]).transforms = {
+    ECS::getComponent<BatchComponent>(m_entities[_Player::Entity_Name]).transforms = {
         glm::translate(glm::mat4(1.0f), m_player_human.pos),
         glm::translate(glm::mat4(1.0f), m_player_ia.pos)
     };
 
-    ECS::getComponent<RenderComponent>(m_entities[_Ball::Entity_Name]).transforms = {
+    ECS::getComponent<BatchComponent>(m_entities[_Ball::Entity_Name]).transforms = {
         glm::translate(glm::mat4(1.0f), m_ball.pos)
     };
 }
@@ -202,35 +220,42 @@ void SamplePong::_update_hitboxes(bool show) {
     if (m_entities.find("Hitbox") == m_entities.cend()) {
         m_entities["Hitbox"] = ECS::createEntity();
 
-        RenderComponent render;
-        render.type = RenderComponent::Geometry;
-        render.model = Model::Create(Model::Cube);
-        render.model->localMaterial = glm::vec4(1, 0, 0, 1);
+        DrawComponent draw;
+        draw.type = DrawComponent::Geometry;
 
-        ECS::addComponent(m_entities["Hitbox"], render);
+        BodyComponent body;
+        body.model = Model::Create(Model::Cube);
+        body.localMaterial = glm::vec4(1, 0, 0, 1);
+
+        BatchComponent batch;
+        batch.transforms = {};
+
+        ECS::addComponent(m_entities["Hitbox"], draw);
+        ECS::addComponent(m_entities["Hitbox"], body);
+        ECS::addComponent(m_entities["Hitbox"], batch);
     }
 
     // Get component
-    RenderComponent& renderComponent = ECS::getComponent<RenderComponent>(m_entities["Hitbox"]);
+    BatchComponent& batch = ECS::getComponent<BatchComponent>(m_entities["Hitbox"]);
 
     if (!show) {
-        renderComponent.transforms.clear();
+        batch.transforms.clear();
         return;
     }
 
     // Get first mesh's obb of an entity
     auto __get_hitbox = [=](const std::string& entity_name, const glm::vec3& pos) {
-        const RenderComponent& renderComponentEntity = ECS::getComponent<RenderComponent>(m_entities[entity_name]);
+        const BodyComponent& bodyEntity = ECS::getComponent<BodyComponent>(m_entities[entity_name]);
 
         return
             glm::translate(glm::mat4(1.0f), pos) *
-            renderComponentEntity.model->localTransform *
-            renderComponentEntity.model->root->transform *
-            renderComponentEntity.model->root->meshes.front()->obb();
+            bodyEntity.localTransform *
+            bodyEntity.model->root->transform *
+            bodyEntity.model->root->meshes.front()->obb();
     };
 
     // Draw hitboxes
-    renderComponent.transforms =
+    batch.transforms =
     {
         __get_hitbox(_Player::Entity_Name, m_player_ia.pos),
         __get_hitbox(_Player::Entity_Name, m_player_human.pos),

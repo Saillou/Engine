@@ -11,8 +11,16 @@ Scene::Scene(int widthHint, int heightHint):
     _internalFrame(Framebuffer::Unique, widthHint, heightHint)
 {
     _init_gl_config();
-    m_render_system = ECS::registerSystem<RenderSystem>(camera, lights);
     _quad.mesh->setupVao();
+
+    // Init default system
+    m_render_system   = ECS::registerSystem<RenderSystem>(camera, lights);
+    m_caster_system   = ECS::registerSystem<CasterSystem>();
+    m_collider_system = ECS::registerSystem<ColliderSystem>();
+
+    m_render_system->init();
+    m_caster_system->init();
+    m_collider_system->init();
 }
 
 void Scene::clear() {
@@ -136,4 +144,15 @@ int Scene::height() const {
 
 Framebuffer& Scene::framebuffer_main() {
     return _framebuffer_main;
+}
+
+// System direct access
+std::shared_ptr<RenderSystem> Scene::renderer() {
+    return m_render_system;
+}
+std::shared_ptr<CasterSystem> Scene::raycaster() {
+    return m_caster_system;
+}
+std::shared_ptr<ColliderSystem> Scene::collider() {
+    return m_collider_system;
 }
