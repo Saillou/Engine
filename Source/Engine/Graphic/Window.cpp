@@ -155,10 +155,7 @@ void Window::_init(const char* title) {
 
 // Private
 void Window::_resize(int width, int height) {
-    TextEngine::SetViewport(0, 0, width, height);
-
     if (m_scene) {
-        m_scene->camera().screenSize = glm::vec2(width, height);
         m_scene->resize(width, height);
     }
 

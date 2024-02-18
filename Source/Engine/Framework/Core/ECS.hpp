@@ -29,8 +29,8 @@ struct ECS
     template<typename T>
     static ComponentType getComponentType();
 
-    template<typename T>
-    static std::shared_ptr<T> registerSystem();
+    template<typename T, typename... Args>
+    static std::shared_ptr<T> registerSystem(Args&&... args);
 
     template<typename T>
     static void setSystemSignature(Signature signature);
@@ -83,10 +83,10 @@ inline ComponentType ECS::getComponentType()
     return ComponentManager::getComponentType<T>();
 }
 
-template<typename T>
-inline std::shared_ptr<T> ECS::registerSystem()
+template<typename T, typename... Args>
+inline std::shared_ptr<T> ECS::registerSystem(Args&&... args)
 {
-    return SystemManager::registerSystem<T>();
+    return SystemManager::registerSystem<T>(std::forward<Args>(args)...);
 }
 
 template<typename T>

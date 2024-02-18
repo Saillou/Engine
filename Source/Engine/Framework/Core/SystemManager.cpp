@@ -13,7 +13,6 @@ void SystemManager::entityDestroyed(Entity entity)
     for (auto const& pair : manager.m_systems)
     {
         auto const& system = pair.second;
-        system->m_entities.erase(entity);
         system->removeEntity(entity);
     }
 }
@@ -30,12 +29,10 @@ void SystemManager::entitySignatureChanged(Entity entity, Signature signature)
 
         if ((signature & systemSignature) == systemSignature)
         {
-            system->m_entities.insert(entity);
             system->addEntity(entity);
         }
         else
         {
-            system->m_entities.erase(entity);
             system->removeEntity(entity);
         }
     }

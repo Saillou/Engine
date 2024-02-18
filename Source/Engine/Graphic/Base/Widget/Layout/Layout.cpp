@@ -1,4 +1,5 @@
 #include "Layout.hpp"
+#include <iostream>
 
 Layout::Layout(Scene& scene) :
     Widget(Style::Tag::Layout, EventListened::MouseMove | EventListened::MouseButton),

@@ -9,8 +9,10 @@ SamplePong::SamplePong() :
     _create_entities();
 
     // Enable events
-    _subscribe(&SamplePong::_update);
     _subscribe(&SamplePong::_on_key_pressed);
+    _subscribe(&SamplePong::_update);
+    _subscribe(&SamplePong::_draw);
+    _subscribe([=](const SceneEvents::RenderFinished&) { m_ui.show(); });
 
     // Go
     m_timer.tic();
@@ -18,11 +20,11 @@ SamplePong::SamplePong() :
 
 void SamplePong::_init_game_elements() {
     // Scene
-    m_scene.lights() = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
+    m_scene.lights = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
 
     // Camera
-    m_scene.camera().position = glm::vec3(0, m_distance, -6.0f);
-    m_scene.camera().direction = glm::vec3(0, 0, 0);
+    m_scene.camera.position = glm::vec3(0, m_distance, -6.0f);
+    m_scene.camera.direction = glm::vec3(0, 0, 0);
 
     // Game elements
     m_player_human.pos = glm::vec3(0.0f, 0.0f, -2.0f);
@@ -163,19 +165,17 @@ void SamplePong::_update_entities() {
     };
 }
 
-void SamplePong::_draw() {
+void SamplePong::_draw(const SceneEvents::Draw&) {
     for (auto& entity : m_models) {
         if (entity.first.find("debug") != std::string::npos)
             continue;
 
-        m_scene.renderer().draw(Render::Shadows, entity.second);
+        //m_scene.renderer().draw(Render::Shadows, entity.second);
     }
 
     if (m_ui.show_debug) {
         _draw_hitbox();
     }
-
-    m_ui.show();
 }
 
 void SamplePong::_draw_hitbox() {
@@ -204,7 +204,7 @@ void SamplePong::_draw_hitbox() {
         __get_hitbox(_Ball::Entity_Name, m_ball.pos)
     };
 
-    m_scene.renderer().draw(Render::Geometry, m_models["debug_cube"]);
+    //m_scene.renderer().draw(Render::Geometry, m_models["debug_cube"]);
 }
 
 void SamplePong::_apply_actions(_Player& player)
@@ -218,7 +218,7 @@ void SamplePong::_apply_actions(_Player& player)
 }
 
 // Events
-void SamplePong::_update(const SceneEvents::Draw&)
+void SamplePong::_update(const CommonEvents::StateUpdated&)
 {
     if (m_ui.want_restart) {
         _init_game_elements();
@@ -231,8 +231,6 @@ void SamplePong::_update(const SceneEvents::Draw&)
 
     _physics(m_timer.elapsed<Timer::microsecond>() / 1000.0f);
     _update_entities();
-
-    _draw();
 
     m_timer.tic();
 }
@@ -270,9 +268,9 @@ void SamplePong::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
             m_theta += 0.01f * dir.x;
             m_distance += 0.05f * dir.y;
 
-            scene.camera().position.x = m_distance * sin(m_theta);
-            scene.camera().position.y = m_distance * cos(m_theta);
-            scene.camera().position.z += 0.05f * dir.z;
+            scene.camera.position.x = m_distance * sin(m_theta);
+            scene.camera.position.y = m_distance * cos(m_theta);
+            scene.camera.position.z += 0.05f * dir.z;
         }
     }
 

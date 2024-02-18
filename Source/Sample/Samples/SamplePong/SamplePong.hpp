@@ -45,11 +45,11 @@ private:
     void _apply_actions(_Player&);
     void _physics(float dt_ms);
 
-    void _draw();
     void _draw_hitbox();
 
     // Events
-    void _update(const SceneEvents::Draw&);
+    void _update(const CommonEvents::StateUpdated&);
+    void _draw(const SceneEvents::Draw&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Scene

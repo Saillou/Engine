@@ -1,4 +1,5 @@
 #include "Scene.hpp"
+#include "../TextEngine.hpp"
 
 #include <glad/glad.h>
 
@@ -10,7 +11,8 @@ Scene::Scene(int widthHint, int heightHint):
     _internalFrame(Framebuffer::Unique, widthHint, heightHint)
 {
     _init_gl_config();
-    _quad.mesh->setupVao();
+    m_render_system = ECS::registerSystem<RenderSystem>(camera, lights);
+    //_quad.mesh->setupVao();
 }
 
 void Scene::clear() {
@@ -23,38 +25,40 @@ void Scene::run() {
     // Setup
     _update_camera();
 
-    // Application draw
-    _renderer._clear();
-    _renderer._deferred = m_enable_deffered_draw;
+    //// Application draw
+    //_renderer._clear();
+    //_renderer._deferred = m_enable_deffered_draw;
 
     Event::Emit(SceneEvents::PreDraw());
 
-    if (!m_enable_deffered_draw)
-        clear();
+    //if (!m_enable_deffered_draw)
+    //    clear();
 
     Viewport(width(), height());
-    Event::Emit(SceneEvents::Draw());
 
-    if (m_enable_deffered_draw) {
-        // Resolve draw order and render shadow scene
-        Viewport(_renderer._shadower.width(), _renderer._shadower.height());
-        _renderer._compute();
+    m_render_system->update();
+    //Event::Emit(SceneEvents::Draw());
 
-        // Render main scene
-        Viewport(width(), height());
-        _framebuffer_main.bind();
-        {
-            _framebuffer_main.clear();
+    //if (m_enable_deffered_draw) {
+    //    // Resolve draw order and render shadow scene
+    //    Viewport(_renderer._shadower.width(), _renderer._shadower.height());
+    //    _renderer._compute();
 
-            _renderer._deferred = false;
-            _renderer._draw();
-        }
-        _framebuffer_main.unbind();
-    
-        // Apply filters
-        Event::Emit(SceneEvents::PostDraw());
-        drawFrame(_framebuffer_main);
-    }
+    //    // Render main scene
+    //    Viewport(width(), height());
+    //    _framebuffer_main.bind();
+    //    {
+    //        _framebuffer_main.clear();
+
+    //        _renderer._deferred = false;
+    //        _renderer._draw();
+    //    }
+    //    _framebuffer_main.unbind();
+    //
+    //    // Apply filters
+    //    Event::Emit(SceneEvents::PostDraw());
+    //    drawFrame(_framebuffer_main);
+    //}
 
     Event::Emit(SceneEvents::RenderFinished());
 }
@@ -78,16 +82,16 @@ void Scene::drawFrame(const Framebuffer& framebuffer) {
     
     // Draw
     _quad.texture_location = 0;
-    _renderer.quad(_quad);
+    //_renderer.quad(_quad); // TODO: Don't forget me
 
     // set back to original state.
     Texture::deactivate(GL_TEXTURE_2D, GL_TEXTURE0);
     glEnable(GL_DEPTH_TEST); 
 }
 
-void Scene::directDraw(bool b) {
-    m_enable_deffered_draw = !b;
-}
+//void Scene::directDraw(bool b) {
+//    m_enable_deffered_draw = !b;
+//}
 
 void Scene::Viewport(int width, int height) {
     glViewport(0, 0, width, height);
@@ -99,6 +103,8 @@ void Scene::Viewport(int x, int y, int width, int height) {
 void Scene::resize(int width, int height) {
     m_width  = width;
     m_height = height;
+
+    TextEngine::SetViewport(0, 0, width, height);
     _framebuffer_main.resize(width, height);
 
     _update_camera();
@@ -114,13 +120,14 @@ void Scene::_init_gl_config() {
 }
 
 void Scene::_update_camera() {
+    camera.screenSize = glm::vec2(width(), height());
+
     if (m_height == 0)
         return;
-
     float aspect = (float)m_width / m_height;
 
-    _renderer._camera.lookAt();
-    _renderer._camera.usePerspective(aspect);
+    camera.lookAt();
+    camera.usePerspective(aspect);
 }
 
 int Scene::width() const {
@@ -129,15 +136,15 @@ int Scene::width() const {
 int Scene::height() const {
     return m_height;
 }
-Renderer& Scene::renderer() {
-    return _renderer;
-}
-Camera& Scene::camera() {
-    return _renderer._camera;
-}
-std::vector<Light>& Scene::lights() {
-    return _renderer._lights;
-}
+//Renderer& Scene::renderer() {
+//    return _renderer;
+//}
+//Camera& Scene::camera() {
+//    return _renderer._camera;
+//}
+//std::vector<Light>& Scene::lights() {
+//    return _renderer._lights;
+//}
 
 Framebuffer& Scene::framebuffer_main() {
     return _framebuffer_main;
