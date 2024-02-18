@@ -76,7 +76,7 @@ Model::Model(SimpleShape shape) :
     if (!mesh)
         return;
 
-    _setMeshVao(*mesh);
+    setMeshVao(*mesh);
     root->meshes.emplace_back(std::move(mesh));
 }
 
@@ -88,6 +88,22 @@ Model::Model(const std::string& path):
     m_instances.bindData(sizeof(mat4));
 
     _loadModel(path);
+}
+
+void Model::setMeshVao(Mesh& mesh) const {
+    mesh.setupVao();
+
+    m_colors.bind();
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glVertexAttribDivisor(3, 1);
+
+    m_instances.bind();
+    for (int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(4 + i);
+        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(i * sizeof(vec4)));
+        glVertexAttribDivisor(4 + i, 1);
+    }
 }
 
 void Model::draw(Shader& shader) const 
@@ -165,22 +181,6 @@ std::vector<glm::mat4> Model::GetMeshesPoses() const
     });
 
     return quats;
-}
-
-void Model::_setMeshVao(Mesh& mesh) const{
-    mesh.setupVao();
-
-    m_colors.bind();
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
-    glVertexAttribDivisor(3, 1);
-
-    m_instances.bind();
-    for (int i = 0; i < 4; i++) {
-        glEnableVertexAttribArray(4 + i);
-        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(i * sizeof(vec4)));
-        glVertexAttribDivisor(4 + i, 1);
-    }
 }
 
 void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
@@ -278,7 +278,7 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
     }
 
     outMesh.compute_obb();
-    _setMeshVao(outMesh);
+    setMeshVao(outMesh);
 }
 
 void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst) const
@@ -297,5 +297,5 @@ void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& 
     }
 
     outMesh.compute_obb();
-    _setMeshVao(outMesh);
+    setMeshVao(outMesh);
 }

@@ -2,13 +2,13 @@
 
 BaseFilter::BaseFilter() : _framebuffer(Framebuffer::Unique)
 {
-    // ..
+    _surface.mesh->setupVao();
 }
 BaseFilter::BaseFilter(Shader& sh) : 
     _framebuffer(Framebuffer::Unique),
     _shader(sh)
 {
-    // ..
+    _surface.mesh->setupVao();
 }
 
 void BaseFilter::apply(Framebuffer& fIn, int texture_location) {

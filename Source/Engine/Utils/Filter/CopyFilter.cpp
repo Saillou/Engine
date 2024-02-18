@@ -6,6 +6,8 @@ CopyFilter::CopyFilter(int width, int height):
     _frame_solo_b(Framebuffer::Unique, width, height),
     _frame_solo_c(Framebuffer::Unique, width, height)
 {
+    _surface.mesh->setupVao();
+
     _shader        
         .attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec3", "aPos")

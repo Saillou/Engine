@@ -2983,7 +2983,7 @@ struct ImFontAtlas
     // [BETA] Custom Rectangles/Glyphs API
     //-------------------------------------------
 
-    // You can request arbitrary rectangles to be packed into the atlas, for your own purposes.
+    // You can request arbitrary rectangles to be packed into the atlas, for your own purtransforms.
     // - After calling Build(), you can query the rectangle position and render your pixels.
     // - If you render colored output, set 'atlas->TexPixelsUseColors = true' as this may help some backends decide of prefered texture format.
     // - You can also request your rectangles to be mapped as font glyph (given a font + Unicode point),

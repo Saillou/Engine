@@ -32,6 +32,8 @@ public:
     virtual ~Model() = default;
 
     // Methods
+    void setMeshVao(Mesh& mesh) const;
+
     void draw(Shader& shader) const;
     void drawElements(Shader& shader) const;
 
@@ -70,6 +72,5 @@ protected:
     void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
     void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst) const;
 
-    void _setMeshVao(Mesh& mesh) const;
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
 };

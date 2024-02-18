@@ -8,6 +8,7 @@ Widget::Widget(Style::Tag tag, int evt):
 {
 	// All screen by default
 	_surface = std::make_unique<Quad>();
+	_surface->mesh->setupVao();
 }
 
 void Widget::_setParent(Widget* child, Layout* parent) {
