@@ -12,7 +12,7 @@ Scene::Scene(int widthHint, int heightHint):
 {
     _init_gl_config();
     m_render_system = ECS::registerSystem<RenderSystem>(camera, lights);
-    //_quad.mesh->setupVao();
+    _quad.mesh->setupVao();
 }
 
 void Scene::clear() {
@@ -24,6 +24,7 @@ void Scene::clear() {
 void Scene::run() {
     // Setup
     _update_camera();
+    clear();
 
     //// Application draw
     //_renderer._clear();
@@ -89,10 +90,6 @@ void Scene::drawFrame(const Framebuffer& framebuffer) {
     glEnable(GL_DEPTH_TEST); 
 }
 
-//void Scene::directDraw(bool b) {
-//    m_enable_deffered_draw = !b;
-//}
-
 void Scene::Viewport(int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -136,15 +133,6 @@ int Scene::width() const {
 int Scene::height() const {
     return m_height;
 }
-//Renderer& Scene::renderer() {
-//    return _renderer;
-//}
-//Camera& Scene::camera() {
-//    return _renderer._camera;
-//}
-//std::vector<Light>& Scene::lights() {
-//    return _renderer._lights;
-//}
 
 Framebuffer& Scene::framebuffer_main() {
     return _framebuffer_main;

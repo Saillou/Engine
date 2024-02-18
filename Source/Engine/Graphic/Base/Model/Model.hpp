@@ -16,7 +16,7 @@
 
 struct Model
 {
-    friend struct Renderer;
+    friend struct RenderSystem;
 
     enum SimpleShape {
         Custom,
@@ -39,7 +39,6 @@ public:
 
     // Helpers
     Ref Clone() const;
-    std::vector<glm::mat4> GetMeshesPoses() const;
 
     // Data tree for storing organized meshes
     struct Node {
@@ -51,17 +50,8 @@ public:
     std::unique_ptr<Node> root = nullptr;
 
     // Local info 
-    // - TODO: remove and add as RenderComponent -
     glm::mat4 localTransform = glm::mat4(1.0f);
     glm::vec4 localMaterial  = glm::vec4(1.0f);
-
-    std::vector<glm::mat4> transforms = {};
-    std::vector<glm::vec4> materials  = {};
-    // ----------------------------------------
-
-    Buffer m_colors;
-    Buffer m_instances;
-    // ---------------------------------------
 
 protected:
     Model(SimpleShape shape = SimpleShape::Custom);
@@ -73,4 +63,7 @@ protected:
     void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst) const;
 
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
+
+    Buffer m_colors;
+    Buffer m_instances;
 };

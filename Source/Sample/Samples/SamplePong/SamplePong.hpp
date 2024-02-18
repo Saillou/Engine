@@ -45,16 +45,16 @@ private:
     void _apply_actions(_Player&);
     void _physics(float dt_ms);
 
-    void _draw_hitbox();
+    //void _draw_hitbox();
 
     // Events
     void _update(const CommonEvents::StateUpdated&);
-    void _draw(const SceneEvents::Draw&);
+    //void _draw(const SceneEvents::Draw&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Scene
     Scene& m_scene;
-    std::unordered_map<std::string, Model::Ref> m_models;
+    std::unordered_map<std::string, Entity> m_entities;
 
     _Ball   m_ball;
     _Player m_player_human;

@@ -106,7 +106,7 @@ void Model::setMeshVao(Mesh& mesh) const {
     }
 }
 
-void Model::draw(Shader& shader) const 
+void Model::draw(Shader& shader) const
 {
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) 
     {
@@ -120,7 +120,7 @@ void Model::draw(Shader& shader) const
     });
 }
 
-void Model::drawElements(Shader& shader) const 
+void Model::drawElements(Shader& shader) const
 {
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
@@ -167,20 +167,6 @@ Model::Ref Model::Clone() const
     }
 
     return model_copied;
-}
-
-std::vector<glm::mat4> Model::GetMeshesPoses() const
-{
-    std::vector<glm::mat4> quats;
-
-    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
-    {
-        quats.push_back(
-            localTransform * node_acc.transform * mesh->obb()
-        );
-    });
-
-    return quats;
 }
 
 void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {

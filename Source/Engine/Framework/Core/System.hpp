@@ -11,6 +11,6 @@ struct System
     virtual void addEntity(Entity entity);
     virtual void removeEntity(Entity entity);
 
-private:
+protected:
     std::set<Entity> m_entities;
 };

@@ -11,7 +11,7 @@ SamplePong::SamplePong() :
     // Enable events
     _subscribe(&SamplePong::_on_key_pressed);
     _subscribe(&SamplePong::_update);
-    _subscribe(&SamplePong::_draw);
+    //_subscribe(&SamplePong::_draw);
     _subscribe([=](const SceneEvents::RenderFinished&) { m_ui.show(); });
 
     // Go
@@ -38,53 +38,84 @@ void SamplePong::_init_game_elements() {
 }
 
 void SamplePong::_create_entities() {
-    // Create entities shape
-    m_models["field"] = Model::Create(Model::Quad);
+    // ---- Field -----
     {
-        m_models["field"]->localMaterial = glm::vec4(1, 1, 1, 0.2f);
-        //m_models["field"]->localMaterial.cast_shadow = false;
+        m_entities["field"] = ECS::createEntity();
 
-        glm::mat4& pose(m_models["field"]->localTransform);
+        RenderComponent render;
+        render.type  = RenderComponent::Shadows;
+        render.model = Model::Create(Model::Quad);
+        render.model->localMaterial = glm::vec4(1, 1, 1, 0.2f);
+
+        glm::mat4& pose(render.model->localTransform);
         pose = glm::translate(pose, glm::vec3(0, 0.1f, 0));
         pose = glm::scale(pose, glm::vec3(2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
+
+        render.transforms = {
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
+        };
+
+        ECS::addComponent(m_entities["field"], render);
     }
 
-    m_models[_Wall::Entity_Name] = Model::Create(Model::Quad);
+    // ---- Wall -----
     {
-        m_models[_Wall::Entity_Name]->localMaterial = glm::vec4(1, 1, 1, 0.5f);
-        //m_models[_Wall::Entity_Name]->localMaterial.cast_shadow = false;
+        m_entities[_Wall::Entity_Name] = ECS::createEntity();
 
-        glm::mat4& pose(m_models[_Wall::Entity_Name]->localTransform);
+        RenderComponent render;
+        render.type  = RenderComponent::Shadows;
+        render.model = Model::Create(Model::Quad);
+        render.model->localMaterial = glm::vec4(1, 1, 1, 0.5f);
+
+        glm::mat4& pose(render.model->localTransform);
         pose = glm::translate(pose, glm::vec3(0, -0.1f, 0));
         pose = glm::scale(pose, glm::vec3(1.0f, 0.2f, 2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(0, 1, 0));
+
+        render.transforms = {
+            glm::translate(glm::mat4(1.0f), m_wall_1.pos),
+            glm::translate(glm::mat4(1.0f), m_wall_2.pos)
+        };
+
+        ECS::addComponent(m_entities[_Wall::Entity_Name], render);
     }
 
-    m_models[_Player::Entity_Name] = Model::Create(Model::Cube);
+    // ---- Player -----
     {
-        m_models[_Player::Entity_Name]->localMaterial = glm::vec4(1.0f);
-        m_models[_Player::Entity_Name]->localTransform = { glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f)) };
+        m_entities[_Player::Entity_Name] = ECS::createEntity();
+
+        RenderComponent render;
+        render.type = RenderComponent::Shadows;
+        render.model = Model::Create(Model::Cube);
+        render.model->localMaterial = glm::vec4(1.0f);
+        render.model->localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
+        
+        render.transforms = {
+            glm::translate(glm::mat4(1.0f), m_player_human.pos),
+            glm::translate(glm::mat4(1.0f), m_player_ia.pos)
+        };
+
+        ECS::addComponent(m_entities[_Player::Entity_Name], render);
     }
 
-    m_models[_Ball::Entity_Name] = Model::Create(Model::Sphere);
+    // ---- Ball -----
     {
-        m_models[_Ball::Entity_Name]->localMaterial = glm::vec4(1.0f);
-        m_models[_Ball::Entity_Name]->localTransform = { glm::scale(glm::mat4(1.0f), glm::vec3(0.2f)) };
+        m_entities[_Ball::Entity_Name] = ECS::createEntity();
+
+        RenderComponent render;
+        render.type  = RenderComponent::Shadows;
+        render.model = Model::Create(Model::Sphere);
+        render.model->localMaterial  = glm::vec4(1.0f);
+        render.model->localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+        render.transforms = { 
+            glm::translate(glm::mat4(1.0f), m_ball.pos) 
+        };
+
+        ECS::addComponent(m_entities[_Ball::Entity_Name], render);
     }
-
-    // Populate entities
-    m_models["field"]->transforms = {
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
-    };
-
-    m_models[_Wall::Entity_Name]->transforms = {
-        glm::translate(glm::mat4(1.0f), m_wall_1.pos),
-        glm::translate(glm::mat4(1.0f), m_wall_2.pos)
-    };
-
-    _update_entities();
 }
+
 
 void SamplePong::_ia() {
     if (m_player_ia.pos.x < m_ball.pos.x - 0.1f)
@@ -124,8 +155,8 @@ void SamplePong::_physics(float dt_ms) {
         const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
         auto collision_point = Collider::CheckHitboxes(
-            m_models[collider.name], body_quat,
-            m_models[_Ball::Entity_Name], ball_quat
+            ECS::getComponent<RenderComponent>(m_entities[collider.name]).model, body_quat,
+            ECS::getComponent<RenderComponent>(m_entities[_Ball::Entity_Name]).model, ball_quat
         );
 
         if (!collision_point.has_value())
@@ -154,17 +185,19 @@ void SamplePong::_physics(float dt_ms) {
     m_ball.pos = new_ball_pos;
 }
 
-void SamplePong::_update_entities() {
-    m_models[_Player::Entity_Name]->transforms = {
+void SamplePong::_update_entities()
+{
+    ECS::getComponent<RenderComponent>(m_entities[_Player::Entity_Name]).transforms = {
         glm::translate(glm::mat4(1.0f), m_player_human.pos),
-        glm::translate(glm::mat4(1.0f), m_player_ia.pos),
+        glm::translate(glm::mat4(1.0f), m_player_ia.pos)
     };
 
-    m_models[_Ball::Entity_Name]->transforms = {
+    ECS::getComponent<RenderComponent>(m_entities[_Ball::Entity_Name]).transforms = {
         glm::translate(glm::mat4(1.0f), m_ball.pos)
     };
 }
 
+/*
 void SamplePong::_draw(const SceneEvents::Draw&) {
     for (auto& entity : m_models) {
         if (entity.first.find("debug") != std::string::npos)
@@ -206,16 +239,18 @@ void SamplePong::_draw_hitbox() {
 
     //m_scene.renderer().draw(Render::Geometry, m_models["debug_cube"]);
 }
+*/
 
 void SamplePong::_apply_actions(_Player& player)
 {
     switch (player.next_action) {
-    case _Player::Action::Left:  player.pos.x -= _Player::MaxSpeed; break;
-    case _Player::Action::Right: player.pos.x += _Player::MaxSpeed; break;
+        case _Player::Action::Left:  player.pos.x -= _Player::MaxSpeed; break;
+        case _Player::Action::Right: player.pos.x += _Player::MaxSpeed; break;
     }
 
     player.next_action = _Player::Action::None;
 }
+
 
 // Events
 void SamplePong::_update(const CommonEvents::StateUpdated&)

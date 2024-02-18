@@ -32,12 +32,12 @@ struct Cookable {
     static ShaderSource _init_geometry();
     static ShaderSource _init_fragment();
 
-protected:
     static void _set_shader_basic(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
     static void _set_shader_shape(Shader& shader);
     static void _set_shader_particle(Shader& shader);
 
+protected:
     // Members
     std::unordered_map<CookType, UShader> m_shaders;
 };
