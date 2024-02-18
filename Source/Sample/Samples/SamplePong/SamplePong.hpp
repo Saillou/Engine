@@ -3,8 +3,8 @@
 #include "../Sample.hpp"
 #include "UiPong.hpp"
 
-struct SamplePong : 
-    public Sample 
+struct SamplePong :
+    public Sample
 {
     SamplePong();
 
