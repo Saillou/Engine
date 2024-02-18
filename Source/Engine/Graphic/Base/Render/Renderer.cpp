@@ -76,23 +76,21 @@ void Renderer::remove_shader(const std::string& shaderName) {
 Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
     addRecipe(type);
 
-    // Use
-    Shader& sh = get(type)->use();
-
     switch (type) {
     case Cookable::CookType::Basic:
         {
             // Check light capabilities
-            const ShaderSource& ssource = get(type)->source(ShaderSource::Type::Fragment);
-
-            // Need to edit shader
-            if (ssource.getVar("LightPos").count < lights.size()) {
+            if (get(type)->source(ShaderSource::Type::Fragment).getVar("LightPos").count < lights.size())
+            {
                 editRecipe(type, ShaderSource::Type::Fragment, ShaderSource{}
                     .add_var("uniform", "vec3", "LightPos", (int)lights.size())
                     .add_var("uniform", "vec4", "LightColor", (int)lights.size())
                     .add_var("uniform", "samplerCube", "depthMap", (int)lights.size())
                 );
             }
+
+            // Use
+            Shader& sh = get(type)->use();
 
             // Bind shadow map
             if (shadower)
@@ -116,11 +114,14 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
 
     case Cookable::CookType::Particle:
     case Cookable::CookType::Geometry:
+        // Use
+        Shader& sh = get(type)->use();
+
         sh.set("Projection", camera.projection)
           .set("View",       camera.modelview);
         break;
     }
-    return sh;
+    return *get(type);
 }
 
 void Renderer::_clear() {

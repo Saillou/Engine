@@ -93,15 +93,6 @@ void ViewForest::_draw(const SceneEvents::Draw&) {
 
     // Draw objects
     for (const _Object& obj : m_objects) {
-        m_models[obj.id]->transforms.clear();
-
-        for (const auto& quat : obj.quats) {
-            if (obj.id == _ObjectId::Cube) {
-                m_models[obj.id]->localMaterial = glm::vec4(0.7f, 0.7f, 0.7f, 1);
-            }
-
-            m_models[obj.id]->transforms.push_back(quat);
-        }
         scene.renderer().draw(Render::DrawType::Shadows, m_models[obj.id]);
     }
 
@@ -364,6 +355,9 @@ void ViewForest::_setObjects() {
     for (const _Object& obj : m_objects) {
         m_models[obj.id]->transforms = obj.quats;
     }
+
+    // Cube material
+    m_models[_ObjectId::Cube]->localMaterial = glm::vec4(0.7f, 0.7f, 0.7f, 1);
 }
 
 // Callbacks
