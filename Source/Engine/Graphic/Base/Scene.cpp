@@ -10,6 +10,7 @@ Scene::Scene(int widthHint, int heightHint):
     _internalFrame(Framebuffer::Unique, widthHint, heightHint)
 {
     _init_gl_config();
+    _quad.mesh->setupVao();
 }
 
 void Scene::clear() {

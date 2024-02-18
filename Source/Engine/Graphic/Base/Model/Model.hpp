@@ -57,6 +57,10 @@ public:
     std::vector<glm::vec4> materials  = {};
     // ----------------------------------------
 
+    Buffer m_colors;
+    Buffer m_instances;
+    // ---------------------------------------
+
 protected:
     Model(SimpleShape shape = SimpleShape::Custom);
     Model(const std::string& path);
@@ -64,7 +68,8 @@ protected:
     void _loadModel(const std::string& path);
     void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
     void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
-    static void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
+    void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst) const;
 
+    void _setMeshVao(Mesh& mesh) const;
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
 };

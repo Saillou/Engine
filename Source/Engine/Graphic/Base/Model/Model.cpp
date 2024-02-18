@@ -47,26 +47,46 @@ Model::Ref Model::Create(const std::string& path)
 
 // Instance
 Model::Model(SimpleShape shape) :
-    root(std::make_unique<Model::Node>())
+    root(std::make_unique<Model::Node>()),
+    m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+    m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
 {
+    m_colors.bindData(sizeof(vec4));
+    m_instances.bindData(sizeof(mat4));
+
+    std::unique_ptr<Mesh> mesh = nullptr;
     switch (shape)
     {
     case Quad:
-        root->meshes.push_back(Quad::CreateMesh());
+        mesh = Quad::CreateMesh();
         break;
 
     case Cube:
-        root->meshes.push_back(Cube::CreateMesh());
+        mesh = Cube::CreateMesh();
         break;
 
     case Sphere:
-        root->meshes.push_back(Sphere::CreateMesh());
+        mesh = Sphere::CreateMesh();
         break;
+
+    default:
+        return;
     }
+
+    if (!mesh)
+        return;
+
+    _setMeshVao(*mesh);
+    root->meshes.emplace_back(std::move(mesh));
 }
 
-Model::Model(const std::string& path)
+Model::Model(const std::string& path):
+    m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+    m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
 {
+    m_colors.bindData(sizeof(vec4));
+    m_instances.bindData(sizeof(mat4));
+
     _loadModel(path);
 }
 
@@ -79,7 +99,7 @@ void Model::draw(Shader& shader) const
             shader.set("LocalModel", localTransform * node_acc.transform);
 
         mesh->bindTextures(shader);
-        mesh->drawElements();
+        mesh->drawElements((GLsizei)m_instances.size() / sizeof(mat4));
         mesh->unbindTextures();
     });
 }
@@ -92,7 +112,7 @@ void Model::drawElements(Shader& shader) const
         if (shader.has("LocalModel"))
             shader.set("LocalModel", localTransform * node_acc.transform);
 
-        mesh->drawElements();
+        mesh->drawElements((GLsizei)m_instances.size() / sizeof(mat4));
     });
 }
 
@@ -147,12 +167,33 @@ std::vector<glm::mat4> Model::GetMeshesPoses() const
     return quats;
 }
 
+void Model::_setMeshVao(Mesh& mesh) const{
+    mesh.setupVao();
+
+    m_colors.bind();
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glVertexAttribDivisor(3, 1);
+
+    m_instances.bind();
+    for (int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(4 + i);
+        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(i * sizeof(vec4)));
+        glVertexAttribDivisor(4 + i, 1);
+    }
+}
+
 void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
-    // TODO not for each mesh
-    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
-    {
-        mesh->updateBatch(models, colors);
-    });
+    m_instances.bindData(models);
+
+    if (colors.size() >= models.size()) {
+        m_colors.bindData(colors);
+    }
+    else {
+        std::vector<vec4> res_colors = colors;
+        res_colors.resize(models.size());
+        m_colors.bindData(res_colors);
+    }
 }
 
 void Model::_loadModel(const std::string& path) {
@@ -236,11 +277,11 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
         });
     }
 
-    outMesh.sendToGpu();
     outMesh.compute_obb();
+    _setMeshVao(outMesh);
 }
 
-void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
+void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst) const
 {
     const Mesh& inMesh = *src;
     Mesh& outMesh = *dst;
@@ -255,6 +296,6 @@ void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& 
         });
     }
 
-    outMesh.sendToGpu();
     outMesh.compute_obb();
+    _setMeshVao(outMesh);
 }

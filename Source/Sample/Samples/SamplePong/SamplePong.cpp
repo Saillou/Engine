@@ -18,7 +18,7 @@ SamplePong::SamplePong() :
 
 void SamplePong::_init_game_elements() {
     // Scene
-    m_scene.lights() = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
+    m_scene.lights() = { /*{glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) }*/ };
 
     // Camera
     m_scene.camera().position = glm::vec3(0, m_distance, -6.0f);
@@ -50,7 +50,7 @@ void SamplePong::_create_entities() {
 
     m_models[_Wall::Entity_Name] = Model::Create(Model::Quad);
     {
-        m_models[_Wall::Entity_Name]->localMaterial = glm::vec4(1, 1, 1, 0.2f);
+        m_models[_Wall::Entity_Name]->localMaterial = glm::vec4(1, 1, 1, 1);
         //m_models[_Wall::Entity_Name]->localMaterial.cast_shadow = false;
 
         glm::mat4& pose(m_models[_Wall::Entity_Name]->localTransform);
@@ -168,7 +168,7 @@ void SamplePong::_draw() {
         if (entity.first.find("debug") != std::string::npos)
             continue;
 
-        m_scene.renderer().draw(Render::Shadows, entity.second);
+        m_scene.renderer().draw(Render::Basic, entity.second);
     }
 
     if (m_ui.show_debug) {

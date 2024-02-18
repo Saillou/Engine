@@ -6,7 +6,7 @@
 struct Cube : 
 	private PrimitiveHelper
 {
-	static std::unique_ptr<Mesh> CreateMesh(bool sendToGpu = true);
+	static std::unique_ptr<Mesh> CreateMesh();
 	static std::shared_ptr<Mesh> GetOne();
 };
 

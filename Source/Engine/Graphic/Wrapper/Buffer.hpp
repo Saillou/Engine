@@ -19,8 +19,8 @@ public:
 		void bindSubData(const std::vector<T>& data);
 
 	void bindData(size_t size);
-	void bind();
-	void unbind();
+	void bind() const;
+	void unbind() const;
 
 	unsigned int getId() const;
 	size_t size() const;

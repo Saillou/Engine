@@ -2,7 +2,7 @@
 
 #include "../../../Cookable.hpp"
 
-std::unique_ptr<Mesh> Quad::CreateMesh(bool sendToGpu)
+std::unique_ptr<Mesh> Quad::CreateMesh()
 {
     std::unique_ptr<Mesh> quad_mesh = std::make_unique<Mesh>();
 
@@ -13,10 +13,6 @@ std::unique_ptr<Mesh> Quad::CreateMesh(bool sendToGpu)
         glm::vec2(0, 0), glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(1, 0)
     );
 
-    // Send to gpu
-    if (sendToGpu)
-        quad_mesh->sendToGpu();
-
     quad_mesh->compute_obb();
     return quad_mesh;
 }
@@ -25,11 +21,11 @@ std::unique_ptr<Mesh> Quad::CreateMesh(bool sendToGpu)
 Quad::Quad(float x_, float y_, float w_, float h_):
     x(x_), y(y_), w(w_), h(h_)
 {
-    _quad_mesh = CreateMesh();
+    mesh = CreateMesh();
 }
 
 void Quad::drawElements() const {
-    _quad_mesh->drawElements();
+    mesh->drawElements();
 }
 
 glm::mat4 Quad::transform() const

@@ -25,17 +25,13 @@ struct TextureData {
 
 struct Mesh {
     Mesh();
-    void sendToGpu();
+    void setupVao();
     void compute_obb();
-
-    // TODO: remove and use a different strategie
-    void updateBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
-    // ----------
 
     void bindTextures(Shader& shader) const;
     void unbindTextures() const;
 
-    void drawElements() const;
+    void drawElements(size_t nElements = 1) const;
 
     // Cpu data
     std::vector<Vertex>       vertices;
@@ -57,11 +53,6 @@ private:
     Array  m_vao;
     Buffer m_vbo;
     Buffer m_ebo;
-
-    // TODO: remove and use a different strategie
-    Buffer m_colors;
-    Buffer m_instances;
-    // ---------------------------------------
 
     // Cached computations
     glm::mat4 m_obb = glm::mat4(1.0f);
