@@ -153,7 +153,6 @@ Shader& SampleSnow::_create_triangle_shader(Shader& shader)
             Cookable::_init_vertex()
 
             .add_var("uniform", "vec4", "override_color")
-            .add_var("uniform", "vec4", "diffuse_color")
 
             .add_func("void", "main", "", R"_main_(
                 vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));

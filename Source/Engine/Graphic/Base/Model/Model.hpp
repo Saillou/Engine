@@ -53,7 +53,7 @@ public:
     // Local info 
     // - TODO: remove and add as RenderComponent -
     glm::mat4 localTransform = glm::mat4(1.0f);
-    glm::vec4 localMaterial  = glm::vec4(0.0f);
+    glm::vec4 localMaterial  = glm::vec4(1.0f);
 
     std::vector<glm::mat4> transforms = {};
     std::vector<glm::vec4> materials  = {};

@@ -10,7 +10,6 @@ SampleForest::SampleForest() :
     _subscribe(&SampleForest::_on_state_update);
     _subscribe(&SampleForest::_on_key_pressed);
     _subscribe(&SampleForest::_on_mouse_moved);
-    _subscribe(&SampleForest::_on_mouse_clicked);
 
     // Lights
     m_scene.lights() = { 
@@ -73,12 +72,4 @@ void SampleForest::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
 
 void SampleForest::_on_mouse_moved(const CommonEvents::MouseMoved& evt) {
     m_view->mouse_on(evt.x, evt.y);
-}
-
-void SampleForest::_on_mouse_clicked(const CommonEvents::MouseButton& evt) {
-    switch (evt.button)
-    {
-        case Left:  std::cout << "Click left" << std::endl; break;
-        case Right: std::cout << "Click right" << std::endl; break;
-    }
 }

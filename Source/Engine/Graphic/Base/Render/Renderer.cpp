@@ -121,6 +121,7 @@ Shader& Renderer::_setShader(Cookable::CookType type, const Camera& camera, cons
           .set("View",       camera.modelview);
         break;
     }
+
     return *get(type);
 }
 

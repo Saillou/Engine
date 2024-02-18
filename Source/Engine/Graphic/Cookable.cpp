@@ -83,6 +83,8 @@ ShaderSource Cookable::_init_vertex() {
         .add_var("uniform", "mat4", "View")
         .add_var("uniform", "mat4", "LocalModel")
 
+        .add_var("uniform", "vec4", "diffuse_color")
+
         .add_var("out", "VS_OUT", R"_struct_({
             vec3 FragPos;
             vec3 Normal;
@@ -113,7 +115,6 @@ ShaderSource Cookable::_init_fragment() {
                 vec4 Color;
             } fs_in)_struct_")
 
-        .add_var("uniform", "vec4", "diffuse_color")
         .add_var("uniform", "sampler2D", "texture_diffuse")
 
         .add_var("out", "vec4", "FragColor")
@@ -131,7 +132,7 @@ void Cookable::_set_shader_basic(Shader& shader) {
                 vs_out.FragPos   = vec3(aModel * LocalModel * vec4(aPos, 1.0));
                 vs_out.Normal    = mat3(transpose(inverse(aModel * LocalModel))) * aNormal;  
                 vs_out.TexCoords = aTexCoords;
-                vs_out.Color     = aColor;
+                vs_out.Color     = aColor.a > 0 ? aColor * diffuse_color : diffuse_color;
 
                 gl_Position = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_")
@@ -203,7 +204,7 @@ void Cookable::_set_shader_basic(Shader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 vec2 tex_size = textureSize(texture_diffuse, 0);
-                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, fs_in.TexCoords) : max(fs_in.Color, diffuse_color);
+                vec4 ambiant_color = tex_size.x * tex_size.y > 1 ? texture(texture_diffuse, fs_in.TexCoords) : fs_in.Color;
 
                 // Shall use light ?
                 if(LightNumber == 0) {
@@ -232,30 +233,36 @@ void Cookable::_set_shader_geometry(Shader& shader) {
 
             .add_func("void", "main", "", R"_main_(
                 vs_out.FragPos  = vec3(aModel * LocalModel * vec4(aPos, 1.0));
-                vs_out.Color    = aColor;
+                vs_out.Color    = max(aColor, diffuse_color);
 
                 gl_Position     = Projection * View * vec4(vs_out.FragPos, 1.0);
             )_main_")
         )
-        .attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
+        .attachSource(GL_GEOMETRY_SHADER, 
+            _init_geometry()
+
             .add_var("in", "layout", "(triangles)")
             .add_var("out", "layout", "(line_strip, max_vertices = 4)")
+            .add_var("out", "vec4", "Color")
 
             .add_func("void", "main", "", R"_main_(
+                Color           = 0.5 * (gs_in[1].Color   + gs_in[2].Color);
                 gl_Position     = gl_in[1].gl_Position; EmitVertex();
                 gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
                 EndPrimitive();
 
+                Color           = 0.5 * (gs_in[0].Color   + gs_in[1].Color);
                 gl_Position     = gl_in[0].gl_Position; EmitVertex();
                 gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
                 EndPrimitive();
             )_main_")
         )
-        .attachSource(GL_FRAGMENT_SHADER, 
-            _init_fragment()
+        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
+            .add_var("in", "vec4", "Color")
+            .add_var("out", "vec4", "FragColor")
 
             .add_func("void", "main", "", R"_main_(
-                FragColor = diffuse_color;
+                FragColor = Color;
             )_main_")
         );
 }
