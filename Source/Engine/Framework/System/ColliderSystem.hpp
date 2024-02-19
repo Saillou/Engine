@@ -9,11 +9,10 @@
 #include "../Core/ECS.hpp"
 #include "../Core/System.hpp"
 #include "../Component/BodyComponent.hpp"
+#include "../Component/BatchComponent.hpp"
+#include "../Component/CollideComponent.hpp"
 
 struct ColliderSystem : public System {
-	ColliderSystem();
-	~ColliderSystem() = default;
-
 	void init() override;
-	void update(); // delta time too?
+	void update(Entity entityChecked);
 };

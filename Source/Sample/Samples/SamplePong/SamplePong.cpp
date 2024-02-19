@@ -91,6 +91,7 @@ void SamplePong::_create_entities() {
         ECS::addComponent(m_entities[_Wall::Entity_Name], body);
         ECS::addComponent(m_entities[_Wall::Entity_Name], draw);
         ECS::addComponent(m_entities[_Wall::Entity_Name], batch);
+        ECS::addComponent(m_entities[_Wall::Entity_Name], CollideComponent());
     }
 
     // ---- Player -----
@@ -113,6 +114,7 @@ void SamplePong::_create_entities() {
         ECS::addComponent(m_entities[_Player::Entity_Name], body);
         ECS::addComponent(m_entities[_Player::Entity_Name], draw);
         ECS::addComponent(m_entities[_Player::Entity_Name], batch);
+        ECS::addComponent(m_entities[_Player::Entity_Name], CollideComponent());
     }
 
     // ---- Ball -----
@@ -134,6 +136,7 @@ void SamplePong::_create_entities() {
         ECS::addComponent(m_entities[_Ball::Entity_Name], body);
         ECS::addComponent(m_entities[_Ball::Entity_Name], draw);
         ECS::addComponent(m_entities[_Ball::Entity_Name], batch);
+        ECS::addComponent(m_entities[_Player::Entity_Name], CollideComponent());
     }
 }
 
@@ -147,65 +150,38 @@ void SamplePong::_ia() {
 }
 
 void SamplePong::_physics(float dt_ms) {
-    // Integrate pos
+    // Nope
+    if (m_ui.stop_time)
+        return;
+
+    // Integrate speed without hindrances
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
-    // Define potential colliders with the ball
-    struct _collide_body_ {
-        const std::string& name;
-        const glm::vec3& pos;
-    };
-    std::vector<_collide_body_> colliders =
-    {
-        { _Player::Entity_Name, m_player_human.pos},
-        { _Player::Entity_Name, m_player_ia.pos},
-        { _Wall::Entity_Name,   m_wall_1.pos},
-        { _Wall::Entity_Name,   m_wall_2.pos}
+    // Try to move the ball and check collision
+    ECS::getComponent<BatchComponent>(m_entities[_Ball::Entity_Name]).transforms = {
+        glm::translate(glm::mat4(1.0f), new_ball_pos)
     };
 
-    struct _collision_ {
-        glm::vec3 contact_point;
-        const _collide_body_& collider;
-    };
-    std::optional<_collision_> collision = {};
+    m_scene.collider()->update(m_entities[_Ball::Entity_Name]);
 
-    // Check
-    for (const auto& collider : colliders)
-    {
-        const glm::mat4 body_quat = glm::translate(glm::mat4(1.0f), collider.pos);
-        const glm::mat4 ball_quat = glm::translate(glm::mat4(1.0f), new_ball_pos);
-
-        const auto& body_collider = ECS::getComponent<BodyComponent>(m_entities[collider.name]);
-        const auto& body_ball     = ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name]);
-
-        auto collision_point = Collider::CheckHitboxes(
-            body_collider.model, body_quat * body_collider.localTransform,
-            body_ball.model,     ball_quat * body_ball.localTransform
-        );
-
-        if (!collision_point.has_value())
-            continue;
-
-        collision.emplace(_collision_{ collision_point.value(), collider });
-        break; // we expect only one collision
-    }
+    const CollideComponent& collide = ECS::getComponent<CollideComponent>(m_entities[_Ball::Entity_Name]);
 
     // Solve
-    if (collision.has_value())
+    if (collide.is_colliding)
     {
-        if (collision.value().collider.name == _Player::Entity_Name) {
-            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - collision.value().collider.pos);
+        // Change speed direction
+        if (collide.hit_entities.front() == m_entities[_Player::Entity_Name]) {
+            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - collide.hit_positions.front());
         }
         else {
             m_ball.speed.x *= -1.0f;
         }
+
+        // New position because of hindrances
         new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
     }
 
     // Apply
-    if (m_ui.stop_time)
-        return;
-
     m_ball.pos = new_ball_pos;
 }
 

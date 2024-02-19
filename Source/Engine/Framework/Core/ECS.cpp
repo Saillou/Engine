@@ -3,6 +3,7 @@
 #include "../Component/BodyComponent.hpp"
 #include "../Component/DrawComponent.hpp"
 #include "../Component/BatchComponent.hpp"
+#include "../Component/CollideComponent.hpp"
 
 static bool initialized = false;
 
@@ -14,6 +15,7 @@ void ECS::init()
     ECS::registerComponent<BodyComponent>();
     ECS::registerComponent<DrawComponent>();
     ECS::registerComponent<BatchComponent>();
+    ECS::registerComponent<CollideComponent>();
 
     initialized = true;
 }

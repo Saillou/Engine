@@ -15,5 +15,5 @@ struct CasterSystem : public System {
 	~CasterSystem() = default;
 
 	void init() override;
-	void update(); // delta time too?
+	void update();
 };
