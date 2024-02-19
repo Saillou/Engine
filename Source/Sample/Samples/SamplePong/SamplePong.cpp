@@ -27,14 +27,14 @@ void SamplePong::_init_game_elements() {
     m_scene.lights = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
 
     // Camera
-    m_scene.camera.position = glm::vec3(0, m_distance, -6.0f);
+    m_scene.camera.position  = glm::vec3(0, m_distance, -6.0f);
     m_scene.camera.direction = glm::vec3(0, 0, 0);
 
     // Game elements
     m_player_human.pos = glm::vec3(0.0f, 0.0f, -2.0f);
-    m_player_ia.pos = glm::vec3(0.0f, 0.0f, +2.0f);
+    m_player_ia.pos    = glm::vec3(0.0f, 0.0f, +2.0f);
 
-    m_ball.pos = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_ball.pos   = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ball.speed = glm::vec3(+0.003f, 0.0f, -0.001f);
 
     m_wall_1.pos = glm::vec3(-2.0f, 0.0f, 0.0f);
@@ -87,11 +87,13 @@ void SamplePong::_create_entities() {
             glm::translate(glm::mat4(1.0f), m_wall_2.pos)
         };
 
+        CollideComponent collider;
+
         m_entities[_Wall::Entity_Name] = ECS::createEntity();
         ECS::addComponent(m_entities[_Wall::Entity_Name], body);
         ECS::addComponent(m_entities[_Wall::Entity_Name], draw);
         ECS::addComponent(m_entities[_Wall::Entity_Name], batch);
-        ECS::addComponent(m_entities[_Wall::Entity_Name], CollideComponent());
+        ECS::addComponent(m_entities[_Wall::Entity_Name], collider);
     }
 
     // ---- Player -----
@@ -110,11 +112,13 @@ void SamplePong::_create_entities() {
             glm::translate(glm::mat4(1.0f), m_player_ia.pos)
         };
 
+        CollideComponent collider;
+
         m_entities[_Player::Entity_Name] = ECS::createEntity();
         ECS::addComponent(m_entities[_Player::Entity_Name], body);
         ECS::addComponent(m_entities[_Player::Entity_Name], draw);
         ECS::addComponent(m_entities[_Player::Entity_Name], batch);
-        ECS::addComponent(m_entities[_Player::Entity_Name], CollideComponent());
+        ECS::addComponent(m_entities[_Player::Entity_Name], collider);
     }
 
     // ---- Ball -----
@@ -132,11 +136,13 @@ void SamplePong::_create_entities() {
             glm::translate(glm::mat4(1.0f), m_ball.pos) 
         };
 
+        CollideComponent collider;
+
         m_entities[_Ball::Entity_Name] = ECS::createEntity();
         ECS::addComponent(m_entities[_Ball::Entity_Name], body);
         ECS::addComponent(m_entities[_Ball::Entity_Name], draw);
         ECS::addComponent(m_entities[_Ball::Entity_Name], batch);
-        ECS::addComponent(m_entities[_Player::Entity_Name], CollideComponent());
+        ECS::addComponent(m_entities[_Ball::Entity_Name], collider);
     }
 }
 
@@ -148,6 +154,7 @@ void SamplePong::_ia() {
     if (m_player_ia.pos.x > m_ball.pos.x + 0.1f)
         m_player_ia.next_action = _Player::Action::Left;
 }
+
 
 void SamplePong::_physics(float dt_ms) {
     // Nope
@@ -169,9 +176,15 @@ void SamplePong::_physics(float dt_ms) {
     // Solve
     if (collide.is_colliding)
     {
+        Entity entity_colliding = collide.hit_entities.front();
+        glm::vec3 pos_colliding = collide.hit_positions.front();
+
+        const BatchComponent& batch = ECS::getComponent<BatchComponent>(entity_colliding);
+
         // Change speed direction
-        if (collide.hit_entities.front() == m_entities[_Player::Entity_Name]) {
-            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - collide.hit_positions.front());
+        if (entity_colliding == m_entities[_Player::Entity_Name]) {
+            glm::vec3 entity_colliding = glm::vec3(batch.transforms[pos_colliding.z < 0 ? 0:1][3]);
+            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - entity_colliding);
         }
         else {
             m_ball.speed.x *= -1.0f;

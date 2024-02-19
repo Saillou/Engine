@@ -1,5 +1,8 @@
 #include "ColliderSystem.hpp"
 
+#include <iostream>
+#include <glm/gtx/string_cast.hpp>
+
 void ColliderSystem::init()
 {
     Signature signature;
@@ -26,7 +29,7 @@ void ColliderSystem::update(Entity entityChecked)
         return;
 
     // TODO: change that because it's only test the first element of a batch
-    const glm::mat4& checked_transform = batchChecked.transforms.front()* bodyChecked.localTransform;
+    const glm::mat4& checked_transform = batchChecked.transforms.front() * bodyChecked.localTransform;
 
     // Check against all entities
     for (Entity entity : m_entities) {
@@ -35,8 +38,8 @@ void ColliderSystem::update(Entity entityChecked)
             continue;
 
         // Batch check
-        const BatchComponent& batch = ECS::getComponent<BatchComponent>(entityChecked);
-        const BodyComponent& body   = ECS::getComponent<BodyComponent>(entityChecked);
+        const BatchComponent& batch = ECS::getComponent<BatchComponent>(entity);
+        const BodyComponent& body   = ECS::getComponent<BodyComponent>(entity);
 
         for (const glm::mat4& world_transform : batch.transforms) 
         {
