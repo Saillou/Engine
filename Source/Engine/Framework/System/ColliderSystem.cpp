@@ -41,14 +41,14 @@ void ColliderSystem::update(Entity entityChecked)
         if (collide_result.type & CollideComponent::Multiple) {
             if (collide_result.type & CollideComponent::Accurate) {
                 collision_points = Collider::CheckAccurateMultiple(
-                    body.model,        body.transform,
-                    bodyChecked.model, bodyChecked.transform
+                    body.model,        body.transform.get(),
+                    bodyChecked.model, bodyChecked.transform.get()
                 );
             }
             else {
                 collision_points = Collider::CheckHitboxesMultiple(
-                    body.model,        body.transform,
-                    bodyChecked.model, bodyChecked.transform
+                    body.model,        body.transform.get(),
+                    bodyChecked.model, bodyChecked.transform.get()
                 );
             }
         }
@@ -57,22 +57,24 @@ void ColliderSystem::update(Entity entityChecked)
             if (collide_result.type & CollideComponent::Accurate) 
             {
                 collision_point = Collider::CheckAccurate(
-                    body.model,        body.transform,
-                    bodyChecked.model, bodyChecked.transform
+                    body.model,        body.transform.get(),
+                    bodyChecked.model, bodyChecked.transform.get()
                 );
             }
             else 
             {
                 collision_point = Collider::CheckHitboxes(
-                    body.model,        body.transform,
-                    bodyChecked.model, bodyChecked.transform
+                    body.model,        body.transform.get(),
+                    bodyChecked.model, bodyChecked.transform.get()
                 );
             }
 
             if (!collision_point.has_value())
                 continue;
 
-            collision_points = { collision_point.value() };
+            collision_points = {
+                collision_point.value() 
+            };
         }
 
         // Got something?

@@ -58,7 +58,7 @@ void SamplePong::_create_entities()
         body.model     = Model::Load(Model::SimpleShape::Quad);
         body.material  = glm::vec4(1, 1, 1, 0.2f);
 
-        glm::mat4& pose(body.transform);
+        glm::mat4& pose(body.transform.local);
         pose = glm::translate(pose, glm::vec3(0, 0.1f, 0));
         pose = glm::scale(pose, glm::vec3(2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
@@ -79,13 +79,13 @@ void SamplePong::_create_entities()
         body.material  = glm::vec4(1, 1, 1, 0.5f);
 
         // Local transform
-        glm::mat4& pose(body.transform);
+        glm::mat4& pose(body.transform.local);
         pose = glm::translate(pose, glm::vec3(0, -0.1f, 0));
         pose = glm::scale(pose, glm::vec3(1.0f, 0.2f, 2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(0, 1, 0));
 
         // World transform
-        pose = glm::translate(glm::mat4(1.0f), wall.pos) * pose;
+        body.transform.world = glm::translate(glm::mat4(1.0f), wall.pos);
 
         CollideComponent collider;
 
@@ -101,14 +101,12 @@ void SamplePong::_create_entities()
         DrawComponent draw;
         draw.type = player.pos == m_player_human.pos ? DrawComponent::Geometry : DrawComponent::Shadows;
 
-        // Local transform
         BodyComponent body;
         body.model     = Model::Load(Model::SimpleShape::Cube);
         body.material  = player.pos == m_player_ia.pos ? glm::vec4(0.7f, 0, 0, 1.0f) : glm::vec4(0, 0, 0.7f, 1.0f);
-        body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
-        
-        // World transform
-        body.transform = glm::translate(glm::mat4(1.0f), player.pos) * body.transform;
+
+        body.transform.local = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
+        body.transform.world = glm::translate(glm::mat4(1.0f), player.pos);
 
         CollideComponent collider;
 
@@ -123,14 +121,12 @@ void SamplePong::_create_entities()
         DrawComponent draw;
         draw.type = DrawComponent::Shadows;
 
-        // Local transform
         BodyComponent body;
         body.model     = Model::Load(Model::SimpleShape::Sphere);
         body.material  = glm::vec4(1.0f);
-        body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
 
-        // World transform
-        body.transform = glm::translate(glm::mat4(1.0f), m_ball.pos) * body.transform;
+        body.transform.local = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+        body.transform.world = glm::translate(glm::mat4(1.0f), m_ball.pos);
 
         CollideComponent collider;
 
@@ -160,7 +156,7 @@ void SamplePong::_physics(float dt_ms) {
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
     // Try to move the ball and check collision
-    ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name].front()).transform = glm::translate(glm::mat4(1.0f), new_ball_pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+    ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name].front()).transform.world = glm::translate(glm::mat4(1.0f), new_ball_pos);
 
     m_scene.collider()->update(m_entities[_Ball::Entity_Name].front());
 
@@ -179,7 +175,7 @@ void SamplePong::_physics(float dt_ms) {
         const auto& players = m_entities[_Player::Entity_Name];
         if (std::find(players.cbegin(), players.cend(), entity_colliding) != players.cend()) 
         {
-            glm::vec3 entity_pos_colliding = glm::vec3(body.transform[3]);
+            glm::vec3 entity_pos_colliding = glm::vec3(body.transform.world[3]);
             m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - entity_pos_colliding);
         }
         else 
@@ -202,15 +198,13 @@ void SamplePong::_update_entities()
         const std::vector<_Player>& players = { m_player_human, m_player_ia };
         for (size_t iPlayer = 0; iPlayer < m_entities[_Player::Entity_Name].size(); iPlayer++)
         {
-            glm::mat4& transform = ECS::getComponent<BodyComponent>(m_entities[_Player::Entity_Name][iPlayer]).transform;
-            transform = glm::translate(glm::mat4(1.0f), players[iPlayer].pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
+            ECS::getComponent<BodyComponent>(m_entities[_Player::Entity_Name][iPlayer]).transform.world = glm::translate(glm::mat4(1.0f), players[iPlayer].pos);
         }
     }
 
     // Update ball
     {
-        glm::mat4& transform = ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name].front()).transform;
-        transform = glm::translate(glm::mat4(1.0f), m_ball.pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+        ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name].front()).transform.world = glm::translate(glm::mat4(1.0f), m_ball.pos);
     }
 }
 

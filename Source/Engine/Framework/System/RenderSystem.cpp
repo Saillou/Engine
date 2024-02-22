@@ -61,16 +61,19 @@ void RenderSystem::_compute()
             case DrawComponent::Basic:
             case DrawComponent::Lights:
             case DrawComponent::Shadows:    
-                type = CookType::Basic;    break;
+                type = CookType::Basic;    
+                break;
 
             case DrawComponent::Geometry: 
-                type = CookType::Geometry; break;
+                type = CookType::Geometry; 
+                break;
 
-            default: continue;
+            default: 
+                continue;
         }
 
-        _batches[type][body.model]._transforms.push_back(body.transform);
-        _batches[type][body.model]._materials.push_back(body.material);
+        _batches[type][body.model]._transforms.push_back(body.transform.get());
+        _batches[type][body.model]._materials.push_back(body.material.color);
     }
 }
 

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "../../Graphic/Base/Model/Model.hpp"
-
+#include "Transform.hpp"
+#include "Material.hpp"
 
 struct BodyComponent 
 {
 	Model::Ref model = nullptr;
 
-	glm::mat4 transform = glm::mat4(1.0f);
-	glm::vec4 material  = glm::vec4(1.0f);
+	Transform transform;
+	Material  material;
 };
