@@ -9,7 +9,6 @@
 #include "../Core/ECS.hpp"
 #include "../Core/System.hpp"
 #include "../Component/BodyComponent.hpp"
-#include "../Component/BatchComponent.hpp"
 #include "../Component/CollideComponent.hpp"
 
 struct ColliderSystem : public System {

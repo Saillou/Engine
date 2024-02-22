@@ -18,7 +18,6 @@ void RenderSystem::init()
 
     signature.set(ECS::getComponentType<BodyComponent>());
     signature.set(ECS::getComponentType<DrawComponent>());
-    signature.set(ECS::getComponentType<BatchComponent>());
 
     ECS::setSystemSignature<RenderSystem>(signature);
 }
@@ -67,7 +66,8 @@ Shader& RenderSystem::_setShader(Cookable::CookType type, const Camera& camera, 
               .set("use_shadow",  shadower != nullptr)
               .set("LightNumber", (int)lights.size());
 
-            for (int iLight = 0; iLight < (int)lights.size(); iLight++) {
+            for (int iLight = 0; iLight < (int)lights.size(); iLight++) 
+            {
                 sh.set("LightPos["    + std::to_string(iLight) + "]", lights[iLight].position)
                   .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
                   .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
@@ -77,7 +77,6 @@ Shader& RenderSystem::_setShader(Cookable::CookType type, const Camera& camera, 
 
     case Cookable::CookType::Particle:
     case Cookable::CookType::Geometry:
-        // Use
         Shader& sh = get(type)->use();
 
         sh.set("Projection", camera.projection)
@@ -92,14 +91,13 @@ Shader& RenderSystem::_setShader(Cookable::CookType type, const Camera& camera, 
 void RenderSystem::_compute() 
 {
     for (auto& entity : m_entities) {
-        DrawComponent&  draw  = ECS::getComponent<DrawComponent>(entity);
-        BodyComponent&  body  = ECS::getComponent<BodyComponent>(entity);
-        BatchComponent& batch = ECS::getComponent<BatchComponent>(entity);
+        const DrawComponent&  draw  = ECS::getComponent<DrawComponent>(entity);
+        const BodyComponent&  body  = ECS::getComponent<BodyComponent>(entity);
 
         if (draw.type == DrawComponent::Hidden)
             continue;
 
-        body.model->_setBatch(batch.transforms, batch.materials);
+        body.model->_setBatch({ body.transform });
     }
 }
 
@@ -115,13 +113,10 @@ void RenderSystem::_drawShadows()
                 if (draw.type == DrawComponent::Hidden)
                     continue;
 
-                //if (!bodyComponent.model->localMaterial.cast_shadow)
+                //if (!bodyComponent.model->material.cast_shadow)
                 //    continue;
 
-                //if (di.priority < 0.0f)
-                //    break;
-
-                body.model->drawElements(sh, body.localTransform);
+                body.model->drawElements(sh);
             }
         }
     );
@@ -144,7 +139,7 @@ void RenderSystem::_drawEntity(Entity entity)
                 case DrawComponent::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
                 case DrawComponent::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
             } return _placeHolder;
-        }().set("diffuse_color", body.localMaterial), body.localTransform);
+        }().set("diffuse_color", body.material));
     }
     //else {
     //    if (_userShadersName.find(type) == _userShadersName.cend())
@@ -246,7 +241,7 @@ void Renderer::_compute()
         //  - transparent: furthest first
         di.priority = std::numeric_limits<float>::max();
 
-        if (di.model->localMaterial.diffuse_color.a < 1.0f || di.model->localMaterial.force_reorder) {
+        if (di.model->material.diffuse_color.a < 1.0f || di.model->material.force_reorder) {
             // Sort also poses in batch
             using dist_entity = std::tuple<float, Pose, Material>;
             std::vector<dist_entity> all_dist_entity;
@@ -297,7 +292,7 @@ void Renderer::_compute()
     // Shadows
     _shadower.render(_camera, _lights, [=](Shader& sh) {
         for (_DrawEntity& di : _heapEntities) {
-            if (!di.model->localMaterial.cast_shadow)
+            if (!di.model->material.cast_shadow)
                 continue;
 
             if (di.priority < 0.0f)
@@ -356,7 +351,7 @@ void Renderer::_drawEntitySync(Render::DrawType type, Model::Ref model, bool upd
                 case Render::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
                 case Render::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
             } return placeHolder;
-        }().set("diffuse_color", model->localMaterial.diffuse_color));
+        }().set("diffuse_color", model->material.diffuse_color));
     }
     else {
         if (_userShadersName.find(type) == _userShadersName.cend())

@@ -34,8 +34,8 @@ public:
     // Methods
     void setMeshVao(Mesh& mesh) const;
 
-    void draw(Shader& shader, const glm::mat4& localTransform) const;
-    void drawElements(Shader& shader, const glm::mat4& localTransform) const;
+    void draw(Shader& shader) const;
+    void drawElements(Shader& shader) const;
 
     // Data tree for storing organized meshes
     struct Node {

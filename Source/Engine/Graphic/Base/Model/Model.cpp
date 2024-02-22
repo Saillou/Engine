@@ -30,19 +30,19 @@ inline mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
 // Creators
 Model::Ref Model::Create(SimpleShape shape)
 {
-    struct ModelInstance : public Model {
-        ModelInstance(SimpleShape s) : Model(s) { }
+    struct _Model_:Model {
+        _Model_(SimpleShape s) : Model(s) { }
     };
 
-    return std::make_shared<ModelInstance>(shape);
+    return std::make_shared<_Model_>(shape);
 }
 Model::Ref Model::Create(const std::string& path)
 {
-    struct ModelInstance : public Model {
-        ModelInstance(const std::string& p) : Model(p) { }
+    struct _Model_: Model {
+        _Model_(const std::string& p) : Model(p) { }
     };
 
-    return std::make_shared<ModelInstance>(path);
+    return std::make_shared<_Model_>(path);
 }
 
 // Instance
@@ -57,22 +57,10 @@ Model::Model(SimpleShape shape) :
     std::unique_ptr<Mesh> mesh = nullptr;
     switch (shape)
     {
-    case Quad:
-        mesh = Quad::CreateMesh();
-        break;
-
-    case Cube:
-        mesh = Cube::CreateMesh();
-        break;
-
-    case Sphere:
-        mesh = Sphere::CreateMesh();
-        break;
-
-    default:
-        return;
+        case Quad: mesh  = Quad::CreateMesh();   break;
+        case Cube: mesh  = Cube::CreateMesh();   break;
+        case Sphere:mesh = Sphere::CreateMesh(); break;
     }
-
     if (!mesh)
         return;
 
@@ -106,13 +94,13 @@ void Model::setMeshVao(Mesh& mesh) const {
     }
 }
 
-void Model::draw(Shader& shader, const glm::mat4& localTransform) const
+void Model::draw(Shader& shader) const
 {
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) 
     {
         shader.use();
         if (shader.has("LocalModel"))
-            shader.set("LocalModel", localTransform * node_acc.transform);
+            shader.set("LocalModel", node_acc.transform);
 
         mesh->bindTextures(shader);
         mesh->drawElements((GLsizei)m_instances.size() / sizeof(mat4));
@@ -120,13 +108,13 @@ void Model::draw(Shader& shader, const glm::mat4& localTransform) const
     });
 }
 
-void Model::drawElements(Shader& shader, const glm::mat4& localTransform) const
+void Model::drawElements(Shader& shader) const
 {
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
         shader.use();
         if (shader.has("LocalModel"))
-            shader.set("LocalModel", localTransform * node_acc.transform);
+            shader.set("LocalModel", node_acc.transform);
 
         mesh->drawElements((GLsizei)m_instances.size() / sizeof(mat4));
     });

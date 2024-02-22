@@ -1,4 +1,5 @@
 #include "SamplePong.hpp"
+#include <algorithm>
 
 SamplePong::SamplePong() :
     m_scene(Service<Window>::get().scene())
@@ -9,7 +10,9 @@ SamplePong::SamplePong() :
     // Enable events
     _subscribe(&SamplePong::_on_key_pressed);
     _subscribe(&SamplePong::_update);
-    _subscribe([=](const SceneEvents::RenderFinished&) { m_ui.show(); });
+    _subscribe([=](const SceneEvents::RenderFinished&) { 
+        m_ui.show(); 
+    });
 
     // Go
     m_timer.tic();
@@ -17,12 +20,15 @@ SamplePong::SamplePong() :
 
 SamplePong::~SamplePong()
 {
-    for (auto entity : m_entities) {
-        ECS::destroyEntity(entity.second);
+    for (auto v_entity : m_entities) {
+        for (auto entity : v_entity.second) {
+            ECS::destroyEntity(entity);
+        }
     }
 }
 
-void SamplePong::_init_game_elements() {
+void SamplePong::_init_game_elements() 
+{
     // Scene
     m_scene.lights = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
 
@@ -41,7 +47,8 @@ void SamplePong::_init_game_elements() {
     m_wall_2.pos = glm::vec3(+2.0f, 0.0f, 0.0f);
 }
 
-void SamplePong::_create_entities() {
+void SamplePong::_create_entities() 
+{
     // ---- Field -----
     {
         DrawComponent draw;
@@ -49,76 +56,66 @@ void SamplePong::_create_entities() {
 
         BodyComponent body;
         body.model          = Model::Create(Model::Quad);
-        body.localMaterial  = glm::vec4(1, 1, 1, 0.2f);
+        body.material  = glm::vec4(1, 1, 1, 0.2f);
 
-        glm::mat4& pose(body.localTransform);
+        glm::mat4& pose(body.transform);
         pose = glm::translate(pose, glm::vec3(0, 0.1f, 0));
         pose = glm::scale(pose, glm::vec3(2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(1, 0, 0));
 
-        BatchComponent batch;
-        batch.transforms = {
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
-        };
-
-        m_entities["field"] = ECS::createEntity();
-        ECS::addComponent(m_entities["field"], body);
-        ECS::addComponent(m_entities["field"], draw);
-        ECS::addComponent(m_entities["field"], batch);
+        m_entities["field"].push_back(ECS::createEntity());
+        ECS::addComponent(m_entities["field"].back(), body);
+        ECS::addComponent(m_entities["field"].back(), draw);
     }
 
-    // ---- Wall -----
+    // ---- Walls -----
+    for (_Wall wall : {m_wall_1, m_wall_2}) 
     {
         DrawComponent draw;
         draw.type = DrawComponent::Shadows;
 
         BodyComponent body;
         body.model          = Model::Create(Model::Quad);
-        body.localMaterial  = glm::vec4(1, 1, 1, 0.5f);
+        body.material  = glm::vec4(1, 1, 1, 0.5f);
 
-        glm::mat4& pose(body.localTransform);
+        // Local transform
+        glm::mat4& pose(body.transform);
         pose = glm::translate(pose, glm::vec3(0, -0.1f, 0));
         pose = glm::scale(pose, glm::vec3(1.0f, 0.2f, 2.0f));
         pose = glm::rotate(pose, glm::pi<float>() / 2.0f, glm::vec3(0, 1, 0));
 
-        BatchComponent batch;
-        batch.transforms = {
-            glm::translate(glm::mat4(1.0f), m_wall_1.pos),
-            glm::translate(glm::mat4(1.0f), m_wall_2.pos)
-        };
+        // World transform
+        pose = glm::translate(glm::mat4(1.0f), wall.pos) * pose;
 
         CollideComponent collider;
 
-        m_entities[_Wall::Entity_Name] = ECS::createEntity();
-        ECS::addComponent(m_entities[_Wall::Entity_Name], body);
-        ECS::addComponent(m_entities[_Wall::Entity_Name], draw);
-        ECS::addComponent(m_entities[_Wall::Entity_Name], batch);
-        ECS::addComponent(m_entities[_Wall::Entity_Name], collider);
+        m_entities[_Wall::Entity_Name].push_back(ECS::createEntity());
+        ECS::addComponent(m_entities[_Wall::Entity_Name].back(), body);
+        ECS::addComponent(m_entities[_Wall::Entity_Name].back(), draw);
+        ECS::addComponent(m_entities[_Wall::Entity_Name].back(), collider);
     }
 
-    // ---- Player -----
+    // ---- Players -----
+    for (_Player player : {m_player_human, m_player_ia})
     {
         DrawComponent draw;
         draw.type = DrawComponent::Shadows;
 
+        // Local transform
         BodyComponent body;
         body.model          = Model::Create(Model::Cube);
-        body.localMaterial  = glm::vec4(1.0f);
-        body.localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
+        body.material  = glm::vec4(1.0f);
+        body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
         
-        BatchComponent batch;
-        batch.transforms = {
-            glm::translate(glm::mat4(1.0f), m_player_human.pos),
-            glm::translate(glm::mat4(1.0f), m_player_ia.pos)
-        };
+        // World transform
+        body.transform = glm::translate(glm::mat4(1.0f), player.pos) * body.transform;
 
         CollideComponent collider;
 
-        m_entities[_Player::Entity_Name] = ECS::createEntity();
-        ECS::addComponent(m_entities[_Player::Entity_Name], body);
-        ECS::addComponent(m_entities[_Player::Entity_Name], draw);
-        ECS::addComponent(m_entities[_Player::Entity_Name], batch);
-        ECS::addComponent(m_entities[_Player::Entity_Name], collider);
+        m_entities[_Player::Entity_Name].push_back(ECS::createEntity());
+        ECS::addComponent(m_entities[_Player::Entity_Name].back(), body);
+        ECS::addComponent(m_entities[_Player::Entity_Name].back(), draw);
+        ECS::addComponent(m_entities[_Player::Entity_Name].back(), collider);
     }
 
     // ---- Ball -----
@@ -126,23 +123,21 @@ void SamplePong::_create_entities() {
         DrawComponent draw;
         draw.type = DrawComponent::Shadows;
 
+        // Local transform
         BodyComponent body;
         body.model          = Model::Create(Model::Sphere);
-        body.localMaterial  = glm::vec4(1.0f);
-        body.localTransform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+        body.material  = glm::vec4(1.0f);
+        body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
 
-        BatchComponent batch;
-        batch.transforms = {
-            glm::translate(glm::mat4(1.0f), m_ball.pos) 
-        };
+        // World transform
+        body.transform = glm::translate(glm::mat4(1.0f), m_ball.pos) * body.transform;
 
         CollideComponent collider;
 
-        m_entities[_Ball::Entity_Name] = ECS::createEntity();
-        ECS::addComponent(m_entities[_Ball::Entity_Name], body);
-        ECS::addComponent(m_entities[_Ball::Entity_Name], draw);
-        ECS::addComponent(m_entities[_Ball::Entity_Name], batch);
-        ECS::addComponent(m_entities[_Ball::Entity_Name], collider);
+        m_entities[_Ball::Entity_Name].push_back(ECS::createEntity());
+        ECS::addComponent(m_entities[_Ball::Entity_Name].back(), body);
+        ECS::addComponent(m_entities[_Ball::Entity_Name].back(), draw);
+        ECS::addComponent(m_entities[_Ball::Entity_Name].back(), collider);
     }
 }
 
@@ -165,28 +160,30 @@ void SamplePong::_physics(float dt_ms) {
     glm::vec3 new_ball_pos = m_ball.pos + m_ball.speed * dt_ms;
 
     // Try to move the ball and check collision
-    ECS::getComponent<BatchComponent>(m_entities[_Ball::Entity_Name]).transforms = {
-        glm::translate(glm::mat4(1.0f), new_ball_pos)
-    };
+    ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name].front()).transform = glm::translate(glm::mat4(1.0f), new_ball_pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
 
-    m_scene.collider()->update(m_entities[_Ball::Entity_Name]);
+    m_scene.collider()->update(m_entities[_Ball::Entity_Name].front());
 
-    const CollideComponent& collide = ECS::getComponent<CollideComponent>(m_entities[_Ball::Entity_Name]);
+    const CollideComponent& collide = ECS::getComponent<CollideComponent>(m_entities[_Ball::Entity_Name].front());
 
     // Solve
     if (collide.is_colliding)
     {
+        // Assuming only one interaction
         Entity entity_colliding = collide.hit_entities.front();
         glm::vec3 pos_colliding = collide.hit_positions.front();
 
-        const BatchComponent& batch = ECS::getComponent<BatchComponent>(entity_colliding);
+        const BodyComponent& body = ECS::getComponent<BodyComponent>(entity_colliding);
 
         // Change speed direction
-        if (entity_colliding == m_entities[_Player::Entity_Name]) {
-            glm::vec3 entity_colliding = glm::vec3(batch.transforms[pos_colliding.z < 0 ? 0:1][3]);
-            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - entity_colliding);
+        const auto& players = m_entities[_Player::Entity_Name];
+        if (std::find(players.cbegin(), players.cend(), entity_colliding) != players.cend()) 
+        {
+            glm::vec3 entity_pos_colliding = glm::vec3(body.transform[3]);
+            m_ball.speed = glm::length(m_ball.speed) * glm::normalize(new_ball_pos - entity_pos_colliding);
         }
-        else {
+        else 
+        {
             m_ball.speed.x *= -1.0f;
         }
 
@@ -200,65 +197,21 @@ void SamplePong::_physics(float dt_ms) {
 
 void SamplePong::_update_entities()
 {
-    ECS::getComponent<BatchComponent>(m_entities[_Player::Entity_Name]).transforms = {
-        glm::translate(glm::mat4(1.0f), m_player_human.pos),
-        glm::translate(glm::mat4(1.0f), m_player_ia.pos)
-    };
-
-    ECS::getComponent<BatchComponent>(m_entities[_Ball::Entity_Name]).transforms = {
-        glm::translate(glm::mat4(1.0f), m_ball.pos)
-    };
-}
-
-
-void SamplePong::_update_hitboxes(bool show) {
-    // Create a debug box if non existing
-    if (m_entities.find("Hitbox") == m_entities.cend()) {
-        m_entities["Hitbox"] = ECS::createEntity();
-
-        DrawComponent draw;
-        draw.type = DrawComponent::Geometry;
-
-        BodyComponent body;
-        body.model = Model::Create(Model::Cube);
-        body.localMaterial = glm::vec4(1, 0, 0, 1);
-
-        BatchComponent batch;
-        batch.transforms = {};
-
-        ECS::addComponent(m_entities["Hitbox"], draw);
-        ECS::addComponent(m_entities["Hitbox"], body);
-        ECS::addComponent(m_entities["Hitbox"], batch);
-    }
-
-    // Get component
-    BatchComponent& batch = ECS::getComponent<BatchComponent>(m_entities["Hitbox"]);
-
-    if (!show) {
-        batch.transforms.clear();
-        return;
-    }
-
-    // Get first mesh's obb of an entity
-    auto __get_hitbox = [=](const std::string& entity_name, const glm::vec3& pos) {
-        const BodyComponent& bodyEntity = ECS::getComponent<BodyComponent>(m_entities[entity_name]);
-
-        return
-            glm::translate(glm::mat4(1.0f), pos) *
-            bodyEntity.localTransform *
-            bodyEntity.model->root->transform *
-            bodyEntity.model->root->meshes.front()->obb();
-    };
-
-    // Draw hitboxes
-    batch.transforms =
+    // Update players
     {
-        __get_hitbox(_Player::Entity_Name, m_player_ia.pos),
-        __get_hitbox(_Player::Entity_Name, m_player_human.pos),
-        __get_hitbox(_Wall::Entity_Name, m_wall_1.pos),
-        __get_hitbox(_Wall::Entity_Name, m_wall_2.pos),
-        __get_hitbox(_Ball::Entity_Name, m_ball.pos)
-    };
+        const std::vector<_Player>& players = { m_player_human, m_player_ia };
+        for (size_t iPlayer = 0; iPlayer < m_entities[_Player::Entity_Name].size(); iPlayer++)
+        {
+            glm::mat4& transform = ECS::getComponent<BodyComponent>(m_entities[_Player::Entity_Name][iPlayer]).transform;
+            transform = glm::translate(glm::mat4(1.0f), players[iPlayer].pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
+        }
+    }
+
+    // Update ball
+    {
+        glm::mat4& transform = ECS::getComponent<BodyComponent>(m_entities[_Ball::Entity_Name].front()).transform;
+        transform = glm::translate(glm::mat4(1.0f), m_ball.pos) * glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+    }
 }
 
 void SamplePong::_apply_actions(_Player& player)
@@ -286,7 +239,7 @@ void SamplePong::_update(const CommonEvents::StateUpdated&)
 
     _physics(m_timer.elapsed<Timer::microsecond>() / 1000.0f);
     _update_entities();
-    _update_hitboxes(m_ui.show_debug);
+    //_update_hitboxes(m_ui.show_debug);
 
     m_timer.tic();
 }

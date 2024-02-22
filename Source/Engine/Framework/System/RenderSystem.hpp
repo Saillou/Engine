@@ -8,7 +8,6 @@
 #include "../Core/System.hpp"
 #include "../Component/BodyComponent.hpp"
 #include "../Component/DrawComponent.hpp"
-#include "../Component/BatchComponent.hpp"
 
 #include "Render/ShadowRender.hpp"
 #include "../../Graphic/TextEngine.hpp"

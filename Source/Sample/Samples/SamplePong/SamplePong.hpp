@@ -45,7 +45,6 @@ private:
     void _ia();
     void _apply_actions(_Player&);
     void _physics(float dt_ms);
-    void _update_hitboxes(bool show);
 
     // Events
     void _update(const CommonEvents::StateUpdated&);
@@ -53,7 +52,7 @@ private:
 
     // Scene
     Scene& m_scene;
-    std::unordered_map<std::string, Entity> m_entities;
+    std::unordered_map<std::string, std::vector<Entity>> m_entities;
 
     _Ball   m_ball;
     _Player m_player_human;
