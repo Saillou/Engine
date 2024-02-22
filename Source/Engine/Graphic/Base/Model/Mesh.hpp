@@ -48,6 +48,9 @@ struct Mesh {
         Triangle = GL_TRIANGLES,
     } drawMode = Triangle;
 
+    // Helpers
+    static void Clone(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
+
 private:
     // Gpu data
     Array  m_vao;

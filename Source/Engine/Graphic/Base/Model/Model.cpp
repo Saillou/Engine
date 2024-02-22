@@ -132,7 +132,7 @@ Model::Ref Model::Clone()
             for (const auto& mesh : (*currNode)->_meshes) 
             {
                 (*currNodeCopied)->_meshes.push_back(std::make_unique<Mesh>());
-                _cloneMesh(mesh, (*currNodeCopied)->_meshes.back());
+                Mesh::Clone(mesh, (*currNodeCopied)->_meshes.back());
 
                 model_copied->_setMeshVao(*(*currNodeCopied)->_meshes.back());
             }
@@ -151,24 +151,6 @@ Model::Ref Model::Clone()
     // Return new model
     _s_model_cache[uuid] = model_copied;
     return model_copied;
-}
-
-void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
-{
-    const Mesh& inMesh = *src;
-    Mesh& outMesh = *dst;
-
-    outMesh.vertices = inMesh.vertices;
-    outMesh.indices = inMesh.indices;
-
-    for (const TextureData& inTexture : inMesh.textures) {
-        outMesh.textures.push_back(TextureData{
-            inTexture.type,
-            std::make_unique<Texture>(*inTexture.data.get())
-        });
-    }
-
-    outMesh.compute_obb();
 }
 
 // Instance
@@ -242,6 +224,10 @@ void Model::drawElements(Shader& shader) const
 void Model::addMesh(Mesh& mesh, std::unique_ptr<Node>& parent_node) {
     _setMeshVao(mesh);
     parent_node->_meshes.emplace_back(std::move(std::unique_ptr<Mesh>(&mesh)));
+}
+
+const std::string& Model::uuid() const {
+    return _uuid;
 }
 
 // Model loading

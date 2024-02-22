@@ -59,6 +59,9 @@ public:
 
     void addMesh(Mesh& mesh, std::unique_ptr<Node>& node);
 
+    // Getters
+    const std::string& uuid() const;
+
 protected:
     Model();
     Model(SimpleShape shape);
@@ -67,7 +70,6 @@ protected:
     void _loadModel(const std::string& path);
     void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
     void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
-    void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
 
     void _setMeshVao(Mesh& mesh) const;
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});

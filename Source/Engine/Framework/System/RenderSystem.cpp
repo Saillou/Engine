@@ -90,6 +90,10 @@ Shader& RenderSystem::_setShader(Cookable::CookType type, const Camera& camera, 
 // Prepare draw
 void RenderSystem::_compute() 
 {
+    // Create batches here
+    std::unordered_map<Model::Ref, std::vector<glm::mat4>> _batches;
+
+    // Get info
     for (auto& entity : m_entities) {
         const DrawComponent&  draw  = ECS::getComponent<DrawComponent>(entity);
         const BodyComponent&  body  = ECS::getComponent<BodyComponent>(entity);
@@ -97,7 +101,12 @@ void RenderSystem::_compute()
         if (draw.type == DrawComponent::Hidden)
             continue;
 
-        body.model->_setBatch({ body.transform });
+        _batches[body.model].push_back(body.transform);
+    }
+
+    // Set batches
+    for (auto& it : _batches) {
+        it.first->_setBatch(it.second);
     }
 }
 

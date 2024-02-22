@@ -75,3 +75,21 @@ void Mesh::compute_obb() {
     // Final transformation
     m_obb = scale(translate(m_obb, centroid), ext_vert * 0.5f);
 }
+
+void Mesh::Clone(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
+{
+    const Mesh& inMesh = *src;
+    Mesh& outMesh = *dst;
+
+    outMesh.vertices = inMesh.vertices;
+    outMesh.indices = inMesh.indices;
+
+    for (const TextureData& inTexture : inMesh.textures) {
+        outMesh.textures.push_back(TextureData{
+            inTexture.type,
+            std::make_unique<Texture>(*inTexture.data.get())
+        });
+    }
+
+    outMesh.compute_obb();
+}
