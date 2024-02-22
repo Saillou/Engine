@@ -23,9 +23,9 @@ struct Quad :
     glm::mat4 transform() const;
 
     // Draw instructions
-    bool absolute_dimmensions = false;
-    int texture_location      = 0;
-    glm::vec4 diffuse_color   = {};
+    bool absolute_dimensions = false;
+    int texture_location     = 0;
+    glm::vec4 diffuse_color  = {};
 
     std::unique_ptr<Mesh> mesh;
 };

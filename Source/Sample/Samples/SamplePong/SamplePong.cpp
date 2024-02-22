@@ -99,12 +99,12 @@ void SamplePong::_create_entities()
     for (_Player player : {m_player_human, m_player_ia})
     {
         DrawComponent draw;
-        draw.type = DrawComponent::Shadows;
+        draw.type = player.pos == m_player_human.pos ? DrawComponent::Geometry : DrawComponent::Shadows;
 
         // Local transform
         BodyComponent body;
         body.model     = Model::Load(Model::SimpleShape::Cube);
-        body.material  = glm::vec4(1.0f);
+        body.material  = player.pos == m_player_ia.pos ? glm::vec4(0.7f, 0, 0, 1.0f) : glm::vec4(0, 0, 0.7f, 1.0f);
         body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
         
         // World transform
