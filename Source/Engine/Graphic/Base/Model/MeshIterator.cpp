@@ -15,7 +15,7 @@ void MeshIterator::forEachMesh(const Model& model, mesh_cbk cbk)
         s.pop();
 
         // Use
-        for (const auto& mesh : elt.node->meshes) 
+        for (const auto& mesh : elt.node->_meshes) 
         {
             cbk(mesh, elt);
         }

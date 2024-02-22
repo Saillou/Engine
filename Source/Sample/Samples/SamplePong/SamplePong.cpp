@@ -55,7 +55,7 @@ void SamplePong::_create_entities()
         draw.type = DrawComponent::Shadows;
 
         BodyComponent body;
-        body.model          = Model::Create(Model::Quad);
+        body.model     = Model::Load(Model::SimpleShape::Quad)->Clone();
         body.material  = glm::vec4(1, 1, 1, 0.2f);
 
         glm::mat4& pose(body.transform);
@@ -75,7 +75,7 @@ void SamplePong::_create_entities()
         draw.type = DrawComponent::Shadows;
 
         BodyComponent body;
-        body.model          = Model::Create(Model::Quad);
+        body.model     = Model::Load(Model::SimpleShape::Quad)->Clone();;
         body.material  = glm::vec4(1, 1, 1, 0.5f);
 
         // Local transform
@@ -103,7 +103,7 @@ void SamplePong::_create_entities()
 
         // Local transform
         BodyComponent body;
-        body.model          = Model::Create(Model::Cube);
+        body.model     = Model::Load(Model::SimpleShape::Cube)->Clone();
         body.material  = glm::vec4(1.0f);
         body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
         
@@ -125,7 +125,7 @@ void SamplePong::_create_entities()
 
         // Local transform
         BodyComponent body;
-        body.model          = Model::Create(Model::Sphere);
+        body.model     = Model::Load(Model::SimpleShape::Sphere)->Clone();
         body.material  = glm::vec4(1.0f);
         body.transform = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
 

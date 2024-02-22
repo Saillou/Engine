@@ -76,18 +76,18 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 float RayCaster::ApproxDistance(const glm::vec3& origin, const Model::Ref model, const glm::mat4& quat)
 {
 	// Will just check the root element..
-	if (!model->root || model->root->meshes.empty())
+	if (!model->root || model->root->meshes().empty())
 		return -1.0f;
 
 	// Check all meshes of root
 	float avg_distance = 0.0f;
 	const glm::mat4 Q = quat * model->root->transform;
 
-	for (const auto& mesh : model->root->meshes) {
+	for (const auto& mesh : model->root->meshes()) {
 		avg_distance += glm::distance(vec3(Q * mesh->obb()[3]), origin);
 	}
 
-	return avg_distance / model->root->meshes.size();
+	return avg_distance / model->root->meshes().size();
 }
 
 // - Helpers -

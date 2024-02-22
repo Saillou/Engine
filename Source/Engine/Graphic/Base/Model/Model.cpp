@@ -14,6 +14,14 @@
 
 using namespace glm;
 
+// Cache magic
+std::unordered_map<std::string, Model::Ref> Model::_s_model_cache;
+
+void Model::ClearCache()
+{
+    _s_model_cache.clear();
+}
+
 // Helper
 inline mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
 {
@@ -28,25 +36,143 @@ inline mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from)
 }
 
 // Creators
-Model::Ref Model::Create(SimpleShape shape)
+Model::Ref Model::Create(int customId)
 {
+    const std::string uuid = "#CUSTOM#" + std::to_string(customId);
+
+    // Check cache
+    if (_s_model_cache.find(uuid) != _s_model_cache.cend()) {
+        std::cerr << "Already created object with this ID - Previous one will be invalidated." << std::endl;
+    }
+
+    // Create empty
+    struct _Model_ :Model {
+        _Model_() : Model() { }
+    };
+
+    // Caching
+    _s_model_cache[uuid] = std::make_shared<_Model_>();
+    _s_model_cache[uuid]->_uuid = uuid;
+
+    return _s_model_cache[uuid];
+}
+Model::Ref Model::Load(SimpleShape shape)
+{
+    const std::string uuid = "#SHAPE#" + std::to_string((int)shape);
+
+    // Check cache
+    if (_s_model_cache.find(uuid) != _s_model_cache.cend()) {
+        return _s_model_cache[uuid];
+    }
+
+    // Create
     struct _Model_:Model {
         _Model_(SimpleShape s) : Model(s) { }
     };
 
-    return std::make_shared<_Model_>(shape);
+    // Caching
+    _s_model_cache[uuid] = std::make_shared<_Model_>(shape);
+    _s_model_cache[uuid]->_uuid = uuid;
+
+    return _s_model_cache[uuid];
 }
-Model::Ref Model::Create(const std::string& path)
+Model::Ref Model::Load(const std::string& path)
 {
+    const std::string uuid = "#FILE#" + path;
+
+    // Check cache
+    if (_s_model_cache.find(uuid) != _s_model_cache.cend()) {
+        return _s_model_cache[uuid];
+    }
+
+    // Create
     struct _Model_: Model {
         _Model_(const std::string& p) : Model(p) { }
     };
 
-    return std::make_shared<_Model_>(path);
+    // Caching
+    _s_model_cache[uuid] = std::make_shared<_Model_>(path);
+    _s_model_cache[uuid]->_uuid = uuid;
+
+    return _s_model_cache[uuid];
+}
+
+Model::Ref Model::Clone()
+{
+    // Create a new one
+    const std::string uuid = "#CLONE#" + _uuid;
+
+    // Create empty
+    struct _Model_ :Model {
+        _Model_() : Model() { }
+    };
+
+    // Caching
+    Model::Ref model_copied = std::make_shared<_Model_>();
+    model_copied->_uuid     = uuid;
+
+    // Populate
+    {
+        std::stack<const std::unique_ptr<Node>*> st;
+        std::stack<std::unique_ptr<Node>*> st_copied;
+
+        st.push(&root);
+        st_copied.push(&(model_copied->root));
+
+        while (!st.empty()) 
+        {
+            const auto currNode = st.top();
+            auto currNodeCopied = st_copied.top();
+
+            st.pop();
+            st_copied.pop();
+
+            // Clone meshes
+            (*currNodeCopied)->transform = (*currNode)->transform;
+            for (const auto& mesh : (*currNode)->_meshes) 
+            {
+                (*currNodeCopied)->_meshes.push_back(std::make_unique<Mesh>());
+                _cloneMesh(mesh, (*currNodeCopied)->_meshes.back());
+
+                model_copied->_setMeshVao(*(*currNodeCopied)->_meshes.back());
+            }
+
+            // Create nodes
+            for (size_t i = 0; i < (*currNode)->children.size(); i++) 
+            {
+                (*currNodeCopied)->children.push_back(std::make_unique<Node>());
+
+                st.push(&(*currNode)->children[i]);
+                st_copied.push(&(*currNodeCopied)->children[i]);
+            }
+        }
+    }
+
+    // Return new model
+    _s_model_cache[uuid] = model_copied;
+    return model_copied;
+}
+
+void Model::_cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
+{
+    const Mesh& inMesh = *src;
+    Mesh& outMesh = *dst;
+
+    outMesh.vertices = inMesh.vertices;
+    outMesh.indices = inMesh.indices;
+
+    for (const TextureData& inTexture : inMesh.textures) {
+        outMesh.textures.push_back(TextureData{
+            inTexture.type,
+            std::make_unique<Texture>(*inTexture.data.get())
+        });
+    }
+
+    outMesh.compute_obb();
 }
 
 // Instance
-Model::Model(SimpleShape shape) :
+Model::Model():
     root(std::make_unique<Model::Node>()),
     m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
     m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
@@ -54,20 +180,30 @@ Model::Model(SimpleShape shape) :
     m_colors.bindData(sizeof(vec4));
     m_instances.bindData(sizeof(mat4));
 
+    // Let user do what he wants
+}
+Model::Model(SimpleShape shape):
+    root(std::make_unique<Model::Node>()),
+    m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+    m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+{
+    using MSS = Model::SimpleShape;
+
+    m_colors.bindData(sizeof(vec4));
+    m_instances.bindData(sizeof(mat4));
+
     std::unique_ptr<Mesh> mesh = nullptr;
     switch (shape)
     {
-        case Quad: mesh  = Quad::CreateMesh();   break;
-        case Cube: mesh  = Cube::CreateMesh();   break;
-        case Sphere:mesh = Sphere::CreateMesh(); break;
+        case MSS::Quad: mesh  = Quad::CreateMesh();   break;
+        case MSS::Cube: mesh  = Cube::CreateMesh();   break;
+        case MSS::Sphere:mesh = Sphere::CreateMesh(); break;
     }
     if (!mesh)
         return;
 
-    setMeshVao(*mesh);
-    root->meshes.emplace_back(std::move(mesh));
+    addMesh(*mesh.release(), root);
 }
-
 Model::Model(const std::string& path):
     m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
     m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
@@ -78,22 +214,7 @@ Model::Model(const std::string& path):
     _loadModel(path);
 }
 
-void Model::setMeshVao(Mesh& mesh) const {
-    mesh.setupVao();
-
-    m_colors.bind();
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
-    glVertexAttribDivisor(3, 1);
-
-    m_instances.bind();
-    for (int i = 0; i < 4; i++) {
-        glEnableVertexAttribArray(4 + i);
-        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(i * sizeof(vec4)));
-        glVertexAttribDivisor(4 + i, 1);
-    }
-}
-
+// Draws
 void Model::draw(Shader& shader) const
 {
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) 
@@ -107,7 +228,6 @@ void Model::draw(Shader& shader) const
         mesh->unbindTextures();
     });
 }
-
 void Model::drawElements(Shader& shader) const
 {
     MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
@@ -119,20 +239,12 @@ void Model::drawElements(Shader& shader) const
         mesh->drawElements((GLsizei)m_instances.size() / sizeof(mat4));
     });
 }
-
-void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
-    m_instances.bindData(models);
-
-    if (colors.size() >= models.size()) {
-        m_colors.bindData(colors);
-    }
-    else {
-        std::vector<vec4> res_colors = colors;
-        res_colors.resize(models.size());
-        m_colors.bindData(res_colors);
-    }
+void Model::addMesh(Mesh& mesh, std::unique_ptr<Node>& parent_node) {
+    _setMeshVao(mesh);
+    parent_node->_meshes.emplace_back(std::move(std::unique_ptr<Mesh>(&mesh)));
 }
 
+// Model loading
 void Model::_loadModel(const std::string& path) {
     // read file via ASSIMP
     Assimp::Importer importer;
@@ -149,15 +261,14 @@ void Model::_loadModel(const std::string& path) {
     root = std::make_unique<Node>();
     _processNode(scene->mRootNode, scene, root);
 }
-
 void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::unique_ptr<Node>& currentNode) {
     // Relative position
     currentNode->transform = aiMatrix4x4ToGlm(inNnode->mTransformation);
 
     for (unsigned int i = 0; i < inNnode->mNumMeshes; i++) {
         // Create and process mesh
-        currentNode->meshes.push_back(std::make_unique<Mesh>());
-        _processMesh(scene->mMeshes[inNnode->mMeshes[i]], scene, currentNode->meshes.back());
+        currentNode->_meshes.push_back(std::make_unique<Mesh>());
+        _processMesh(scene->mMeshes[inNnode->mMeshes[i]], scene, currentNode->_meshes.back());
     }
 
     // Continue recursively
@@ -167,7 +278,6 @@ void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::uniqu
         _processNode(inNnode->mChildren[i], scene, currentNode->children[i]);
     }
 }
-
 void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& pOutMesh) {
     Mesh& outMesh = *pOutMesh;
 
@@ -215,5 +325,34 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
     }
 
     outMesh.compute_obb();
-    setMeshVao(outMesh);
+    _setMeshVao(outMesh);
+}
+
+// Vao stuff
+void Model::_setMeshVao(Mesh& mesh) const {
+    mesh.setupVao();
+
+    m_colors.bind();
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glVertexAttribDivisor(3, 1);
+
+    m_instances.bind();
+    for (int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(4 + i);
+        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(i * sizeof(vec4)));
+        glVertexAttribDivisor(4 + i, 1);
+    }
+}
+void Model::_setBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
+    m_instances.bindData(models);
+
+    if (colors.size() >= models.size()) {
+        m_colors.bindData(colors);
+    }
+    else {
+        std::vector<vec4> res_colors = colors;
+        res_colors.resize(models.size());
+        m_colors.bindData(res_colors);
+    }
 }
