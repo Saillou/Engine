@@ -30,23 +30,19 @@ private:
 	Camera&				_camera;	// Given by Scene
 	std::vector<Light>& _lights;	// Given by Scene
 	ShadowRender		_shadower;
-	Shader				_placeHolder;
 
 	struct _Batch {
-		std::vector<Entity>		_entities;
 		std::vector<glm::mat4>	_transforms;
 		std::vector<glm::vec4>	_materials;
 	};
-	std::unordered_map<Model::Ref, _Batch> _batches;
-
-	// Helper
-	Shader& _setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower);
+	std::unordered_map<CookType, std::unordered_map<Model::Ref, _Batch>> _batches;
 
 	// Prepare draw
 	void _compute();
+	void _setBasicShader();
+	void _setGeometryShader();
 
 	// Actual draw calls
 	void _drawShadows();
 	void _drawEntities();
-	void _drawEntity(Entity);
 };

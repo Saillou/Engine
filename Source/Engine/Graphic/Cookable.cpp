@@ -239,19 +239,21 @@ void Cookable::_set_shader_geometry(Shader& shader) {
             _init_geometry()
 
             .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(line_strip, max_vertices = 4)")
+            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
             .add_var("out", "vec4", "Color")
+            .add_var("uniform", "highp int", "n_lines")
 
+            // line order: 0-1, 1-2, 2-0
             .add_func("void", "main", "", R"_main_(
-                Color           = 0.5 * (gs_in[1].Color   + gs_in[2].Color);
-                gl_Position     = gl_in[1].gl_Position; EmitVertex();
-                gl_Position     = gl_in[2].gl_Position; EmitVertex(); 
-                EndPrimitive();
+                for(int i = 0; i < n_lines; i++) 
+                {
+                    Color = gs_in[i].Color;
 
-                Color           = 0.5 * (gs_in[0].Color   + gs_in[1].Color);
-                gl_Position     = gl_in[0].gl_Position; EmitVertex();
-                gl_Position     = gl_in[1].gl_Position; EmitVertex(); 
-                EndPrimitive();
+                    gl_Position = gl_in[(i+0)%3].gl_Position; EmitVertex();
+                    gl_Position = gl_in[(i+1)%3].gl_Position; EmitVertex(); 
+
+                    EndPrimitive();
+                }
             )_main_")
         )
         .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}

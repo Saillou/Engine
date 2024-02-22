@@ -14,12 +14,17 @@ RenderSystem::RenderSystem(Camera& camera, std::vector<Light>& lights) :
 
 void RenderSystem::init() 
 {
+    // System requirements
     Signature signature;
 
     signature.set(ECS::getComponentType<BodyComponent>());
     signature.set(ECS::getComponentType<DrawComponent>());
 
     ECS::setSystemSignature<RenderSystem>(signature);
+
+    // System members
+    addRecipe(Cookable::CookType::Basic);
+    addRecipe(Cookable::CookType::Geometry);
 }
 
 void RenderSystem::update()
@@ -33,92 +38,58 @@ void RenderSystem::update()
     _drawEntities();
 }
 
-// Helpers
-Shader& RenderSystem::_setShader(Cookable::CookType type, const Camera& camera, const std::vector<Light>& lights, const ShadowRender* shadower) {
-    addRecipe(type);
-
-    switch (type) {
-    case Cookable::CookType::Basic:
-        {
-            // Check light capabilities
-            if (get(type)->source(ShaderSource::Type::Fragment).getVar("LightPos").count < lights.size())
-            {
-                editRecipe(type, ShaderSource::Type::Fragment, ShaderSource{}
-                    .add_var("uniform", "vec3", "LightPos", (int)lights.size())
-                    .add_var("uniform", "vec4", "LightColor", (int)lights.size())
-                    .add_var("uniform", "samplerCube", "depthMap", (int)lights.size())
-                );
-            }
-
-            // Use
-            Shader& sh = get(type)->use();
-
-            // Bind shadow map
-            if (shadower)
-                shadower->bindTextures(GL_TEXTURE0 + 1);
-
-            // Set uniforms
-            sh.set("Projection",  camera.projection)
-              .set("View",        camera.modelview)
-              .set("CameraPos",   camera.position)
-              .set("far_plane",   camera.far_plane)
-              .set("use_shadow",  shadower != nullptr)
-              .set("LightNumber", (int)lights.size());
-
-            for (int iLight = 0; iLight < (int)lights.size(); iLight++) 
-            {
-                sh.set("LightPos["    + std::to_string(iLight) + "]", lights[iLight].position)
-                  .set("LightColor["  + std::to_string(iLight) + "]", lights[iLight].color)
-                  .set("depthMap["    + std::to_string(iLight) + "]", iLight + 1);
-            }
-        }
-        break;
-
-    case Cookable::CookType::Particle:
-    case Cookable::CookType::Geometry:
-        Shader& sh = get(type)->use();
-
-        sh.set("Projection", camera.projection)
-          .set("View",       camera.modelview);
-        break;
-    }
-
-    return *get(type);
-}
-
 // Prepare draw
 void RenderSystem::_compute() 
 {
-    // Clear previous compute
+    // Clear previous computations
     _batches.clear();
+    _batches[CookType::Basic] = {};
+    _batches[CookType::Geometry] = {};
 
     // Get info
     for (Entity entity : m_entities) {
-        const DrawComponent&  draw  = ECS::getComponent<DrawComponent>(entity);
-        const BodyComponent&  body  = ECS::getComponent<BodyComponent>(entity);
+        const DrawComponent& draw = ECS::getComponent<DrawComponent>(entity);
+        const BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
 
         if (draw.type == DrawComponent::Hidden)
             continue;
 
-        _batches[body.model]._entities.push_back(entity);
-        _batches[body.model]._transforms.push_back(body.transform);
-        _batches[body.model]._materials.push_back(body.material);
-    }
+        CookType type = (CookType)-1;
 
-    // Set batches
-    for (auto& it : _batches) {
-        Model::Ref model    = it.first;
-        const _Batch& batch = it.second;
+        switch (draw.type)
+        {
+            case DrawComponent::Basic:
+            case DrawComponent::Lights:
+            case DrawComponent::Shadows:    
+                type = CookType::Basic;    break;
 
-        model->_setBatch(batch._transforms, batch._materials);
+            case DrawComponent::Geometry: 
+                type = CookType::Geometry; break;
+
+            default: continue;
+        }
+
+        _batches[type][body.model]._transforms.push_back(body.transform);
+        _batches[type][body.model]._materials.push_back(body.material);
     }
 }
 
 // Draws
 void RenderSystem::_drawShadows() 
 {
+    // Set batches
+    const auto& batch_who_casts_shadows = _batches[CookType::Basic];
+
+    for (auto& itBatch : batch_who_casts_shadows) {
+        Model::Ref model    = itBatch.first;
+        const _Batch& batch = itBatch.second;
+
+        model->_setBatch(batch._transforms, batch._materials);
+    }
+
+    // Draw
     _shadower.render(_camera, _lights, [=](Shader& sh) {
-        for (auto& it : _batches) {
+        for (auto& it : batch_who_casts_shadows) {
             Model::Ref model = it.first;
 
             model->drawElements(sh);
@@ -128,27 +99,68 @@ void RenderSystem::_drawShadows()
 
 void RenderSystem::_drawEntities()
 {
-    for (auto& it : _batches) {
-        Model::Ref model = it.first;
+    // Draw basic batches
+    _setBasicShader(); 
+    
+    for (auto& itBatch : _batches[CookType::Basic]) {
+        Model::Ref model = itBatch.first;
+        _Batch& batch    = itBatch.second;
 
-        model->draw(sh);
+        // Batch (VBO instances) already setup thanks to shadow render
+        model->draw(*get(CookType::Basic));
+    }
+
+    // Draw geometry batches
+    _setGeometryShader();
+
+    for (auto& itBatch : _batches[CookType::Geometry]) {
+        Model::Ref model    = itBatch.first;
+        const _Batch& batch = itBatch.second;
+
+        model->_setBatch(batch._transforms, batch._materials);
+        model->draw(*get(CookType::Geometry));
     }
 }
 
-void RenderSystem::_drawEntity(Entity entity) 
+// Shader stuff
+void RenderSystem::_setBasicShader()
 {
-    DrawComponent& draw = ECS::getComponent<DrawComponent>(entity);
-    BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
-
-    if(draw.type < DrawComponent::Custom) {
-        body.model->draw([&]() -> Shader& {
-            switch (draw.type) {
-                case DrawComponent::Basic:    return _setShader(Cookable::CookType::Basic,    _camera, {},      nullptr);
-                case DrawComponent::Lights:   return _setShader(Cookable::CookType::Basic,    _camera, _lights, nullptr);
-                case DrawComponent::Shadows:  return _setShader(Cookable::CookType::Basic,    _camera, _lights, &_shadower);
-                case DrawComponent::Geometry: return _setShader(Cookable::CookType::Geometry, _camera, {},      nullptr);
-                case DrawComponent::Particle: return _setShader(Cookable::CookType::Particle, _camera, {},      nullptr);
-            } return _placeHolder;
-        }());
+    // Check light capabilities
+    if (get(Cookable::CookType::Basic)->source(ShaderSource::Type::Fragment).getVar("LightPos").count < _lights.size())
+    {
+        editRecipe(Cookable::CookType::Basic, ShaderSource::Type::Fragment, ShaderSource{}
+            .add_var("uniform", "vec3", "LightPos", (int)_lights.size())
+            .add_var("uniform", "vec4", "LightColor", (int)_lights.size())
+            .add_var("uniform", "samplerCube", "depthMap", (int)_lights.size())
+        );
     }
+
+    // Use
+    Shader& sh = get(Cookable::CookType::Basic)->use();
+
+    // Bind shadow map
+    _shadower.bindTextures(GL_TEXTURE0 + 1);
+
+    // Set uniforms
+    sh.set("Projection", _camera.projection)
+      .set("View", _camera.modelview)
+      .set("CameraPos", _camera.position)
+      .set("far_plane", _camera.far_plane)
+      .set("use_shadow", true)
+      .set("LightNumber", (int)_lights.size());
+
+    for (int iLight = 0; iLight < (int)_lights.size(); iLight++)
+    {
+        sh.set("LightPos[" +   std::to_string(iLight) + "]", _lights[iLight].position)
+          .set("LightColor[" + std::to_string(iLight) + "]", _lights[iLight].color)
+          .set("depthMap[" +   std::to_string(iLight) + "]", iLight + 1);
+    }
+}
+
+void RenderSystem::_setGeometryShader() {
+    Shader& sh = get(Cookable::CookType::Geometry)->use();
+
+    sh.set("Projection", _camera.projection)
+      .set("View",       _camera.modelview)
+      .set("n_lines",    2);
 }
