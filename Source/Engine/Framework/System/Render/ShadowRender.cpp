@@ -18,9 +18,9 @@ ShadowRender::ShadowRender()
             )_main_")
         ).
         attachSource(GL_GEOMETRY_SHADER, ShaderSource{}
-            .add_var("in", "layout", "(triangles)")
+            .add_var("layout", "(triangles)", "in")
             .add_var("uniform", "mat4", "shadowMatrices[6]")
-            .add_var("out", "layout", "(triangle_strip, max_vertices = 18)")
+            .add_var("layout", "(triangle_strip, max_vertices = 18)", "out")
             .add_var("out", "vec4", "FragPos")
             .add_func("void", "main", "", R"_main_(
                 for(int face = 0; face < 6; face++) {
