@@ -1,6 +1,7 @@
 #include "ECS.hpp"
 
 #include "../Component/BodyComponent.hpp"
+#include "../Component/CastComponent.hpp"
 #include "../Component/DrawComponent.hpp"
 #include "../Component/CollideComponent.hpp"
 
@@ -12,6 +13,7 @@ void ECS::init()
         return;
 
     ECS::registerComponent<BodyComponent>();
+    ECS::registerComponent<CastComponent>();
     ECS::registerComponent<DrawComponent>();
     ECS::registerComponent<CollideComponent>();
 

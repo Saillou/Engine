@@ -19,7 +19,7 @@
 struct RenderSystem : 
 	public System, Cookable 
 {
-	RenderSystem(Camera& camera, std::vector<Light>& lights);
+	RenderSystem(const Camera& camera, const std::vector<Light>& lights);
 	~RenderSystem() = default;
 
 	void init() override;
@@ -27,9 +27,9 @@ struct RenderSystem :
 
 private:
 	// Members
-	Camera&				_camera;	// Given by Scene
-	std::vector<Light>& _lights;	// Given by Scene
-	ShadowRender		_shadower;
+	const Camera&			  _camera;	// Given by Scene
+	const std::vector<Light>& _lights;	// Given by Scene
+	ShadowRender			  _shadower;
 
 	struct _Batch {
 		std::vector<Entity>     _entities;

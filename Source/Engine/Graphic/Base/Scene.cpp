@@ -15,7 +15,7 @@ Scene::Scene(int widthHint, int heightHint):
 
     // Init default system
     m_render_system   = ECS::registerSystem<RenderSystem>(camera, lights);
-    m_caster_system   = ECS::registerSystem<CasterSystem>();
+    m_caster_system   = ECS::registerSystem<CasterSystem>(camera);
     m_collider_system = ECS::registerSystem<ColliderSystem>();
 
     m_render_system->init();
@@ -64,8 +64,8 @@ void Scene::run() {
     //    }
     //    _framebuffer_main.unbind();
     //
-    //    // Apply filters
-    //    Event::Emit(SceneEvents::PostDraw());
+        // Apply filters
+        Event::Emit(SceneEvents::PostDraw());
     //    drawFrame(_framebuffer_main);
     //}
 

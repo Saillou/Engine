@@ -6,7 +6,7 @@
 #include <iostream>
 #include <algorithm>
 
-RenderSystem::RenderSystem(Camera& camera, std::vector<Light>& lights) :
+RenderSystem::RenderSystem(const Camera& camera, const std::vector<Light>& lights) :
     _camera(camera),
     _lights(lights)
 {
