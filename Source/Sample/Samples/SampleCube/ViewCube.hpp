@@ -7,7 +7,7 @@
 #include <Engine/Events/CommonEvents.hpp>
 
 struct ViewCube : Event::Subscriber {
-    ViewCube();
+     ViewCube();
     ~ViewCube();
 
 protected:
