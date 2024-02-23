@@ -32,14 +32,21 @@ private:
 	ShadowRender		_shadower;
 
 	struct _Batch {
+		std::vector<Entity>     _entities;
 		std::vector<glm::mat4>	_transforms;
 		std::vector<glm::vec4>	_materials;
 	};
-	std::unordered_map<CookType, std::unordered_map<Model::Ref, _Batch>> _batches;
+	typedef std::unordered_map<Model::Ref, _Batch> Batch;
+
+	Batch _shadow_batch;
+	std::unordered_map<CookType, Batch> _batches_opaque;
+	std::unordered_map<CookType, Batch> _batches_translucent;
 
 	// Prepare draw
 	void _compute();
-	void _setBasicShader();
+	void _reorder(Model::Ref, _Batch&);
+
+	void _setSolidShader();
 	void _setGeometryShader();
 
 	// Actual draw calls

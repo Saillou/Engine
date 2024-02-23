@@ -5,8 +5,8 @@
 
 void Cookable::Set(CookType type, Shader& recipe) {
     switch (type) {
-    case CookType::Basic:
-        _set_shader_basic(recipe);
+    case CookType::Solid:
+        _set_shader_solid(recipe);
         break;
 
     case CookType::Geometry:
@@ -121,7 +121,7 @@ ShaderSource Cookable::_init_fragment() {
 
 
 // - Shaders
-void Cookable::_set_shader_basic(Shader& shader) {
+void Cookable::_set_shader_solid(Shader& shader) {
     shader
         .attachSource(Shader::Vertex,
             _init_vertex()

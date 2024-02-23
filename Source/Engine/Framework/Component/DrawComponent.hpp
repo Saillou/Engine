@@ -5,16 +5,11 @@
 
 struct DrawComponent 
 {
-	// Render info
 	enum DrawType 
 	{
-		Hidden = 0,
-		Particle,
-		Basic,
-		Lights,
-		Shadows,
-		Geometry,
-		Custom = 2048
+		Hidden   = 0,
+		Solid	 = (1 << 0),
+		Geometry = (1 << 1),
 	};
 
 	DrawType type = Hidden;

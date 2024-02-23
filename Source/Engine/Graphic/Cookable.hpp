@@ -10,7 +10,7 @@
 struct Cookable {
     // Basic possibilities
     enum class CookType {       
-        Basic,
+        Solid,
         Geometry,
         Shape,
         Particle
@@ -32,7 +32,7 @@ struct Cookable {
     static ShaderSource _init_geometry();
     static ShaderSource _init_fragment();
 
-    static void _set_shader_basic(Shader& shader);
+    static void _set_shader_solid(Shader& shader);
     static void _set_shader_geometry(Shader& shader);
     static void _set_shader_shape(Shader& shader);
     static void _set_shader_particle(Shader& shader);

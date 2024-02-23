@@ -1,7 +1,7 @@
 #include "App.hpp"
 
 // List of samples
-//#include "Samples/SampleCube/SampleCube.hpp"
+#include "Samples/SampleCube/SampleCube.hpp"
 #include "Samples/SamplePong/SamplePong.hpp"
 //#include "Samples/SampleTrain/SampleTrain.hpp"
 //#include "Samples/SampleForest/SampleForest.hpp"
@@ -12,7 +12,7 @@
 
 // App
 App::App():
-    m_curr_sample(std::make_unique<SamplePong>())
+    m_curr_sample(std::make_unique<SampleCube>())
 {
 }
 
@@ -21,7 +21,7 @@ void App::changeSample(const SampleId& sample_id) {
 
 	switch (sample_id)
 	{
-		//case SampleId::Cube:		m_curr_sample = std::make_unique<SampleCube>();		 break;
+		case SampleId::Cube:		m_curr_sample = std::make_unique<SampleCube>();		 break;
 		case SampleId::Pong:		m_curr_sample = std::make_unique<SamplePong>();		 break;
 		//case SampleId::Train:		m_curr_sample = std::make_unique<SampleTrain>();	 break;
 		//case SampleId::Forest:		m_curr_sample = std::make_unique<SampleForest>();	 break;

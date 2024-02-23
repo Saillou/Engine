@@ -52,7 +52,7 @@ void SamplePong::_create_entities()
     // ---- Field -----
     {
         DrawComponent draw;
-        draw.type = DrawComponent::Shadows;
+        draw.type = DrawComponent::Solid;
 
         BodyComponent body;
         body.model     = Model::Load(Model::SimpleShape::Quad);
@@ -69,10 +69,10 @@ void SamplePong::_create_entities()
     }
 
     // ---- Walls -----
-    for (_Wall wall : {m_wall_1, m_wall_2}) 
+    for (_Wall wall : {m_wall_1, m_wall_2})
     {
         DrawComponent draw;
-        draw.type = DrawComponent::Shadows;
+        draw.type = DrawComponent::Geometry;
 
         BodyComponent body;
         body.model     = Model::Load(Model::SimpleShape::Quad);
@@ -99,11 +99,11 @@ void SamplePong::_create_entities()
     for (_Player player : {m_player_human, m_player_ia})
     {
         DrawComponent draw;
-        draw.type = player.pos == m_player_human.pos ? DrawComponent::Geometry : DrawComponent::Shadows;
+        draw.type = DrawComponent::Solid;
 
         BodyComponent body;
-        body.model     = Model::Load(Model::SimpleShape::Cube);
-        body.material  = player.pos == m_player_ia.pos ? glm::vec4(0.7f, 0, 0, 1.0f) : glm::vec4(0, 0, 0.7f, 1.0f);
+        body.model    = Model::Load(Model::SimpleShape::Cube);
+        body.material = player.pos == m_player_ia.pos ? glm::vec4(0.7f, 0, 0, 1.0f) : glm::vec4(0, 0, 0.7f, 1.0f);
 
         body.transform.local = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.1f, 0.1f));
         body.transform.world = glm::translate(glm::mat4(1.0f), player.pos);
@@ -119,7 +119,7 @@ void SamplePong::_create_entities()
     // ---- Ball -----
     {
         DrawComponent draw;
-        draw.type = DrawComponent::Shadows;
+        draw.type = DrawComponent::Solid;
 
         BodyComponent body;
         body.model     = Model::Load(Model::SimpleShape::Sphere);
