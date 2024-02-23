@@ -238,8 +238,8 @@ void Cookable::_set_shader_geometry(Shader& shader) {
         .attachSource(GL_GEOMETRY_SHADER, 
             _init_geometry()
 
-            .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
+            .add_var("layout", "(triangles)", "in")
+            .add_var("layout", "(line_strip, max_vertices = 6)", "out")
             .add_var("out", "vec4", "Color")
             .add_var("uniform", "highp int", "n_lines")
 
@@ -318,8 +318,8 @@ void Cookable::_set_shader_particle(Shader& shader) {
             )_main_")
         )
         .attachSource(Shader::Geometry, ShaderSource{}
-            .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(triangle_strip, max_vertices = 3)")
+            .add_var("layout", "(triangles)", "in")
+            .add_var("layout", "(triangle_strip, max_vertices = 3)", "out")
 
             .add_var("in", "VS_OUT", R"_struct_({
                 vec3 FragPos;
