@@ -77,8 +77,12 @@ struct ManagedEntity
     glm::mat4& world() {
         return body().transform.world;
     }
-    const glm::mat4& transform() const{
+    glm::mat4 transform() const{
         return ECS::getComponent<BodyComponent>(_entity).transform.get();
+    }
+
+    Material& material() {
+        return body().material;
     }
     glm::vec4& color() {
         return body().material.color;

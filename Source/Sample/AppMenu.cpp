@@ -53,12 +53,6 @@ void AppMenu::_prepare()
         if (ImGui::MenuItem("Trainmania - Desert track")) {
             Service<App>::get().changeSample(SampleId::Train);
         }
-        if (ImGui::MenuItem("Another one bites the dust")) {
-            Service<App>::get().changeSample(SampleId::Particles);
-        }
-        if (ImGui::MenuItem("The sun like a Mandala")) {
-            Service<App>::get().changeSample(SampleId::Mandala);
-        }
         if (ImGui::MenuItem("Pong revisited")) {
             Service<App>::get().changeSample(SampleId::Pong);
         }

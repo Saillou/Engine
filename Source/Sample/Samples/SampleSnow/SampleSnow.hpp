@@ -27,7 +27,6 @@ private:
     // Members
     Scene& m_scene;
     Timer::Chronometre m_timer;
-    Model::Ref m_model_flake = nullptr;
     std::unordered_map<std::string, std::vector<SharedEntity>> m_entities;
 
     float m_cam_theta = 0.0f;
@@ -40,13 +39,13 @@ private:
         bool moving     = true;
     };
     std::deque<_Flake> m_flakes;
+    Model::Ref m_model_flake = nullptr;
+    glm::mat4 m_flake_local  = glm::mat4(1.0f);
 
     // -- Ui --
     struct Ui
     {
         void show();
-
-        bool show_debug = false;
 
 #ifdef _DEBUG 
         bool loop = false;

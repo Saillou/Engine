@@ -9,9 +9,7 @@ SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
 {
     // Scene
-    m_scene.lights = {
-        Light(glm::vec3{ 0.2f,  -0.5f, 1.0f }, glm::vec4(1,0.5f,0.2f,1)) 
-    };
+    m_scene.lights = { };
 
     m_scene.camera.up        = glm::vec3(0, 0, 1);
     m_scene.camera.position  = glm::vec3(0.0f, m_cam_distance, 1.5f);
@@ -19,6 +17,7 @@ SampleSnow::SampleSnow() :
 
     // Create custom model (just one triangle)
     m_model_flake = Model::Create(0);
+    m_flake_local = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
     std::shared_ptr<Mesh> meshTriangle = std::make_shared<Mesh>();
     PrimitiveHelper::createTriangle(*meshTriangle, {
@@ -82,7 +81,7 @@ void SampleSnow::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     m_scene.camera.position.y = m_cam_distance * cos(m_cam_theta);
 }
 
-// Methods
+// Entities management
 ManagedEntity& SampleSnow::_create_entity(const std::string& category, Model::Ref model) {
     m_entities[category].push_back(
         ManagedEntity::Create(model)
@@ -92,12 +91,13 @@ ManagedEntity& SampleSnow::_create_entity(const std::string& category, Model::Re
 
 void SampleSnow::_destroy_entity(const std::string& category, Entity entity)
 {
-    std::vector<SharedEntity> entities = m_entities[category];
-    entities.erase(std::remove_if(entities.begin(), entities.end(), [=](SharedEntity se) {
+    std::vector<SharedEntity>& entities = m_entities[category];
+    entities.erase(std::remove_if(entities.begin(), entities.end(), [entity](SharedEntity se) {
         return se->entity() == entity;
-    }));
+    }), entities.end());
 }
 
+// Methods
 void SampleSnow::_generate_flakes()
 {
     static const glm::mat4 Identity(1.0f);
@@ -116,10 +116,10 @@ void SampleSnow::_generate_flakes()
 
     // Generate one
     auto& flake = _create_entity("flake", m_model_flake);
-    flake.local() = glm::scale(flake.local(), glm::vec3(0.1f));
-    flake.local() = glm::rotate(flake.local(), glm::pi<float>() / 4.0f, glm::vec3(1, 0, 0));
+    flake.local() = m_flake_local;
     flake.world() = glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.f));
-    flake.color() = glm::vec4(0.7f, 1.0f, 0.9f, 1.0f);
+    flake.material().color = glm::vec4(0.7f, 1.0f, 0.9f, 0.7f);
+    flake.material().cast_shadow = false;
 
     m_flakes.push_back(_Flake { 
         /* .id       = */ flake.entity(),
@@ -139,11 +139,12 @@ void SampleSnow::_compute_physics(float delta_time_seconds)
 {
     static const glm::vec3 Gravity = glm::vec3(0, 0, -0.5f);
 
-    for (_Flake& flake : m_flakes) {
+    for (_Flake& flake : m_flakes) 
+    {
         if (!flake.moving)
             continue;
 
-        if (!_is_flake_colliding(flake.pose, flake.accurate)) {
+        if (!_is_flake_colliding(flake.pose * m_flake_local, flake.accurate)) {
             flake.pose = glm::translate(flake.pose, delta_time_seconds * Gravity);
         }
         else {
@@ -163,24 +164,16 @@ bool SampleSnow::_is_flake_colliding(const glm::mat4& flake_pose, bool accurate)
     const glm::mat4& socle_pose = socle.transform();
     const glm::mat4& tree_pose  = tree.transform();
 
-    if (Collider::CheckHitboxes(
-        m_model_flake, flake_pose, 
-        socle.model(), socle_pose).has_value()
-    ) 
+    if (Collider::CheckHitboxes(m_model_flake, flake_pose, socle.model(), socle_pose).has_value()) 
         return true;
 
     if (!accurate)
-        return Collider::CheckHitboxes(
-            m_model_flake, flake_pose,
-            tree.model(), tree_pose
-        ).has_value();
+        return Collider::CheckHitboxes(m_model_flake, flake_pose, tree.model(), tree_pose).has_value();
 
-    return Collider::CheckAccurate(
-        m_model_flake, flake_pose,
-        tree.model(), tree_pose
-    ).has_value();
+    return Collider::CheckAccurate(m_model_flake, flake_pose,  tree.model(), tree_pose).has_value();
 }
 
+// UI
 void SampleSnow::Ui::show() {
 #ifdef _DEBUG
     #define MAX_FLAKES 500
@@ -191,7 +184,6 @@ void SampleSnow::Ui::show() {
     ImGui::Begin("Actions");
     ImGui::Separator();
 
-    ImGui::Checkbox("Show debug", &show_debug);
     ImGui::Checkbox("Loop", &loop);
     ImGui::SliderInt("Flakes", &flakes_number, 1, MAX_FLAKES);
 

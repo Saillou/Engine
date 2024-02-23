@@ -9,9 +9,7 @@
 enum class SampleId {
 	Cube,		
 	Train,		
-	Forest, 
-	Particles,	
-	Mandala,	
+	Forest,
 	Pong,
 	Snow,
 	Breaker
