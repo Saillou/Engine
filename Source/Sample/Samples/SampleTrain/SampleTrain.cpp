@@ -38,13 +38,14 @@ SampleTrain::SampleTrain() :
 
     // Earth
     m_entities["earth"].push_back(tile_with_rgba(glm::vec4(185, 122, 87, 255)));
-    ECS::getComponent<BodyComponent>(m_entities["earth"].back()).transform.world = pose_scale(glm::vec2(0, 0), Ctx.Ground_Size);
+    ECS::getComponent<BodyComponent>(m_entities["earth"].back()).transform.world = pose_scale(glm::vec2(0, 0), (float)Ctx.Ground_Size);
 
     // Random grass
     for (int i = 0; i < Ctx.Grass_Number; i++) {
         float x = (rand() % (100*Ctx.Ground_Size))/100.0f - Ctx.Ground_Size /2.0f;
         float y = (rand() % (100*Ctx.Ground_Size))/100.0f - Ctx.Ground_Size /2.0f;
         float s = (Ctx.Grass_Max_Scale - Ctx.Grass_Min_Scale) * (rand() % 1000) / 1000.0f + Ctx.Grass_Min_Scale;
+
         m_entities["grass"].push_back(tile_with_texture("Resources/textures/grass.png"));
         ECS::getComponent<BodyComponent>(m_entities["grass"].back()).transform.world = pose_scale(glm::vec2(x, y), s);
     }
@@ -73,7 +74,7 @@ void SampleTrain::_on_update(const CommonEvents::StateUpdated&) {
     _update_camera();
 }
 
-void SampleTrain::_on_scene_end(const SceneEvents::SceneFinished&)
+void SampleTrain::_on_scene_end(const SceneEvents::RenderFinished&)
 {
     _drawInfo();
 }

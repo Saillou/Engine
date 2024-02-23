@@ -46,7 +46,7 @@ void Scene::run() {
     Viewport(width(), height());
 
     m_render_system->update();
-    //Event::Emit(SceneEvents::Draw());
+    Event::Emit(SceneEvents::Draw());
 
     //if (m_enable_deffered_draw) {
     //    // Resolve draw order and render shadow scene
