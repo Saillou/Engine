@@ -20,7 +20,7 @@ struct Vertex {
 
 struct TextureData {
     std::string type;
-    std::unique_ptr<Texture> data;
+    std::shared_ptr<Texture> data;
 };
 
 struct Mesh {
@@ -34,9 +34,9 @@ struct Mesh {
     void drawElements(size_t nElements = 1) const;
 
     // Cpu data
-    std::vector<Vertex>       vertices;
-    std::vector<unsigned int> indices;
-    std::vector<TextureData>  textures;
+    std::vector<Vertex>       vertices = {};
+    std::vector<unsigned int> indices  = {};
+    std::vector<TextureData>  textures = {};
 
     const glm::mat4& obb() const;
 
@@ -49,7 +49,7 @@ struct Mesh {
     } drawMode = Triangle;
 
     // Helpers
-    static void Clone(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
+    static void Clone(const std::shared_ptr<Mesh>& src, std::shared_ptr<Mesh>& dst);
 
 private:
     // Gpu data

@@ -18,7 +18,8 @@ void CasterSystem::init()
 void CasterSystem::update(const glm::vec2& mousePos)
 {
     // Ray cast
-    for (Entity entity : m_entities) {
+    for (Entity entity : m_entities) 
+    {
         const BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
         CastComponent& cast = ECS::getComponent<CastComponent>(entity);
 

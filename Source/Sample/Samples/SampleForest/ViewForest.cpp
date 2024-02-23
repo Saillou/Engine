@@ -87,13 +87,8 @@ void ViewForest::_initObjects() {
 
         // Locomotive
         {
-            m_entities[_ObjectId::Locomotive].push_back(
-                ManagedEntity::Create(Model::Load("Resources/objects/train/locomotive.glb"))
-            );
-
-            ManagedEntity& locomotive = *m_entities[_ObjectId::Locomotive].back();
+            auto& locomotive = _create_entity(_ObjectId::Locomotive, Model::Load("Resources/objects/train/locomotive.glb"));
             locomotive.castable(true);
-
             locomotive.local() = glm::scale(
                 glm::translate(
                     glm::rotate(glm::mat4(1.0f),    // Identity
@@ -106,13 +101,6 @@ void ViewForest::_initObjects() {
         // Trees
         for (int i = 0; i < 100; i++)
         {
-            m_entities[_ObjectId::Tree].push_back(
-                ManagedEntity::Create(Model::Load("Resources/objects/tree/tree.glb"))
-            );
-
-            ManagedEntity& tree = *m_entities[_ObjectId::Tree].back();
-            tree.castable(true);
-
             float x = (float)(i % 10 - 5);
             float y = (float)(i / 10 - 5);
 
@@ -123,6 +111,8 @@ void ViewForest::_initObjects() {
 
             glm::vec3 tr(-0.90f + x, 0.10f, -0.95f + y);  // Translation
 
+            auto& tree = _create_entity(_ObjectId::Tree, Model::Load("Resources/objects/tree/tree.glb"));
+            tree.castable(true);
             tree.local() = glm::scale(
                 glm::translate(
                     glm::rotate(glm::mat4(1.0f),    // Identity
@@ -134,13 +124,8 @@ void ViewForest::_initObjects() {
 
         // Character
         {
-            m_entities[_ObjectId::Character].push_back(
-                ManagedEntity::Create(Model::Load("Resources/objects/character/character.glb"))
-            );
-
-            ManagedEntity& tortle = *m_entities[_ObjectId::Character].back();
+            auto& tortle = _create_entity(_ObjectId::Character, Model::Load("Resources/objects/character/character.glb"));
             tortle.castable(true);
-
             tortle.local() = glm::translate(
                 glm::rotate(glm::mat4(1.0f),  // Identity
                     hpi, glm::vec3(1, 0, 0)), // Rotation
@@ -149,31 +134,21 @@ void ViewForest::_initObjects() {
         }
 
         // Ground
-        for (int i = 0; i < 1024; i++)
+        for (int i = 0; i < 1024; i++) // 1024 = 32*32
         {
-            m_entities[_ObjectId::Grid].push_back(
-                ManagedEntity::Create(Model::Load(Model::SimpleShape::Cube))
-            );
-
-            ManagedEntity& cell = *m_entities[_ObjectId::Grid].back();
-            cell.castable(true);
-
             const glm::vec2 cell_pos = glm::vec2(i % 32 - 16.0f, i / 32 - 16.0f);
-            const glm::vec3 T_pos = 0.3f * glm::vec3(cell_pos, -0.5f);
+            const glm::vec3 T_pos = 0.3f * glm::vec3(cell_pos, 0);
             const glm::vec3 T_scale = 0.3f * glm::vec3(0.5f);
 
+            auto& cell = _create_entity(_ObjectId::Grid, Model::Load(Model::SimpleShape::Quad));
+            cell.castable(true);
             cell.local() = glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
         }
 
         // Cube
         {
-            m_entities[_ObjectId::Cube].push_back(
-                ManagedEntity::Create(Model::Load(Model::SimpleShape::Cube))
-            );
-
-            ManagedEntity& cube = *m_entities[_ObjectId::Cube].back();
+            auto& cube = _create_entity(_ObjectId::Cube, Model::Load(Model::SimpleShape::Cube));
             cube.castable(true);
-
             cube.color() = glm::vec4(1.0f, 0.7f, 0.3f, 1);
             cube.local() = glm::scale(
                 glm::translate(
@@ -182,6 +157,14 @@ void ViewForest::_initObjects() {
             );
         }
     }
+}
+
+ManagedEntity& ViewForest::_create_entity(_ObjectId id, Model::Ref model)
+{
+    m_entities[id].push_back(
+        ManagedEntity::Create(model)
+    );
+    return *m_entities[id].back();
 }
 
 //// Update dynamic memory

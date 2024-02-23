@@ -34,10 +34,11 @@ private:
     };
 
     void _initObjects();
+    ManagedEntity& _create_entity(_ObjectId, Model::Ref);
     //void _initParticles();
     //void _setParticles(float dt = 0.0f);
 
-    std::unordered_map<_ObjectId, std::vector<std::shared_ptr<ManagedEntity>>> m_entities;
+    std::unordered_map<_ObjectId, std::vector<SharedEntity>> m_entities;
 
     // Scene objects
     std::unique_ptr<Skybox> m_skybox;

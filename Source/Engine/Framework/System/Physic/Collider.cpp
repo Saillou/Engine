@@ -51,9 +51,9 @@ std::optional<Point> Collider::CheckAccurate(
 ) {
 	std::optional<Point> result;
 
-	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1) 
+	MeshIterator::forEachMesh(*model1, [&](const std::shared_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
 	{
-		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2) 
+		MeshIterator::forEachMesh(*model2, [&](const std::shared_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
 		{
 			if (result.has_value())
 				return;
@@ -74,9 +74,9 @@ std::optional<std::vector<Point>> Collider::CheckAccurateMultiple(
 ) {
 	std::optional<std::vector<Point>> result;
 
-	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1) 
+	MeshIterator::forEachMesh(*model1, [&](const std::shared_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
 	{
-		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2) 
+		MeshIterator::forEachMesh(*model2, [&](const std::shared_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
 		{
 			std::optional<std::vector<Point>> pt_acc = Collider::CheckMeshesMultiple(*mesh1, worldPose1 * acc1.transform, *mesh2, worldPose2 * acc2.transform);
 			if (!pt_acc.has_value())
@@ -100,9 +100,9 @@ std::optional<Point> Collider::CheckHitboxes(
 
 	std::optional<Point> result;
 
-	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
+	MeshIterator::forEachMesh(*model1, [&](const std::shared_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
 	{
-		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
+		MeshIterator::forEachMesh(*model2, [&](const std::shared_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
 		{
 			if (result.has_value())
 				return;
@@ -132,9 +132,9 @@ std::optional<std::vector<Point>> Collider::CheckHitboxesMultiple(
 
 	std::optional<std::vector<Point>> result;
 
-	MeshIterator::forEachMesh(*model1, [&](const std::unique_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
+	MeshIterator::forEachMesh(*model1, [&](const std::shared_ptr<Mesh>& mesh1, const MeshIterator::Accumulator& acc1)
 	{
-		MeshIterator::forEachMesh(*model2, [&](const std::unique_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
+		MeshIterator::forEachMesh(*model2, [&](const std::shared_ptr<Mesh>& mesh2, const MeshIterator::Accumulator& acc2)
 		{
 			auto pt = Collider::CheckMeshesMultiple(
 				cube, worldPose1 * acc1.transform * mesh1->obb(),

@@ -53,14 +53,24 @@ struct ManagedEntity
     }
 
     // Component
+    const BodyComponent& body() const{
+        return ECS::getComponent<BodyComponent>(_entity);
+    }
     BodyComponent& body() {
         return ECS::getComponent<BodyComponent>(_entity);
+    }
+
+    const DrawComponent& draw() const {
+        return ECS::getComponent<DrawComponent>(_entity);
     }
     DrawComponent& draw() {
         return ECS::getComponent<DrawComponent>(_entity);
     }
 
     // Body component attributes
+    Model::Ref model() const {
+        return body().model;
+    }
     glm::mat4& local() {
         return body().transform.local;
     }
@@ -78,3 +88,4 @@ struct ManagedEntity
 private:
     Entity _entity;
 };
+typedef std::shared_ptr<ManagedEntity> SharedEntity;

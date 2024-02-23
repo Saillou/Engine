@@ -113,8 +113,8 @@ Model::Ref Model::Clone()
 
     // Populate
     {
-        std::stack<const std::unique_ptr<Node>*> st;
-        std::stack<std::unique_ptr<Node>*> st_copied;
+        std::stack<const std::shared_ptr<Node>*> st;
+        std::stack<std::shared_ptr<Node>*> st_copied;
 
         st.push(&root);
         st_copied.push(&(model_copied->root));
@@ -131,7 +131,7 @@ Model::Ref Model::Clone()
             (*currNodeCopied)->transform = (*currNode)->transform;
             for (const auto& mesh : (*currNode)->_meshes) 
             {
-                (*currNodeCopied)->_meshes.push_back(std::make_unique<Mesh>());
+                (*currNodeCopied)->_meshes.push_back(std::make_shared<Mesh>());
                 Mesh::Clone(mesh, (*currNodeCopied)->_meshes.back());
 
                 model_copied->_setMeshVao(*(*currNodeCopied)->_meshes.back());
@@ -140,7 +140,7 @@ Model::Ref Model::Clone()
             // Create nodes
             for (size_t i = 0; i < (*currNode)->children.size(); i++) 
             {
-                (*currNodeCopied)->children.push_back(std::make_unique<Node>());
+                (*currNodeCopied)->children.push_back(std::make_shared<Node>());
 
                 st.push(&(*currNode)->children[i]);
                 st_copied.push(&(*currNodeCopied)->children[i]);
@@ -155,7 +155,7 @@ Model::Ref Model::Clone()
 
 // Instance
 Model::Model():
-    root(std::make_unique<Model::Node>()),
+    root(std::make_shared<Model::Node>()),
     m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
     m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
 {
@@ -165,7 +165,7 @@ Model::Model():
     // Let user do what he wants
 }
 Model::Model(SimpleShape shape):
-    root(std::make_unique<Model::Node>()),
+    root(std::make_shared<Model::Node>()),
     m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
     m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
 {
@@ -174,7 +174,7 @@ Model::Model(SimpleShape shape):
     m_colors.bindData(sizeof(vec4));
     m_instances.bindData(sizeof(mat4));
 
-    std::unique_ptr<Mesh> mesh = nullptr;
+    std::shared_ptr<Mesh> mesh = nullptr;
     switch (shape)
     {
         case MSS::Quad: mesh  = Quad::CreateMesh();   break;
@@ -184,7 +184,7 @@ Model::Model(SimpleShape shape):
     if (!mesh)
         return;
 
-    addMesh(*mesh.release(), root);
+    addMesh(mesh, root);
 }
 Model::Model(const std::string& path):
     m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
@@ -199,7 +199,7 @@ Model::Model(const std::string& path):
 // Draws
 void Model::draw(Shader& shader) const
 {
-    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) 
+    MeshIterator::forEachMesh(*this, [&](const std::shared_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc) 
     {
         shader.use();
         if (shader.has("LocalModel"))
@@ -212,7 +212,7 @@ void Model::draw(Shader& shader) const
 }
 void Model::drawElements(Shader& shader) const
 {
-    MeshIterator::forEachMesh(*this, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
+    MeshIterator::forEachMesh(*this, [&](const std::shared_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
         shader.use();
         if (shader.has("LocalModel"))
@@ -221,9 +221,9 @@ void Model::drawElements(Shader& shader) const
         mesh->drawElements((GLsizei)m_instances.size() / sizeof(mat4));
     });
 }
-void Model::addMesh(Mesh& mesh, std::unique_ptr<Node>& parent_node) {
-    _setMeshVao(mesh);
-    parent_node->_meshes.emplace_back(std::move(std::unique_ptr<Mesh>(&mesh)));
+void Model::addMesh(std::shared_ptr<Mesh> mesh, std::shared_ptr<Node>& parent_node) {
+    _setMeshVao(*mesh);
+    parent_node->_meshes.push_back(mesh);
 }
 
 const std::string& Model::uuid() const {
@@ -244,27 +244,27 @@ void Model::_loadModel(const std::string& path) {
     }
 
     // Ok, create and process from root (recursive)
-    root = std::make_unique<Node>();
+    root = std::make_shared<Node>();
     _processNode(scene->mRootNode, scene, root);
 }
-void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::unique_ptr<Node>& currentNode) {
+void Model::_processNode(const aiNode* inNnode, const aiScene* scene, std::shared_ptr<Node>& currentNode) {
     // Relative position
     currentNode->transform = aiMatrix4x4ToGlm(inNnode->mTransformation);
 
     for (unsigned int i = 0; i < inNnode->mNumMeshes; i++) {
         // Create and process mesh
-        currentNode->_meshes.push_back(std::make_unique<Mesh>());
+        currentNode->_meshes.push_back(std::make_shared<Mesh>());
         _processMesh(scene->mMeshes[inNnode->mMeshes[i]], scene, currentNode->_meshes.back());
     }
 
     // Continue recursively
     for (unsigned int i = 0; i < inNnode->mNumChildren; i++) {
         // Create and process next child
-        currentNode->children.push_back(std::make_unique<Node>());
+        currentNode->children.push_back(std::make_shared<Node>());
         _processNode(inNnode->mChildren[i], scene, currentNode->children[i]);
     }
 }
-void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& pOutMesh) {
+void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::shared_ptr<Mesh>& pOutMesh) {
     Mesh& outMesh = *pOutMesh;
 
     // Mesh's vertices
@@ -306,7 +306,7 @@ void Model::_processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique
     if (const aiTexture* rawTextureData = scene->GetEmbeddedTexture(texture_file.C_Str())) {
         outMesh.textures.push_back(TextureData{
             "texture_diffuse",
-            std::make_unique<Texture>(rawTextureData)
+            std::make_shared<Texture>(rawTextureData)
         });
     }
 

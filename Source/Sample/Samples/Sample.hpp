@@ -7,9 +7,14 @@
 #include <Engine/Utils/Timer.hpp>
 
 enum class SampleId {
-	Cube,		Train,		Forest, 
-	Particles,	Mandala,	Pong,
-	Breaker,	Snow
+	Cube,		
+	Train,		
+	Forest, 
+	Particles,	
+	Mandala,	
+	Pong,
+	Snow,
+	Breaker
 };
 
 struct Sample : Event::Subscriber {

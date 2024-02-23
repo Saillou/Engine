@@ -38,26 +38,26 @@ public:
     // Data tree for storing organized meshes
     struct Node {
         glm::mat4 transform = glm::mat4(1.0f);
-        std::vector<std::unique_ptr<Node>> children = {};
+        std::vector<std::shared_ptr<Node>> children = {};
 
         // Readonly to force the usage of 'addMesh' method (and not fuck with VAOs)
-        const std::vector<std::unique_ptr<Mesh>>& meshes() {
+        const std::vector<std::shared_ptr<Mesh>>& meshes() {
             return _meshes;
         }
     private:
         friend Model;
         friend struct MeshIterator;
 
-        std::vector<std::unique_ptr<Mesh>> _meshes = {};
+        std::vector<std::shared_ptr<Mesh>> _meshes = {};
     };
 
-    std::unique_ptr<Node> root = nullptr;
+    std::shared_ptr<Node> root = nullptr;
 
     // Methods
     void draw(Shader& shader) const;
     void drawElements(Shader& shader) const;
 
-    void addMesh(Mesh& mesh, std::unique_ptr<Node>& node);
+    void addMesh(std::shared_ptr<Mesh> mesh, std::shared_ptr<Node>& node);
 
     // Getters
     const std::string& uuid() const;
@@ -68,8 +68,8 @@ protected:
     Model(const std::string& path);
 
     void _loadModel(const std::string& path);
-    void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
-    void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
+    void _processNode(const aiNode* inNode, const aiScene* scene, std::shared_ptr<Node>& parent);
+    void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::shared_ptr<Mesh>& mesh);
 
     void _setMeshVao(Mesh& mesh) const;
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});

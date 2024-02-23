@@ -44,7 +44,7 @@ std::optional<glm::vec4> RayCaster::Intersect(const glm::vec2& mousePos, const C
 		return {};
 
 	// Traverse model's nodes
-    MeshIterator::forEachMesh(*model, [&](const std::unique_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
+    MeshIterator::forEachMesh(*model, [&](const std::shared_ptr<Mesh>& mesh, const MeshIterator::Accumulator& node_acc)
     {
 		if (optIntersect.has_value())
 			return;

@@ -76,7 +76,7 @@ void Mesh::compute_obb() {
     m_obb = scale(translate(m_obb, centroid), ext_vert * 0.5f);
 }
 
-void Mesh::Clone(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
+void Mesh::Clone(const std::shared_ptr<Mesh>& src, std::shared_ptr<Mesh>& dst)
 {
     const Mesh& inMesh = *src;
     Mesh& outMesh = *dst;
@@ -87,7 +87,7 @@ void Mesh::Clone(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst)
     for (const TextureData& inTexture : inMesh.textures) {
         outMesh.textures.push_back(TextureData{
             inTexture.type,
-            std::make_unique<Texture>(*inTexture.data.get())
+            std::make_shared<Texture>(*inTexture.data.get())
         });
     }
 

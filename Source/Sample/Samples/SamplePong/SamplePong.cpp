@@ -233,7 +233,6 @@ void SamplePong::_update(const CommonEvents::StateUpdated&)
 
     _physics(m_timer.elapsed<Timer::microsecond>() / 1000.0f);
     _update_entities();
-    //_update_hitboxes(m_ui.show_debug);
 
     m_timer.tic();
 }
