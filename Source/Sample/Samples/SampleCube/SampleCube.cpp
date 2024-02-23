@@ -14,7 +14,6 @@ SampleCube::SampleCube()
     // Root events
     _subscribe(&SampleCube::_on_state_update);
     _subscribe(&SampleCube::_on_key_pressed);
-
     //_subscribe(m_ui.get(), &SampleCube::_on_ui_update);
 
     // Camera
@@ -29,7 +28,7 @@ SampleCube::SampleCube()
         Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
         Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
     };
-    scene.lights = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + /* m_ui->lightsCount()*/ 5);
+    scene.lights = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + /* m_ui->lightsCount()*/ 3);
 }
 
 // Events

@@ -48,26 +48,21 @@ void RenderSystem::_compute()
 
     // Get info
     for (Entity entity : m_entities) {
+        // What kind of draw?
         const DrawComponent& draw = ECS::getComponent<DrawComponent>(entity);
-        const BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
 
-        if (draw.type == DrawComponent::Hidden)
+        std::vector<CookType> cooktypes;
+        if (draw.type & DrawComponent::Solid)
+            cooktypes.push_back(CookType::Solid);
+
+        if (draw.type & DrawComponent::Geometry)
+            cooktypes.push_back(CookType::Geometry);
+
+        if (cooktypes.empty())
             continue;
 
-        CookType type = (CookType)-1;
-        switch (draw.type)
-        {
-            case DrawComponent::Solid:
-                type = CookType::Solid;
-                break;
-
-            case DrawComponent::Geometry:
-                type = CookType::Geometry; 
-                break;
-
-            default: 
-                continue;
-        }
+        // Fetch bodies
+        const BodyComponent& body = ECS::getComponent<BodyComponent>(entity);
 
         // Shadow bodies
         if (body.material.cast_shadow) {
@@ -76,15 +71,18 @@ void RenderSystem::_compute()
         }
 
         // Drawn bodies
-        bool need_reorder = body.material.color.a < 1.0f;
-        if (need_reorder) {
-            // Only need the entity, other values will be fetched after re-order
-            _batches_translucent[type][body.model]._entities.push_back(entity);
-        }
-        else {
-            // Normal batches
-            _batches_opaque[type][body.model]._materials.push_back(body.material.color);
-            _batches_opaque[type][body.model]._transforms.push_back(body.transform.get());
+        for (CookType type : cooktypes)
+        {
+            bool need_reorder = body.material.color.a < 1.0f;
+            if (need_reorder) {
+                // Only need the entity, other values will be fetched after re-order
+                _batches_translucent[type][body.model]._entities.push_back(entity);
+            }
+            else {
+                // Normal batches
+                _batches_opaque[type][body.model]._materials.push_back(body.material.color);
+                _batches_opaque[type][body.model]._transforms.push_back(body.transform.get());
+            }
         }
     }
 
