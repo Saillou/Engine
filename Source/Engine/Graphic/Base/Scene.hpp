@@ -21,9 +21,6 @@ struct Scene {
     static void Viewport(int width, int height);
     static void Viewport(int x, int y, int width, int height);
 
-    // utils
-    //void drawFrame(const Framebuffer& framebuffer);
-
     RenderSystem&   renderer();
     OverlaySystem&  overlayer();
     CasterSystem&   raycaster();
@@ -35,7 +32,6 @@ struct Scene {
 
     Camera camera             = {}; // TODO: remove from here and define as components (?)
     std::vector<Light> lights = {}; // TODO: remove from here and define as components (?)
-    //Framebuffer& framebuffer_main();
 
 private:
     void _init_gl_config();
@@ -44,10 +40,6 @@ private:
     // Members
     int m_width  = 0;
     int m_height = 0;
-
-    //Framebuffer _internalFrame;     // Used when drawing multisample frame
-    //Framebuffer _framebuffer_main;
-    //Quad _quad;
 
     // Default systems
     std::shared_ptr<RenderSystem>   m_render_system;

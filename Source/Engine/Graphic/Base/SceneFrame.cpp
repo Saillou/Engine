@@ -22,12 +22,14 @@ Layout& SceneFrame::layout() {
 
 // Callbacks
 void SceneFrame::_on_draw(const SceneEvents::RenderFinished&) {
-    // Refresh style data
-    m_layout->_apply_styleSheet();
-    m_layout->_compute_hull_size();
-
-    Event::Emit(WidgetEvents::Draw(), this);
+    glDisable(GL_DEPTH_TEST);
     {
+        m_layout->_apply_styleSheet();
+        m_layout->_applyStyle();
+        m_layout->_compute_hull_size();
         m_layout->draw(m_scene);
+
+        Event::Emit(WidgetEvents::Draw(), this);
     }
+    glEnable(GL_DEPTH_TEST);
 }

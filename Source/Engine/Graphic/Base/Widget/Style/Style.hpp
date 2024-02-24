@@ -47,7 +47,6 @@ struct Style {
     StyleItem<float> hint_y;
     StyleItem<float> hint_w;
     StyleItem<float> hint_h;
-    StyleItem<float> opacity;
     StyleItem<float> textSize;
     StyleItem<glm::vec4> background;
     StyleItem<glm::vec4> foreground;

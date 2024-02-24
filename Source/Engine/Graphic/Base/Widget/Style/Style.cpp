@@ -6,7 +6,6 @@ Style::Style()
     , hint_y(*this, 0.0f)
     , hint_w(*this, 1.0f)
     , hint_h(*this, 1.0f)
-    , opacity(*this, 1.0f)
     , textSize(*this, 0.5f)
     , background(*this, {0.f,0.f,0.f,1.f})
     , foreground(*this, {1.f,1.f,1.f,1.f})
@@ -31,7 +30,6 @@ Style Style::operator+(const Style& styleNew) const
     sRes.hint_y += styleNew.hint_y;
     sRes.hint_w += styleNew.hint_w;
     sRes.hint_h += styleNew.hint_h;
-    sRes.opacity += styleNew.opacity;
     sRes.textSize += styleNew.textSize;
     sRes.background += styleNew.background;
     sRes.foreground += styleNew.foreground;

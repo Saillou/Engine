@@ -8,10 +8,17 @@ OverlaySystem::OverlaySystem(const Camera& camera) :
 
 void OverlaySystem::init() 
 {
+    // System requirements
+    // ..
+    
+    // Shaders
     addRecipe(Cookable::CookType::Shape);
 }
-void OverlaySystem::update() {
-	// TODO: to do
+void OverlaySystem::update() 
+{
+    TextEngine::SetViewport(0, 0, (int)m_camera.screenSize.x, (int)m_camera.screenSize.y);
+
+    // TODO: to do
 }
 
 // 

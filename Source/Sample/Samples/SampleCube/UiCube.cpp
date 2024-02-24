@@ -59,16 +59,12 @@ void UiCube::setState(UiCube::State state) {
         break;
 
     case State::InGame:
-        m_main_frame.layout().style().opacity.setValue(1.0f);
         m_main_frame.layout().style().background.setValue(Style::Transparent());
-
         m_main_frame.layout().add(m_layouts["InGame"]);
         break;
 
     case State::Pause:
-        m_main_frame.layout().style().opacity.setValue(0.9f);
         m_main_frame.layout().style().background.setValue(glm::vec4(0.1f, 0.1f, 0.15f, 0.5f));
-
         m_main_frame.layout().add(m_layouts["Pause"]);
         break;
     }
@@ -111,14 +107,13 @@ void UiCube::_updateCount(int delta) {
 // ---------- Helpers ----------
 StyleSheet UiCube::_create_style() const
 {
-    const glm::vec4 primary_color    = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+    const glm::vec4 primary_color    = glm::vec4(0.1f, 0.1f, 0.15f, 0.7f);
     const glm::vec4 secondary_color  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
     const glm::vec4 main_text_color  = glm::vec4(0.90f, 0.90f, 0.93f, 1.0f);
     const glm::vec4 foreground_color = glm::vec4(0.66f, 0.66f, 0.70f, 1.0f);
 
     return StyleSheet::CreateDefault()
         .addRule(Style::Tag::Layout, Style()
-            .opacity.setValue(0.90f)
             .background.setValue(primary_color)
         )
         .addRule(Style::Tag::Button, Style()

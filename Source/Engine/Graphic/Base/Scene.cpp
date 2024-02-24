@@ -7,11 +7,8 @@
 Scene::Scene(int widthHint, int heightHint):
     m_width(widthHint),
     m_height(heightHint)
-    //_framebuffer_main(Framebuffer::Multisample, widthHint, heightHint),
-    //_internalFrame(Framebuffer::Unique, widthHint, heightHint)
 {
     _init_gl_config();
-    //_quad.mesh->setupVao();
 
     // Init default system
     m_render_system   = ECS::registerSystem<RenderSystem>(camera, lights);
@@ -36,59 +33,23 @@ void Scene::run() {
     _update_camera();
     clear();
 
-    // Start
     Viewport(width(), height());
+
+    // Start
     Event::Emit(SceneEvents::RenderStarted());
 
     // - Draw 3D-Scene
-    //_framebuffer_main.bind();
-    //{
-        //_framebuffer_main.clear();
-        m_render_system->update();
-    //}
-    //_framebuffer_main.unbind();
+    m_render_system->update();
      
-
     // - Apply filters
     Event::Emit(SceneEvents::PostDraw());
 
     // - Draw UI
-    //_framebuffer_main.bind();
-    //{
-        //_framebuffer_main.clear();
-        m_overlay_system->update();
-    //}
-    //_framebuffer_main.unbind();
+    m_overlay_system->update();
 
     // End
     Event::Emit(SceneEvents::RenderFinished());
 }
-
-//void Scene::drawFrame(const Framebuffer& framebuffer) {
-//    glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
-//    Texture::activate(GL_TEXTURE0);
-//
-//    // Need to blit multisample to mono
-//    if (framebuffer.type() == Framebuffer::Type::Multisample) {
-//        _internalFrame.resize(framebuffer.width(), framebuffer.height());
-//        Framebuffer::Blit(framebuffer, _internalFrame);
-//        _internalFrame.texture().bind();
-//    }
-//    else if (framebuffer.type() == Framebuffer::Type::Cubemap) {
-//        // ..
-//    }
-//    else {
-//        framebuffer.texture().bind();
-//    }
-//    
-//    // Draw
-//    _quad.texture_location = 0;
-//    //_renderer.quad(_quad); // TODO: Don't forget me
-//
-//    // set back to original state.
-//    Texture::deactivate(GL_TEXTURE_2D, GL_TEXTURE0);
-//    glEnable(GL_DEPTH_TEST); 
-//}
 
 void Scene::Viewport(int width, int height) {
     glViewport(0, 0, width, height);
@@ -100,9 +61,6 @@ void Scene::Viewport(int x, int y, int width, int height) {
 void Scene::resize(int width, int height) {
     m_width  = width;
     m_height = height;
-
-    TextEngine::SetViewport(0, 0, width, height);
-    //_framebuffer_main.resize(width, height);
 
     _update_camera();
     Event::Emit(SceneEvents::Resized(width, height));
@@ -133,10 +91,6 @@ int Scene::width() const {
 int Scene::height() const {
     return m_height;
 }
-//
-//Framebuffer& Scene::framebuffer_main() {
-//    return _framebuffer_main;
-//}
 
 // System direct access
 RenderSystem& Scene::renderer() {
