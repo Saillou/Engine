@@ -1,10 +1,13 @@
 #include "SampleSnow.hpp"
 
+#include <random>
+#include <Engine/Graphic/ShaderManager.hpp>
+#include <Engine/Graphic/Shaders/_ShaderHelper.hpp>
 #include <Engine/Graphic/Base/Model/MeshIterator.hpp>
 #include <Engine/Graphic/Base/Model/Primitive/PrimitiveHelper.hpp>
-#include <random>
 
-static constexpr int Id_model_flake = 0;
+static constexpr int Id_model_flake  = 0;
+static constexpr int Id_shader_flake = 0;
 
 // Particles
 SampleSnow::SampleSnow() :
@@ -28,6 +31,9 @@ SampleSnow::SampleSnow() :
         glm::vec3(+0.2f, 0.0f, +0.1f)
     });
     model_flake->addMesh(meshTriangle, model_flake->root);
+
+    // Create custom shader
+    _add_flake_shader();
 
     // Entities
     auto& socle = _create_entity("socle", Model::Load(Model::SimpleShape::Cube));
@@ -118,6 +124,7 @@ void SampleSnow::_generate_flakes()
     flake.world() = glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.f));
     flake.material().color = glm::vec4(0.7f, 1.0f, 0.9f, 0.7f);
     flake.material().cast_shadow = false;
+    flake.draw().type = (DrawComponent::DrawType) (DrawComponent::Custom | (Id_shader_flake << DrawComponent::Custom));
 
     m_flakes.push_back(_Flake { 
         /* .id       = */ flake.entity(),
@@ -186,4 +193,74 @@ void SampleSnow::Ui::show() {
     ImGui::SliderInt("Flakes", &flakes_number, 1, MAX_FLAKES);
 
     ImGui::End();
+}
+
+// Shader
+void SampleSnow::_add_flake_shader()
+{
+    // Already created
+    if (ShaderManager::Has((CookType::_tag_)Id_shader_flake))
+        return;
+
+    // Maybe these methods shall be public
+    struct Initializator : public ShaderHelper {
+        static ShaderSource vertex()   { return _init_vertex();   }
+        static ShaderSource geometry() { return _init_geometry(); }
+        static ShaderSource fragment() { return _init_fragment(); }
+    };
+
+    // Create the shader
+    std::shared_ptr<Shader> shader = std::make_shared<Shader>();
+
+    (*shader)
+        .attachSource(Shader::Vertex,
+            Initializator::vertex()
+
+            .add_var("uniform", "vec4", "override_color")
+            .add_var("uniform", "vec4", "diffuse_color")
+
+            .add_func("void", "main", "", R"_main_(
+                vs_out.FragPos = vec3(aModel * LocalModel * vec4(aPos, 1.0));
+                vs_out.Color   = length(override_color) == 0 ? max(aColor, diffuse_color) : override_color;
+                gl_Position    = Projection * View * vec4(vs_out.FragPos, 1.0);
+            )_main_")
+        )
+        .attachSource(Shader::Geometry,
+            Initializator::geometry()
+
+            .add_var("in", "layout", "(triangles)")
+            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
+            .add_var("out", "vec4", "Color")
+
+            .add_func("void", "main", "", R"_main_(
+                for(int i = 0; i < 3; i++) 
+                {
+                    Color = gs_in[i].Color;
+
+                    gl_Position = gl_in[(i+0)%3].gl_Position; EmitVertex();
+                    gl_Position = gl_in[(i+1)%3].gl_Position; EmitVertex(); 
+
+                    EndPrimitive();
+                }
+            )_main_")
+        )
+        .attachSource(Shader::Fragment, 
+            ShaderSource{}
+
+            .add_var("in", "vec4", "Color")
+            .add_var("out", "vec4", "FragColor")
+
+            .add_func("void", "main", "", R"_main_(
+                FragColor = Color;
+            )_main_")
+        )
+    ;
+
+    // Callback to set uniforms
+    ShaderManager::UniformSetter setter = [&]() {
+        std::cerr << "plop" << std::endl;
+    };
+
+    // Populate
+    ShaderManager::Provide((CookType::_tag_)Id_shader_flake, shader, setter);
 }

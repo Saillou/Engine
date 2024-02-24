@@ -37,8 +37,9 @@ private:
 	typedef std::unordered_map<Model::Ref, _Batch> Batch;
 
 	Batch _shadow_batch;
-	std::unordered_map<CookType, Batch> _batches_opaque;
-	std::unordered_map<CookType, Batch> _batches_translucent;
+	std::unordered_map<CookType::_tag_, Batch> _batches_opaque;
+	std::unordered_map<CookType::_tag_, Batch> _batches_translucent;
+	std::vector<CookType::_tag_> _custom_tags_apply;
 
 	// Prepare draw
 	void _compute();

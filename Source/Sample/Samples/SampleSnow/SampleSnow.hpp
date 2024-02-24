@@ -15,6 +15,7 @@ private:
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Methods
+    void _add_flake_shader();
     ManagedEntity& _create_entity(const std::string& category, Model::Ref);
     void _destroy_entity(const std::string& category, Entity);
 

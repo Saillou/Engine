@@ -41,18 +41,26 @@ void RenderSystem::_compute()
     _shadow_batch.clear();
     _batches_opaque.clear();
     _batches_translucent.clear();
+    _custom_tags_apply.clear();
 
     // Get info
     for (Entity entity : m_entities) {
         // What kind of draw?
         const DrawComponent& draw = ECS::getComponent<DrawComponent>(entity);
 
-        std::vector<CookType> cooktypes;
+        std::vector<CookType::_tag_> cooktypes;
         if (draw.type & DrawComponent::Solid)
-            cooktypes.push_back(CookType::Solid);
+            cooktypes.push_back(CookType::_tag_::Solid);
 
         if (draw.type & DrawComponent::Geometry)
-            cooktypes.push_back(CookType::Geometry);
+            cooktypes.push_back(CookType::_tag_::Geometry);
+
+        if (draw.type & DrawComponent::Custom) {
+            CookType::_tag_ customTag = CookType::_tag_(draw.type >> DrawComponent::Custom);
+            
+            cooktypes.push_back(customTag);
+            _custom_tags_apply.push_back(customTag);
+        }
 
         if (cooktypes.empty())
             continue;
@@ -67,7 +75,7 @@ void RenderSystem::_compute()
         }
 
         // Drawn bodies
-        for (CookType type : cooktypes)
+        for (CookType::_tag_ type : cooktypes)
         {
             bool need_reorder = body.material.color.a < 1.0f;
             if (need_reorder) {
@@ -146,14 +154,18 @@ void RenderSystem::_drawEntities()
     // Setup shaders
     _setSolidShader();
     _setGeometryShader();
+
+    for (CookType::_tag_ tag : _custom_tags_apply) {
+        ShaderManager::Apply(tag);
+    }
     
     // Orders matter
     for (const auto& batches : { _batches_opaque , _batches_translucent })
     {
         for (const auto& itBatches : batches)
         {
-            CookType type       = itBatches.first;
-            const auto& batches = itBatches.second;
+            CookType::_tag_ type = itBatches.first;
+            const auto& batches  = itBatches.second;
 
             for (const auto& itBatch : batches) 
             {
@@ -171,7 +183,9 @@ void RenderSystem::_drawEntities()
 void RenderSystem::_setSolidShader()
 {
     // Check light capabilities
-    if (ShaderManager::Get(CookType::Solid).source(ShaderSource::Type::Fragment).getVar("LightPos").count < _lights.size())
+    if (ShaderManager::Get(CookType::Solid)
+        .source(ShaderSource::Type::Fragment)
+        .getVar("LightPos").count < _lights.size())
     {
         ShaderManager::Edit(CookType::Solid, ShaderSource::Type::Fragment, ShaderSource{}
             .add_var("uniform", "vec3", "LightPos", (int)_lights.size())
@@ -181,18 +195,20 @@ void RenderSystem::_setSolidShader()
     }
 
     // Use
-    Shader& sh = ShaderManager::Get(CookType::Solid).use();
+    Shader& sh = ShaderManager::Get(CookType::Solid)
+        .use();
 
     // Bind shadow map
     _shadower.bindTextures(GL_TEXTURE0 + 1);
 
     // Set uniforms
-    sh.set("Projection", _camera.projection)
-      .set("View", _camera.modelview)
-      .set("CameraPos", _camera.position)
-      .set("far_plane", _camera.far_plane)
-      .set("use_shadow", true)
-      .set("LightNumber", (int)_lights.size());
+    sh.set("Projection",  _camera.projection)
+      .set("View",        _camera.modelview)
+      .set("CameraPos",   _camera.position)
+      .set("far_plane",   _camera.far_plane)
+      .set("use_shadow",  true)
+      .set("LightNumber", (int)_lights.size())
+    ;
 
     for (int iLight = 0; iLight < (int)_lights.size(); iLight++)
     {
