@@ -8,13 +8,13 @@
 
 // Shaders compiled by default
 enum class CookType {
-    Solid,
     Geometry,
-    Shape,
-    Particle,
     Shadow,
+    Shape,
+    Solid,
+    Skybox,
+    Particle,
     Text,
-    Skybox
 };
 
 struct ShaderManager 
@@ -32,9 +32,11 @@ struct ShaderManager
     static Shader& Get(CookType identifier);
 
 protected:
-    ShaderManager();
+    ShaderManager() = default;
     virtual ~ShaderManager() = default;
-    
+
+    void _create_default_shader();
+
     static std::string _getUUID(CookType);
     std::unordered_map<std::string, std::shared_ptr<Shader>> _shaders = {};
 

@@ -22,6 +22,7 @@ void ShaderManager::Init() {
 	};
 
 	_s_manager = std::make_shared<_ShaderManager_>();
+	_s_manager->_create_default_shader();
 }
 
 void ShaderManager::Provide(const std::string& identifier, std::shared_ptr<Shader> shader) {
@@ -91,7 +92,8 @@ std::string ShaderManager::_getUUID(CookType type)
 	return "#DEFAULT#" + std::to_string((int)type);
 }
 
-ShaderManager::ShaderManager() {
+void ShaderManager::_create_default_shader() 
+{
 	// Create, compile and link default shaders
 	Provide(_getUUID(CookType::Geometry),	ShaderGeometry::Create());
 	Provide(_getUUID(CookType::Particle),	ShaderParticle::Create());

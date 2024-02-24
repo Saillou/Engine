@@ -21,6 +21,13 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
     ECS::init();
     ShaderManager::Init();
 
+    // Events
+    _set_events();
+
+    // Basic scene
+    m_scene = std::make_shared<Scene>();
+    _resize(m_width, m_height);
+
     // Mouse buttons
     for (unsigned int btn = 0; btn <= GLFW_MOUSE_BUTTON_LAST; btn++) {
         m_buttons_pressed[btn] = false;
@@ -149,13 +156,6 @@ void Window::_init(const char* title) {
     glfwMakeContextCurrent(m_window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress); // Load gl entry points
     glfwSwapInterval(1);                                // Enable v-sync
-
-    // Events
-    _set_events();
-
-    // Basic scene
-    m_scene = std::make_shared<Scene>();
-    _resize(m_width, m_height);
 }
 
 // Private
