@@ -9,7 +9,7 @@
 
 // App
 App::App():
-    m_curr_sample(std::make_unique<SampleForest>())
+    m_curr_sample(std::make_unique<SampleCube>())
 {
 }
 

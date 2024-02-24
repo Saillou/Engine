@@ -44,9 +44,9 @@ void Text::draw(Scene& scene) {
     for (const std::string& str : _texts) {
         glm::vec2 size = TextEngine::Measure(str, style().textSize());
 
-        //scene.renderer().text(
-        //    str, scene.width() * x(), scene.height() * (1.0f - y0), style().textSize(), style().foreground()
-        //); TODO: Don't forget me
+        scene.overlayer().text(
+            str, scene.width() * x(), scene.height() * (1.0f - y0), style().textSize(), style().foreground()
+        ); // TODO: Use component instead
 
         y0 += size.y / scene.height();
     }

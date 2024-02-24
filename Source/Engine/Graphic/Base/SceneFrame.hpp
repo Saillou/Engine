@@ -13,13 +13,10 @@ struct SceneFrame :
 	virtual ~SceneFrame() = default;
 
 	Layout& layout();
-	Scene& scene();
 
 private:
 	void _on_draw(const SceneEvents::RenderFinished&);
 
-	Framebuffer m_frame;
-	CopyFilter m_copyFilter;
 	Scene& m_scene;
 	std::shared_ptr<Layout> m_layout;
 };

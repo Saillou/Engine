@@ -45,11 +45,10 @@ bool Window::update() {
     if (glfwWindowShouldClose(m_window))
         return false;
 
-    // Render
+    // Render | Overlay
     if (m_scene) {
         m_scene->run();
     }
-    Event::Emit(SceneEvents::SceneFinished());
 
     glfwSwapBuffers(m_window);
 
@@ -132,11 +131,11 @@ void Window::_init(const char* title) {
     // Init GLFW
     glfwInit();
 
-    // OpenGL 3.3 (for best ratio compatibility/features)
+    // Use OpenGL 3.3 (for best ratio compatibility/features)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 16); // AA
+    glfwWindowHint(GLFW_SAMPLES, 4); // AA
 
     m_window = glfwCreateWindow(m_width, m_height, title, m_is_fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!m_window)

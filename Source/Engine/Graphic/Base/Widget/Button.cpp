@@ -41,6 +41,6 @@ void Button::draw(Scene& scene) {
         content.y() += (h() - content.h()) / 2.0f;
 
     // Draw
-    //scene.renderer().quad(*_surface); TODO: Don't forget me
+    scene.overlayer().quad(*_surface); // TODO: Use component instead
     content.draw(scene);
 }

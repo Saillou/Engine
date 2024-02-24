@@ -11,7 +11,7 @@ static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 ViewForest::ViewForest() :
     m_fireGrid({
         Model::Load(Model::SimpleShape::Cube),
-        size_t(2500)
+        size_t(500)
     }),
     m_mousePos(0.0f, 0.0f)
 {
@@ -47,9 +47,8 @@ void ViewForest::_update(const CommonEvents::StateUpdated&)
 {
     Scene& scene = Service<Window>::get().scene();
 
-    // Ray caster
-    scene.raycaster()->update(m_mousePos);
-    for (Entity e : scene.raycaster()->retrieve()) 
+    scene.raycaster().update(m_mousePos);
+    for (Entity e : scene.raycaster().retrieve()) 
     {
         if (ECS::getComponent<CastComponent>(e).is_hit)
             ECS::getComponent<DrawComponent>(e).type = DrawComponent::DrawType(DrawComponent::Geometry | DrawComponent::Solid);

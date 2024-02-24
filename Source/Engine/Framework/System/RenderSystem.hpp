@@ -10,8 +10,6 @@
 #include "../Component/DrawComponent.hpp"
 
 #include "Render/ShadowRender.hpp"
-#include "../../Graphic/TextEngine.hpp"
-#include "../../Graphic/Wrapper/Framebuffer.hpp"
 #include "../../Graphic/Camera.hpp"
 #include "../../Graphic/Light.hpp"
 #include "../../Graphic/Cookable.hpp"

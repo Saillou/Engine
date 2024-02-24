@@ -115,7 +115,7 @@ void SamplePong::_physics(float dt_ms) {
 
     // Try to move the ball and check collision
     ball.world() = glm::translate(glm::mat4(1.0f), new_ball_pos);
-    m_scene.collider()->check(ball.entity());
+    m_scene.collider().check(ball.entity());
 
     // Solve
     if (ball.is_colliding())
