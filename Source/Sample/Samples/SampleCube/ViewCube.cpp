@@ -80,8 +80,12 @@ void ViewCube::_update(const CommonEvents::StateUpdated&)
         for (auto entity : m_entities["Lantern"]) {
             ECS::destroyEntity(entity);
         }
+        m_entities["Lantern"].clear();
 
-        for (const Light& light: scene.lights) {
+        for (const Light& light: scene.lights) 
+        {
+            Entity lantern = ECS::createEntity();
+
             DrawComponent draw;
             draw.type = DrawComponent::Solid;
 
@@ -91,9 +95,10 @@ void ViewCube::_update(const CommonEvents::StateUpdated&)
             body.transform.local = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
             body.transform.world = glm::translate(glm::mat4(1.0f), light.position);
 
-            m_entities["Lantern"].push_back(ECS::createEntity());
-            ECS::addComponent(m_entities["Lantern"].back(), body);
-            ECS::addComponent(m_entities["Lantern"].back(), draw);
+            ECS::addComponent(lantern, body);
+            ECS::addComponent(lantern, draw);
+
+            m_entities["Lantern"].push_back(lantern);
         }
     }
 }

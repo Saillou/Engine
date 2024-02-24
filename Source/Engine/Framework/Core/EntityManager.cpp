@@ -1,5 +1,6 @@
 #include "EntityManager.hpp"
 
+#include <iostream>
 #include <cassert>
 
 EntityManager::EntityManager(): 
@@ -21,11 +22,11 @@ Entity EntityManager::createEntity() {
 
     assert(manager.m_livingEntityCount < MAX_ENTITIES && "Too many entities in existance.");
 
-    Entity id = manager.m_availableEntities.front();
+    Entity entity = manager.m_availableEntities.front();
     manager.m_availableEntities.pop();
     ++manager.m_livingEntityCount;
 
-    return id;
+    return entity;
 }
 
 void EntityManager::destroyEntity(Entity entity) {
