@@ -56,6 +56,13 @@ Model::Ref Model::Create(int customId)
 
     return _s_model_cache[uuid];
 }
+Model::Ref Model::Load(int customId)
+{
+    const std::string uuid = "#CUSTOM#" + std::to_string(customId);
+    assert(_s_model_cache.find(uuid) != _s_model_cache.cend() && "Model not available");
+
+    return _s_model_cache[uuid];
+}
 Model::Ref Model::Load(SimpleShape shape)
 {
     const std::string uuid = "#SHAPE#" + std::to_string((int)shape);

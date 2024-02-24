@@ -38,7 +38,6 @@ private:
         bool moving     = true;
     };
     std::deque<_Flake> m_flakes;
-    Model::Ref m_model_flake = nullptr;
     glm::mat4 m_flake_local  = glm::mat4(1.0f);
 
     // -- Ui --

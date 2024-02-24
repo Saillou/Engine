@@ -26,6 +26,7 @@ struct Model
 public:
     // Constructors
     static Ref Create(int customId);
+    static Ref Load(int customId);
     static Ref Load(SimpleShape shape);
     static Ref Load(const std::string& path);
 

@@ -1,7 +1,5 @@
 #include "Quad.hpp"
 
-#include "../../../Cookable.hpp"
-
 std::unique_ptr<Mesh> Quad::CreateMesh()
 {
     std::unique_ptr<Mesh> quad_mesh = std::make_unique<Mesh>();

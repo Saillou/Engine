@@ -4,6 +4,8 @@
 #include <Engine/Graphic/Base/Model/Primitive/PrimitiveHelper.hpp>
 #include <random>
 
+static constexpr int Id_model_flake = 0;
+
 // Particles
 SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
@@ -16,7 +18,7 @@ SampleSnow::SampleSnow() :
     m_scene.camera.direction = glm::vec3(0, 0, 0);
 
     // Create custom model (just one triangle)
-    m_model_flake = Model::Create(0);
+    Model::Ref model_flake = Model::Create(Id_model_flake);
     m_flake_local = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
     std::shared_ptr<Mesh> meshTriangle = std::make_shared<Mesh>();
@@ -25,7 +27,7 @@ SampleSnow::SampleSnow() :
         glm::vec3(0,     0.0f, -0.1f),
         glm::vec3(+0.2f, 0.0f, +0.1f)
     });
-    m_model_flake->addMesh(meshTriangle, m_model_flake->root);
+    model_flake->addMesh(meshTriangle, model_flake->root);
 
     // Entities
     auto& socle = _create_entity("socle", Model::Load(Model::SimpleShape::Cube));
@@ -111,7 +113,7 @@ void SampleSnow::_generate_flakes()
     }
 
     // Generate one
-    auto& flake = _create_entity("flake", m_model_flake);
+    auto& flake = _create_entity("flake", Model::Load(Id_model_flake));
     flake.local() = m_flake_local;
     flake.world() = glm::translate(Identity, Spread * glm::vec3(dstr(gen), dstr(gen), 1.f));
     flake.material().color = glm::vec4(0.7f, 1.0f, 0.9f, 0.7f);
@@ -160,13 +162,13 @@ bool SampleSnow::_is_flake_colliding(const glm::mat4& flake_pose, bool accurate)
     const glm::mat4& socle_pose = socle.transform();
     const glm::mat4& tree_pose  = tree.transform();
 
-    if (Collider::CheckHitboxes(m_model_flake, flake_pose, socle.model(), socle_pose).has_value()) 
+    if (Collider::CheckHitboxes(Model::Load(Id_model_flake), flake_pose, socle.model(), socle_pose).has_value())
         return true;
 
     if (!accurate)
-        return Collider::CheckHitboxes(m_model_flake, flake_pose, tree.model(), tree_pose).has_value();
+        return Collider::CheckHitboxes(Model::Load(Id_model_flake), flake_pose, tree.model(), tree_pose).has_value();
 
-    return Collider::CheckAccurate(m_model_flake, flake_pose,  tree.model(), tree_pose).has_value();
+    return Collider::CheckAccurate(Model::Load(Id_model_flake), flake_pose,  tree.model(), tree_pose).has_value();
 }
 
 // UI
