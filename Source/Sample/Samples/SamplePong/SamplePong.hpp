@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Sample.hpp"
-#include "../ManagedEntity.hpp"
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 #include "PongActors.hpp"
 #include "UiPong.hpp"

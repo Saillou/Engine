@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <Engine/Framework/Service.hpp>
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 #include <Engine/Events/CommonEvents.hpp>
 #include <Engine/Utils/Timer.hpp>
@@ -14,7 +15,6 @@
 #include <Engine/Graphic/Base/Model/Model.hpp>
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 
-#include "../ManagedEntity.hpp"
 
 struct ViewForest : Event::Subscriber {
      ViewForest();

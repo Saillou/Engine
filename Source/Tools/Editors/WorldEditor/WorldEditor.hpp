@@ -24,5 +24,4 @@ private:
 
     // - Members -
     WorldEditorMenu m_menu;
-    std::unordered_map<std::string, Model::Ref> m_models;
 };

@@ -6,28 +6,45 @@ MaterialEditor::MaterialEditor(Scene& scene) :
 
 void MaterialEditor::onEnter()
 {
-    m_model = Model::Create(Model::Sphere);
-    m_model->poses = { glm::scale(glm::mat4(1.0f), glm::vec3(0.15f)) };
+    m_menu.reset();
 
-    m_scene.lights() = {
+    // Scene lights
+    m_scene.lights = {
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
+    m_menu.state.lightEnabled = true;
 
-    m_scene.camera().position = glm::vec3(0.0f, -1.0f, 0.15f);
-    m_scene.camera().direction = glm::vec3(0, 0, 0);
+    // Camera
+    m_scene.camera.position = glm::vec3(0.0f, -1.0f, 0.15f);
+    m_scene.camera.direction = glm::vec3(0, 0, 0);
 
-    m_menu.reset();
+    // Entity
+    m_sphere = ManagedEntity::Create(Model::Load(Model::SimpleShape::Sphere));
+    m_sphere->local() = {
+        glm::scale(glm::mat4(1.0f), glm::vec3(0.15f))
+    };
 }
 
 void MaterialEditor::onExit()
 {
-    m_model.reset();
+    m_sphere.reset();
 }
 
 void MaterialEditor::onUpdate()
 {
-    m_model->localMaterial.diffuse_color = glm::vec4(m_menu.state.color.x, m_menu.state.color.y, m_menu.state.color.z, m_menu.state.color.w);
-    m_scene.renderer().draw(m_menu.state.lightEnabled ? Render::DrawType::Lights : Render::DrawType::Basic, m_model);
+    m_sphere->color() = glm::vec4(m_menu.state.color.x, m_menu.state.color.y, m_menu.state.color.z, m_menu.state.color.w);
+
+    // Enable lights
+    if (m_scene.lights.empty() && m_menu.state.lightEnabled) {
+        m_scene.lights = {
+            { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
+        };
+    }
+    
+    // Disable lights
+    if (!m_scene.lights.empty() && !m_menu.state.lightEnabled) {
+        m_scene.lights.clear();
+    }
 
     m_menu.show();
 }

@@ -2,7 +2,7 @@
 
 #include "../../_imgui/imgui.h"
 #include "../Sample.hpp"
-#include "../ManagedEntity.hpp"
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 struct SampleSnow : 
     public Sample 
