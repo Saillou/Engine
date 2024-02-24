@@ -13,7 +13,7 @@ void ColliderSystem::init()
     ECS::setSystemSignature<ColliderSystem>(signature);
 }
 
-void ColliderSystem::update(Entity entityChecked)
+void ColliderSystem::check(Entity entityChecked)
 {
     const BodyComponent& bodyChecked   = ECS::getComponent<BodyComponent>(entityChecked);
     CollideComponent& collide_result   = ECS::getComponent<CollideComponent>(entityChecked);

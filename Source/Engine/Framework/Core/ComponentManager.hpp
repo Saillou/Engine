@@ -32,6 +32,9 @@ struct ComponentManager
     static void removeComponent(Entity entity);
 
     template<typename T>
+    static bool hasComponent(Entity entity);
+
+    template<typename T>
     static T& getComponent(Entity entity);
 
     static void entityDestroyed(Entity entity);
@@ -86,6 +89,14 @@ inline void ComponentManager::removeComponent(Entity entity)
 {
     ComponentManager& manager = get();
     manager.getComponentArray<T>()->removeData(entity);
+}
+
+template<typename T>
+inline bool ComponentManager::hasComponent(Entity entity)
+{
+    ComponentManager& manager = get();
+    const char* typeName = typeid(T).name();
+    return manager.m_componentTypes.find(typeName) != manager.m_componentTypes.end();
 }
 
 template<typename T>

@@ -9,6 +9,7 @@
 #include <Engine/Framework/Component/BodyComponent.hpp>
 #include <Engine/Framework/Component/CastComponent.hpp>
 #include <Engine/Framework/Component/DrawComponent.hpp>
+#include <Engine/Framework/Component/CollideComponent.hpp>
 
 struct ManagedEntity 
 {
@@ -52,6 +53,17 @@ struct ManagedEntity
         }
     }
 
+    void collidable(bool enable)
+    {
+        if (enable) {
+            CollideComponent collider;
+            ECS::addComponent(_entity, collider);
+        }
+        else {
+            ECS::removeComponent<CollideComponent>(_entity);
+        }
+    }
+
     // Component
     const BodyComponent& body() const{
         return ECS::getComponent<BodyComponent>(_entity);
@@ -65,6 +77,12 @@ struct ManagedEntity
     }
     DrawComponent& draw() {
         return ECS::getComponent<DrawComponent>(_entity);
+    }
+    bool is_colliding() {
+        if (!ECS::hasComponent<CollideComponent>(_entity))
+            return false;
+
+        return ECS::getComponent<CollideComponent>(_entity).is_colliding;
     }
 
     // Body component attributes

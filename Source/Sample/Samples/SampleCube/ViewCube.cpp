@@ -10,7 +10,7 @@ ViewCube::ViewCube()
 
     // Materials
     glm::vec4 stone = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
-    glm::vec4 paper = glm::vec4(0.8f, 0.1f, 0.6f, 0.4f);
+    glm::vec4 paper = glm::vec4(0.5f, 0.5f, 0.5f, 0.4f);
     glm::vec4 glass = glm::vec4(0.3f, 1.0f, 1.0f, 0.5f);
 
     // - Ground -

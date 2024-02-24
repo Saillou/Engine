@@ -48,10 +48,6 @@ SampleSnow::SampleSnow() :
     m_timer.tic();
 }
 
-SampleSnow::~SampleSnow()
-{    
-}
-
 // Events
 void SampleSnow::_update(const CommonEvents::StateUpdated&)
 {

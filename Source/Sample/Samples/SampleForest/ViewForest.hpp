@@ -34,27 +34,28 @@ private:
     };
 
     void _initObjects();
-    ManagedEntity& _create_entity(_ObjectId, Model::Ref);
-    //void _initParticles();
-    //void _setParticles(float dt = 0.0f);
+    void _initParticles();
+    void _setParticles(float dt = 0.0f);
 
+    ManagedEntity& _create_entity(_ObjectId, Model::Ref);
     std::unordered_map<_ObjectId, std::vector<SharedEntity>> m_entities;
 
     // Scene objects
     std::unique_ptr<Skybox> m_skybox;
 
-    //// Fire grid
-    //struct FireGrid {
-    //    glm::vec3 pos;
+    // Fire grid
+    struct FireGrid 
+    {
+        struct Particle 
+        {
+            SharedEntity entity;
+            glm::vec4 speed;
+        };
 
-    //    struct Particles {
-    //        const size_t amount;
-    //        Model::Ref              object;
-    //        std::vector<glm::mat4>  models;
-    //        std::vector<glm::vec4>  materials;
-    //        std::vector<glm::vec4>  speeds;
-    //    } particles;
-    //} m_fireGrid;
+        Model::Ref model;
+        const size_t amount;
+        std::vector<Particle> particles = {};
+    } m_fireGrid;
 
     glm::vec2 m_mousePos;
     Timer::Chronometre m_timer;

@@ -24,6 +24,9 @@ struct ECS
     static void removeComponent(Entity entity);
 
     template<typename T>
+    static bool hasComponent(Entity entity);
+
+    template<typename T>
     static T& getComponent(Entity entity);
 
     template<typename T>
@@ -69,6 +72,12 @@ inline void ECS::removeComponent(Entity entity)
     EntityManager::setSignature(entity, signature);
 
     SystemManager::entitySignatureChanged(entity, signature);
+}
+
+template<typename T>
+inline bool ECS::hasComponent(Entity entity)
+{
+    return ComponentManager::hasComponent<T>(entity);
 }
 
 template<typename T>

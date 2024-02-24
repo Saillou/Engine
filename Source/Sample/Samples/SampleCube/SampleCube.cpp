@@ -22,13 +22,13 @@ SampleCube::SampleCube()
 
     // Lights
     m_pontential_lights = {
-        Light(glm::vec3{ 0,  -1.50f, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
-        Light(glm::vec3{ 0,  +1.50f, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{ 0,    0,    3.0f }, glm::vec4{ 0.3, 1, 0.7, 1 }),
-        Light(glm::vec3{ -1.50f,  0, 3.0f }, glm::vec4{ 0.7, 0.3, 1, 1 }),
-        Light(glm::vec3{ +1.50f,  0, 3.0f }, glm::vec4{ 1, 0.7, 0.3, 1 }),
+        Light(glm::vec3{ 0,   +3.0f, 3.0f }, glm::vec4{ 1, 0.5f, 1, 1 }),
+        Light(glm::vec3{ 0,   -3.0f, 3.0f }, glm::vec4{ 1, 1, 0.5f, 1 }),
+        Light(glm::vec3{ 0,      0,  3.0f }, glm::vec4{ 0.5f, 0, 1, 1 }),
+        Light(glm::vec3{ -3.0f,  0,  3.0f }, glm::vec4{ 1, 1, 0.5f, 1 }),
+        Light(glm::vec3{ +3.0f,  0,  3.0f }, glm::vec4{ 1, 0.5f, 1, 1 }),
     };
-    scene.lights = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + /* m_ui->lightsCount()*/ 3);
+    scene.lights = std::vector<Light>(m_pontential_lights.cbegin(), m_pontential_lights.cbegin() + /* m_ui->lightsCount()*/ 2);
 }
 
 // Events

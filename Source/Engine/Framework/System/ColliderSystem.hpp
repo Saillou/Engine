@@ -13,5 +13,5 @@
 
 struct ColliderSystem : public System {
 	void init() override;
-	void update(Entity entityChecked);
+	void check(Entity entityChecked);
 };

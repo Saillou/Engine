@@ -7,8 +7,7 @@
 struct SampleSnow : 
     public Sample 
 {
-      SampleSnow();
-     ~SampleSnow();
+    SampleSnow();
 
 private:
     // Events

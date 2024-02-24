@@ -1,46 +1,23 @@
 #pragma once
 
 #include "../Sample.hpp"
+#include "../ManagedEntity.hpp"
+
+#include "PongActors.hpp"
 #include "UiPong.hpp"
 
 struct SamplePong :
     public Sample
 {
     SamplePong();
-    ~SamplePong();
-
 
 private:
-    // Game elements
-    struct _Player {
-        enum class Action {
-            None, Left, Right
-        };
-
-        inline static const std::string Entity_Name = "player";
-        inline static const float MaxSpeed = 0.05f;
-
-        glm::vec3 pos = { 0, 0, 0 };
-        Action next_action = Action::None;
-    };
-
-    struct _Ball {
-        inline static const std::string Entity_Name = "ball";
-
-        glm::vec3 pos = { 0, 0, 0 };
-        glm::vec3 speed = { 0, 0, 0 };
-    };
-
-    struct _Wall {
-        inline static const std::string Entity_Name = "wall";
-
-        glm::vec3 pos = { 0, 0, 0 };
-    };
-
     // Methods
     void _init_game_elements();
     void _create_entities();
-    void _update_entities();
+    void _update_players();
+
+    ManagedEntity& _create_entity(const std::string& category, Model::Ref);
 
     void _ia();
     void _apply_actions(_Player&);
@@ -52,7 +29,7 @@ private:
 
     // Scene
     Scene& m_scene;
-    std::unordered_map<std::string, std::vector<Entity>> m_entities;
+    std::unordered_map<std::string, std::vector<SharedEntity>> m_entities;
 
     _Ball   m_ball;
     _Player m_player_human;
