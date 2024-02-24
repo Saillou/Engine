@@ -1,4 +1,5 @@
 #include "TextEngine.hpp"
+#include "ShaderManager.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -47,31 +48,9 @@ TextEngine& TextEngine::_getInstance() {
 
 // Instance (lazy init, hit on 1st)
 TextEngine::TextEngine():
-    m_vbo(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+    m_vbo(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+    m_text_shader(ShaderManager::Get(CookType::Text))
 {
-    // Setup text shader
-    m_text_shader
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
-            .add_var("layout (location = 0) in", "vec4", "vertex")
-            .add_var("uniform", "mat4", "projection")
-            .add_var("out",     "vec2", "TexCoords")
-            .add_func("void", "main", "", R"_main_(
-                TexCoords   = vertex.zw;
-                gl_Position = projection * vec4(vertex.xy, 0.01f, 1.0);
-            )_main_")
-        )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
-            .add_var("out", "vec4", "FragColor")
-            .add_var("in",  "vec2", "TexCoords")
-            .add_var("uniform", "sampler2D", "text")
-            .add_var("uniform", "vec4", "textColor")
-            .add_func("void", "main", "", R"_main_(
-                vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
-                FragColor    = vec4(textColor) * sampled;
-            )_main_")
-        )
-        .link();
-
     // TODO: Font choice (here hardcoded)
     FT_Library ft;
     FT_Init_FreeType(&ft);

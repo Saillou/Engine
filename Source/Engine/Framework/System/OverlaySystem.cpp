@@ -15,9 +15,6 @@ void OverlaySystem::init()
 {
     // System requirements
     // ..
-    
-    // Shaders
-    addRecipe(Cookable::CookType::Shape);
 }
 void OverlaySystem::update() 
 {
@@ -42,7 +39,8 @@ void OverlaySystem::remove_frame(SceneFrame* frame) {
 // Drawing methods
 void OverlaySystem::quad(const Quad& surface) 
 {
-    Shader& sh = get(Cookable::CookType::Shape)->use()
+    ShaderManager::Get(CookType::Shape)
+        .use()
         .set("LocalModel", surface.absolute_dimensions ?
             glm::translate(glm::scale(glm::mat4(1.0f),
                 glm::vec3(surface.w / 2.0f, surface.h / 2.0f, 0.0f)),

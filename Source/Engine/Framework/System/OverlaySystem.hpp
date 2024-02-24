@@ -13,13 +13,13 @@
 #include "../../Graphic/TextEngine.hpp"
 #include "../../Graphic/Camera.hpp"
 #include "../../Graphic/Light.hpp"
-#include "../../Graphic/Cookable.hpp"
+#include "../../Graphic/ShaderManager.hpp"
 #include "../../Graphic/Base/Model/Primitive/Quad.hpp"
 
 struct SceneFrame;
 
 struct OverlaySystem :
-	public System, Cookable
+	public System
 {
 	 OverlaySystem(const Camera&);
 	~OverlaySystem() = default;

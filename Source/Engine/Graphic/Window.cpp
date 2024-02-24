@@ -2,6 +2,7 @@
 
 #include "../Framework/Core/ECS.hpp"
 #include "../Events/CommonEvents.hpp"
+#include "ShaderManager.hpp"
 
 #include <vector>
 #include <memory>
@@ -13,10 +14,12 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
     m_is_fullscreen(start_fs),
     m_title(title)
 {
-    ECS::init();
-
     // Create window
     _init(title);
+
+    // Singletons
+    ECS::init();
+    ShaderManager::Init();
 
     // Mouse buttons
     for (unsigned int btn = 0; btn <= GLFW_MOUSE_BUTTON_LAST; btn++) {
@@ -131,7 +134,7 @@ void Window::_init(const char* title) {
     // Init GLFW
     glfwInit();
 
-    // Use OpenGL 3.3 (for best ratio compatibility/features)
+    // Try to use OpenGL 3.3 for best ratio compatibility/features
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);

@@ -12,10 +12,10 @@
 #include "Render/ShadowRender.hpp"
 #include "../../Graphic/Camera.hpp"
 #include "../../Graphic/Light.hpp"
-#include "../../Graphic/Cookable.hpp"
+#include "../../Graphic/ShaderManager.hpp"
 
 struct RenderSystem : 
-	public System, Cookable 
+	public System 
 {
 	RenderSystem(const Camera& camera, const std::vector<Light>& lights);
 	~RenderSystem() = default;

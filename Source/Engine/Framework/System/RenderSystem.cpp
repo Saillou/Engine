@@ -21,10 +21,6 @@ void RenderSystem::init()
     signature.set(ECS::getComponentType<DrawComponent>());
 
     ECS::setSystemSignature<RenderSystem>(signature);
-
-    // System members
-    addRecipe(Cookable::CookType::Solid);
-    addRecipe(Cookable::CookType::Geometry);
 }
 
 void RenderSystem::update()
@@ -165,7 +161,7 @@ void RenderSystem::_drawEntities()
                 const _Batch& batch = itBatch.second;
 
                 model->_setBatch(batch._transforms, batch._materials);
-                model->draw(*get(type));
+                model->draw(ShaderManager::Get(type));
             }
         }
     }
@@ -175,9 +171,9 @@ void RenderSystem::_drawEntities()
 void RenderSystem::_setSolidShader()
 {
     // Check light capabilities
-    if (get(Cookable::CookType::Solid)->source(ShaderSource::Type::Fragment).getVar("LightPos").count < _lights.size())
+    if (ShaderManager::Get(CookType::Solid).source(ShaderSource::Type::Fragment).getVar("LightPos").count < _lights.size())
     {
-        editRecipe(Cookable::CookType::Solid, ShaderSource::Type::Fragment, ShaderSource{}
+        ShaderManager::Edit(CookType::Solid, ShaderSource::Type::Fragment, ShaderSource{}
             .add_var("uniform", "vec3", "LightPos", (int)_lights.size())
             .add_var("uniform", "vec4", "LightColor", (int)_lights.size())
             .add_var("uniform", "samplerCube", "depthMap", (int)_lights.size())
@@ -185,7 +181,7 @@ void RenderSystem::_setSolidShader()
     }
 
     // Use
-    Shader& sh = get(Cookable::CookType::Solid)->use();
+    Shader& sh = ShaderManager::Get(CookType::Solid).use();
 
     // Bind shadow map
     _shadower.bindTextures(GL_TEXTURE0 + 1);
@@ -207,9 +203,9 @@ void RenderSystem::_setSolidShader()
 }
 
 void RenderSystem::_setGeometryShader() {
-    Shader& sh = get(Cookable::CookType::Geometry)->use();
-
-    sh.set("Projection", _camera.projection)
-      .set("View",       _camera.modelview)
-      .set("n_lines",    2);
+    ShaderManager::Get(CookType::Geometry)
+        .use()
+        .set("Projection", _camera.projection)
+        .set("View",       _camera.modelview)
+        .set("n_lines",    2);
 }

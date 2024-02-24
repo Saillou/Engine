@@ -12,7 +12,7 @@ struct Skybox {
     void draw(const Camera& camera);
 
 private:
-    Shader shader;
+    Shader& shader;
 
     Array m_vao;
     Buffer m_vbo;

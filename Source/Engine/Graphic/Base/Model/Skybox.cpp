@@ -1,11 +1,13 @@
 #include "Skybox.hpp"
+#include "../../ShaderManager.hpp"
 
 #include <iostream>
 #include <stb_image.h>
 
 Skybox::Skybox(const std::array<std::string, 6>& textures_path):
     m_vbo(GL_ARRAY_BUFFER),
-    m_texture(GL_RGB, GL_TEXTURE_CUBE_MAP)
+    m_texture(GL_RGB, GL_TEXTURE_CUBE_MAP),
+    shader(ShaderManager::Get(CookType::Skybox))
 {
     // Vertices
     m_vao.bind();
@@ -18,33 +20,6 @@ Skybox::Skybox(const std::array<std::string, 6>& textures_path):
     for (unsigned int i = 0; i < textures_path.size(); i++) {
         m_texture.load(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, textures_path[i].c_str());
     }
-
-    // Shader
-    shader.
-        attachSource(Shader::Vertex, ShaderSource{}
-            .add_var("layout (location = 0) in", "vec3", "aPos")
-
-            .add_var("uniform", "mat4", "view")
-            .add_var("uniform", "mat4", "projection")
-
-            .add_var("out", "vec3", "TexCoords")
-
-            .add_func("void", "main", "", R"_main_(
-                TexCoords = aPos;
-                vec4 pos = projection * view * vec4(aPos, 1.0);
-                gl_Position = pos.xyww;
-            )_main_")
-        )
-        .attachSource(Shader::Fragment, ShaderSource{}
-            .add_var("in", "vec3", "TexCoords")
-            .add_var("uniform", "samplerCube", "skybox")
-            .add_var("out", "vec4", "FragColor")
-
-            .add_func("void", "main", "", R"_main_(
-                FragColor = texture(skybox, TexCoords);
-            )_main_")
-        )
-        .link();
 
     shader.use();
     shader.set("skybox", 0);

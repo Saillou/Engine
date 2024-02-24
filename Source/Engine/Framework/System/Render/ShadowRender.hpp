@@ -25,5 +25,5 @@ struct ShadowRender
 
 private:
 	std::vector<std::unique_ptr<Framebuffer>> fbos;
-	Shader shader;
+	Shader& shader;
 };
