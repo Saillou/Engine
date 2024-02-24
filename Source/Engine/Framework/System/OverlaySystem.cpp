@@ -1,5 +1,10 @@
 #include "OverlaySystem.hpp"
 
+#include "../../Graphic/Base/SceneFrame.hpp"
+
+// TODO: do a real system with component, this is just a placebo
+
+
 OverlaySystem::OverlaySystem(const Camera& camera) : 
     m_camera(camera)
 {
@@ -16,12 +21,25 @@ void OverlaySystem::init()
 }
 void OverlaySystem::update() 
 {
+    glDisable(GL_DEPTH_TEST);
     TextEngine::SetViewport(0, 0, (int)m_camera.screenSize.x, (int)m_camera.screenSize.y);
 
-    // TODO: to do
+    for (SceneFrame* frame : _frames) {
+        frame->draw();
+    }
+
+    glEnable(GL_DEPTH_TEST);
 }
 
-// 
+// - not good -
+void OverlaySystem::add_frame(SceneFrame* frame) {
+    _frames.insert(frame);
+}
+void OverlaySystem::remove_frame(SceneFrame* frame) {
+    _frames.erase(frame);
+}
+
+// Drawing methods
 void OverlaySystem::quad(const Quad& surface) 
 {
     Shader& sh = get(Cookable::CookType::Shape)->use()
