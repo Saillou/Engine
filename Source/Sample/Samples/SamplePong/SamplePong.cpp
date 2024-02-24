@@ -11,8 +11,8 @@ SamplePong::SamplePong() :
     // Enable events
     _subscribe(&SamplePong::_on_key_pressed);
     _subscribe(&SamplePong::_update);
-    _subscribe([=](const SceneEvents::RenderFinished&) { 
-        m_ui.show(); 
+    _subscribe([=](const SceneEvents::PostDraw&) {
+        m_ui.show();
     });
 
     // Go

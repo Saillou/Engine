@@ -40,7 +40,7 @@ SampleSnow::SampleSnow() :
     // Enable events
     _subscribe(&SampleSnow::_update);
     _subscribe(&SampleSnow::_on_key_pressed);
-    _subscribe([=](const SceneEvents::RenderFinished&) { 
+    _subscribe([=](const SceneEvents::PostDraw&) { 
         m_ui.show(); 
     });
 

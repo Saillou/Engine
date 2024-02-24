@@ -19,6 +19,8 @@ AppMenu::AppMenu()
     ImGui_ImplGlfw_InitForOpenGL(Service<Window>::get().backend(), true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
+    _prepare();
+
     // Events
     _subscribe([=](const SceneEvents::RenderStarted&)  { _prepare(); });
     _subscribe([=](const SceneEvents::RenderFinished&) { _render();  });
@@ -36,9 +38,13 @@ AppMenu::~AppMenu()
 // Draw methods
 void AppMenu::_prepare()
 {
+    if (_frame_ready)
+        return;
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    _frame_ready = true;
 
     if (!ImGui::BeginMainMenuBar())
         return;
@@ -70,6 +76,11 @@ void AppMenu::_prepare()
 
 void AppMenu::_render()
 {
+    if (!_frame_ready)
+        return;
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    _frame_ready = false;
 }

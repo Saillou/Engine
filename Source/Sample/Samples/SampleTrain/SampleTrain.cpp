@@ -53,7 +53,9 @@ SampleTrain::SampleTrain() :
     // Enable events
     _subscribe(&SampleTrain::_on_update);
     _subscribe(&SampleTrain::_on_key_pressed);
-    _subscribe(&SampleTrain::_on_scene_end);
+    _subscribe([=](const SceneEvents::PostDraw&) { 
+        _drawInfo();
+    });
 
     // Start
     m_timer.tic();
@@ -72,11 +74,6 @@ SampleTrain::~SampleTrain()
 void SampleTrain::_on_update(const CommonEvents::StateUpdated&) {
     _compute_physics();
     _update_camera();
-}
-
-void SampleTrain::_on_scene_end(const SceneEvents::RenderFinished&)
-{
-    _drawInfo();
 }
 
 void SampleTrain::_on_key_pressed(const CommonEvents::KeyPressed& evt) {

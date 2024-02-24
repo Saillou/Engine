@@ -13,4 +13,6 @@ struct AppMenu : Event::Subscriber
 private:
 	void _prepare();
 	void _render();
+
+	bool _frame_ready = false;
 };

@@ -17,7 +17,6 @@ private:
     void _drawInfo();
 
     void _on_update(const CommonEvents::StateUpdated&);
-    void _on_scene_end(const SceneEvents::RenderFinished&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // - Members -

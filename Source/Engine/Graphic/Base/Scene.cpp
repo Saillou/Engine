@@ -35,19 +35,17 @@ void Scene::run() {
 
     Viewport(width(), height());
 
-    // Start
     Event::Emit(SceneEvents::RenderStarted());
+    {
+        // - Draw 3D-Scene
+        m_render_system->update();
 
-    // - Draw 3D-Scene
-    m_render_system->update();
-     
-    // - Apply filters
-    Event::Emit(SceneEvents::PostDraw());
+        // - Apply filters
+        Event::Emit(SceneEvents::PostDraw());
 
-    // - Draw UI
-    m_overlay_system->update();
-
-    // End
+        // - Draw UI
+        m_overlay_system->update();
+    }
     Event::Emit(SceneEvents::RenderFinished());
 }
 
