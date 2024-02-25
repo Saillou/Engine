@@ -17,6 +17,7 @@
 struct Model
 {
     friend struct RenderSystem;
+    friend struct ParticleSystem;
 
     enum class SimpleShape {
         Quad, Cube, Sphere

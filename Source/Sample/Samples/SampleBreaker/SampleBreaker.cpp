@@ -18,9 +18,9 @@ void SampleBreaker::_init_scene()
 {
     // Scene
     m_scene.lights = { 
-        { glm::vec3(0.0f, 0.0f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) },
-        { glm::vec3(0.0f, 1.0f, +2.0f), glm::vec4(1.0f, 0.7f, 0.0f, 1.0f) },
-        { glm::vec3(0.0f, 1.0f, -2.0f), glm::vec4(0.0f, 0.7f, 1.0f, 1.0f) },
+        { glm::vec3(0.0f, 3.0f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) },
+        { glm::vec3(0.0f, 1.5f, +1.7f), glm::vec4(1.0f, 0.7f, 0.0f, 1.0f) },
+        { glm::vec3(0.0f, 1.5f, -1.7f), glm::vec4(0.0f, 0.7f, 1.0f, 1.0f) },
     };
 
     // Camera
@@ -72,21 +72,18 @@ void SampleBreaker::_physics(float dt_ms)
     // Assuming only one interaction per frame
     Entity hidrance(collide.hit_entities.front());
 
-    // Change speed direction
-    if (hidrance == m_wall_left.id() || hidrance == m_wall_right.id()) // simple bounce on wall
-    {
+    if (hidrance == m_wall_left.id() || hidrance == m_wall_right.id()) {
         m_ball.speed.x *= -1.0f;
     }
-    else
-    {
+    else if (hidrance != m_player.id()) { // If not wall, not player, let's assume it's a brick
+        m_ball.speed.z *= -1.0f;
+        _destroy_brick(hidrance);
+    }
+    else {
         const BodyComponent& body(ECS::getComponent<BodyComponent>(hidrance));
 
         glm::vec3 hindrance_pos = glm::vec3(body.transform.world[3]);
         m_ball.speed = glm::length(m_ball.speed) * glm::normalize(m_ball.pos() - hindrance_pos);
-
-        // If not wall, not player, i'll assume it's a brick
-        if (hidrance != m_player.id())
-            _destroy_brick(hidrance);
     }
 
     // New position because of hindrances
@@ -105,32 +102,29 @@ void SampleBreaker::_destroy_brick(Entity entity)
 // - Events -
 void SampleBreaker::_update(const CommonEvents::StateUpdated&)
 {
-    m_player.move();
+    float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
 
-    _physics(m_timer.elapsed<Timer::microsecond>() / 1000.0f);
+    m_player.move();
+    m_ball.animate(dt_ms);
+
+    _physics(dt_ms);
 
     m_scene.lights.front().position = m_ball.pos() + glm::vec3(0, 0.2f, 0);
     m_timer.tic();
 }
 
-void SampleBreaker::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
-    Scene& scene = Service<Window>::get().scene();
-
+void SampleBreaker::_on_key_pressed(const CommonEvents::KeyPressed& evt) 
+{
     if (evt.action != InputAction::Pressed && evt.action != InputAction::Repeated)
         return;
 
-    // - Move player -
+    switch (evt.key) 
     {
-        switch (evt.key) {
-            case KeyCode::ArrowLeft:  m_player.next_action = Player::Action::Left; break;
-            case KeyCode::ArrowRight: m_player.next_action = Player::Action::Right; break;
-        }
-    }
+        // Player actions
+        case KeyCode::ArrowLeft:  m_player.next_action = Player::Action::Left; break;
+        case KeyCode::ArrowRight: m_player.next_action = Player::Action::Right; break;
 
-    // - State -
-    {
-        switch (evt.key) {
-            case KeyCode::Escape: wantQuit = true;
-        }
+        // Game actions
+        case KeyCode::Escape: wantQuit = true;
     }
 }

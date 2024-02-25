@@ -29,19 +29,16 @@ Scene::Scene(int widthHint, int heightHint):
 }
 
 void Scene::run() {
-    // Setup
+    float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
+
     _update_camera();
 
     Event::Emit(SceneEvents::RenderStarted());
     {
         m_filter_system->start();
         {
-            float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
-
-            m_render_system->update();          // Draw 3D-Scene
-            m_particle_system->update(dt_ms);   // Draw particles
-
-            m_timer.tic();
+            m_render_system->update();   // Draw 3D-Scene
+            m_particle_system->update(); // Draw particles
         }
         m_filter_system->apply();
 
@@ -50,6 +47,8 @@ void Scene::run() {
         m_overlay_system->update(); // Draw UI
     }
     Event::Emit(SceneEvents::RenderFinished());
+
+    m_timer.tic();
 }
 
 void Scene::Viewport(int width, int height) {

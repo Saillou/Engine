@@ -6,14 +6,21 @@
 #include "../Component/ParticleComponent.hpp"
 
 #include "../../Graphic/Camera.hpp"
+#include "../../Graphic/ShaderManager.hpp"
+#include "Render/Batch.hpp"
 
 struct ParticleSystem : public System {
 	ParticleSystem(const Camera&);
 	~ParticleSystem() = default;
 
 	void init() override;
-	void update(float dt_ms);
+	void update();
 
 private:
-	const Camera& m_camera;
+	const Camera& _camera;
+
+	std::unordered_map<CookType::_tag_, Batch> _batches;
+
+	void _setSolidShader();
+	void _setParticleShader();
 };

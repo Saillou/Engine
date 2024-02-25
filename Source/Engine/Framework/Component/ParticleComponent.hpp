@@ -8,8 +8,18 @@
 
 struct ParticleComponent 
 {
-	// Expect vectors to be of the same size
-	std::vector<glm::vec4> speeds;
-	std::vector<glm::vec4> colors;
-	std::vector<glm::mat4> worlds;
+	// Data
+	enum class Type {
+		Solid,
+		Particle
+	};
+
+	struct Element {
+		glm::vec4 color;
+		glm::mat4 world;
+	};
+
+	// Members
+	Type type = Type::Solid;
+	std::vector<Element> elements;
 };

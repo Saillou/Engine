@@ -167,8 +167,8 @@ ManagedEntity& ViewForest::_create_entity(_ObjectId id, Model::Ref model)
 }
 
 // Update dynamic memory
-void ViewForest::_setParticles(float dt) {
-    // Move
+void ViewForest::_setParticles(float dt) 
+{
     for (int particules_id = 0; particules_id < (int)m_fireGrid.amount; particules_id++)
     {
         glm::vec4& speed = m_fireGrid.particles[particules_id].speed;

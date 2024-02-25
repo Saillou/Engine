@@ -9,6 +9,7 @@
 #include "../Component/BodyComponent.hpp"
 #include "../Component/DrawComponent.hpp"
 
+#include "Render/Batch.hpp"
 #include "Render/ShadowRender.hpp"
 #include "../../Graphic/Camera.hpp"
 #include "../../Graphic/Light.hpp"
@@ -28,13 +29,6 @@ private:
 	const Camera&			  _camera;	// Given by Scene
 	const std::vector<Light>& _lights;	// Given by Scene
 	ShadowRender			  _shadower;
-
-	struct _Batch {
-		std::vector<Entity>     _entities;
-		std::vector<glm::mat4>	_transforms;
-		std::vector<glm::vec4>	_materials;
-	};
-	typedef std::unordered_map<Model::Ref, _Batch> Batch;
 
 	Batch _shadow_batch;
 	std::unordered_map<CookType::_tag_, Batch> _batches_opaque;
