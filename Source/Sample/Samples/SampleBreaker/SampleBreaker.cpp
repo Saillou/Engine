@@ -1,7 +1,5 @@
 #include "SampleBreaker.hpp"
 
-#include <algorithm>
-
 SampleBreaker::SampleBreaker() :
     m_scene(Service<Window>::get().scene())
 {
@@ -18,11 +16,12 @@ void SampleBreaker::_init_scene()
 {
     // Scene
     m_scene.lights = { 
-        { glm::vec3(0.0f, 3.0f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) }
+        { glm::vec3(0.0f, 0.5f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) },
+        { glm::vec3(0.0f, 0.5f, -1.7f), glm::vec4(0.0f, 0.7f, 1.0f, 1.0f) },
     };
 
     // Camera
-    m_scene.camera.position  = glm::vec3(0, 10.0f, -3.0f);
+    m_scene.camera.position  = glm::vec3(0, 8.0f, -3.0f);
     m_scene.camera.direction = glm::vec3(0, 0, 0);
 
     // Game elements
@@ -107,7 +106,7 @@ void SampleBreaker::_update(const CommonEvents::StateUpdated&)
 
     _physics(dt_ms);
 
-    m_scene.lights.front().position = m_ball.pos() + glm::vec3(0, 0.2f, 0);
+    m_scene.lights.front().position = m_ball.pos() + glm::vec3(0, 1.5f, 0);
     m_timer.tic();
 }
 

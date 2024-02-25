@@ -10,7 +10,7 @@ struct Field : public Actor {
     Field() :
         Actor(Model::Load(Model::SimpleShape::Cube))
     {
-        _entity.color() = glm::vec4(1, 1, 1, 0.2f);
+        _entity.color() = glm::vec4(1, 1, 1, 0.1f);
 
         glm::mat4& local(_entity.local());
         local = glm::translate(local, glm::vec3(0, -0.1f, 0));
