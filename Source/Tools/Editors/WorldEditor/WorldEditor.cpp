@@ -1,9 +1,4 @@
 #include "WorldEditor.hpp"
-#include "WorldEditorHelper.hpp"
-
-
-// Helper functions
-using namespace WorldEditorHelper;
 
 // -------- Editor --------
 WorldEditor::WorldEditor(Scene& scene) : 
