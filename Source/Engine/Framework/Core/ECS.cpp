@@ -5,6 +5,7 @@
 #include "../Component/DrawComponent.hpp"
 #include "../Component/FilterComponent.hpp"
 #include "../Component/CollideComponent.hpp"
+#include "../Component/ParticleComponent.hpp"
 
 static bool initialized = false;
 
@@ -18,6 +19,7 @@ void ECS::init()
     ECS::registerComponent<DrawComponent>();
     ECS::registerComponent<FilterComponent>();
     ECS::registerComponent<CollideComponent>();
+    ECS::registerComponent<ParticleComponent>();
 
     initialized = true;
 }

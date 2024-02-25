@@ -17,7 +17,7 @@ struct Actor {
         return _pos;
     }
 
-    void setPos(const glm::vec3& pos) {
+    virtual void setPos(const glm::vec3& pos) {
         _pos = pos;
         _entity.world() = glm::translate(glm::mat4(1.0f), _pos);
     }

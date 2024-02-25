@@ -16,12 +16,16 @@ Scene::Scene(int widthHint, int heightHint):
     m_caster_system   = ECS::registerSystem<CasterSystem>(camera);
     m_collider_system = ECS::registerSystem<ColliderSystem>();
     m_filter_system   = ECS::registerSystem<FilterSystem>(camera);
+    m_particle_system = ECS::registerSystem<ParticleSystem>(camera);
 
     m_render_system->init();
     m_overlay_system->init();
     m_caster_system->init();
     m_collider_system->init();
     m_filter_system->init();
+    m_particle_system->init();
+
+    m_timer.tic();
 }
 
 void Scene::run() {
@@ -32,7 +36,12 @@ void Scene::run() {
     {
         m_filter_system->start();
         {
-            m_render_system->update(); // Draw 3D-Scene
+            float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
+
+            m_render_system->update();          // Draw 3D-Scene
+            m_particle_system->update(dt_ms);   // Draw particles
+
+            m_timer.tic();
         }
         m_filter_system->apply();
 
@@ -85,9 +94,6 @@ int Scene::height() const {
 }
 
 // System direct access
-RenderSystem& Scene::renderer() {
-    return *m_render_system;
-}
 OverlaySystem& Scene::overlayer() {
     return *m_overlay_system;
 }

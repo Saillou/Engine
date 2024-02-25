@@ -11,11 +11,25 @@ struct Ball : public Actor {
 
     // Methods
     Ball():
+        _fire(ManagedEntity::Create(Model::Load(Model::SimpleShape::Cube))),
         Actor(Model::Load(Model::SimpleShape::Sphere))
     {
         _entity.color() = glm::vec4(1.0f, 0.4f, 0.2f, 1.0f);
         _entity.local() = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
         _entity.world() = glm::translate(glm::mat4(1.0f), _pos);
         _entity.collidable(true);
+
+        ParticleComponent particles;
+        ECS::addComponent(_fire->entity(), particles);
+        ECS::removeComponent<DrawComponent>(_fire->entity());
     }
+
+    void setPos(const glm::vec3& pos) override {
+        _pos = pos;
+        _entity.world() = glm::translate(glm::mat4(1.0f), _pos);
+        _fire->world() = _entity.world();
+    }
+
+private:
+    SharedEntity _fire;
 };

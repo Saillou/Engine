@@ -2,12 +2,14 @@
 
 #include "SceneEvents.hpp"
 #include "../Wrapper/Framebuffer.hpp"
+#include "../../Utils/Timer.hpp"
 #include "../../Framework/Core/ECS.hpp"
 #include "../../Framework/System/CasterSystem.hpp"
 #include "../../Framework/System/FilterSystem.hpp"
 #include "../../Framework/System/RenderSystem.hpp"
 #include "../../Framework/System/OverlaySystem.hpp"
 #include "../../Framework/System/ColliderSystem.hpp"
+#include "../../Framework/System/ParticleSystem.hpp"
 
 // Scene model
 struct Scene {
@@ -21,7 +23,6 @@ struct Scene {
     static void Viewport(int width, int height);
     static void Viewport(int x, int y, int width, int height);
 
-    RenderSystem&   renderer();
     OverlaySystem&  overlayer();
     CasterSystem&   raycaster();
     ColliderSystem& collider();
@@ -40,6 +41,7 @@ private:
     // Members
     int m_width  = 0;
     int m_height = 0;
+    Timer::Chronometre m_timer;
 
     // Default systems
     std::shared_ptr<RenderSystem>   m_render_system;
@@ -47,4 +49,5 @@ private:
     std::shared_ptr<CasterSystem>   m_caster_system;
     std::shared_ptr<ColliderSystem> m_collider_system;
     std::shared_ptr<FilterSystem>   m_filter_system;
+    std::shared_ptr<ParticleSystem> m_particle_system;
 };
