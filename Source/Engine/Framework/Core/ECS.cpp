@@ -1,8 +1,27 @@
 #include "ECS.hpp"
 
+#include "../Component/BodyComponent.hpp"
+#include "../Component/CastComponent.hpp"
+#include "../Component/DrawComponent.hpp"
+#include "../Component/FilterComponent.hpp"
+#include "../Component/CollideComponent.hpp"
+#include "../Component/ParticleComponent.hpp"
+
+static bool initialized = false;
+
 void ECS::init()
 {
-    // init all other managers here, for now not needed
+    if (initialized)
+        return;
+
+    ECS::registerComponent<BodyComponent>();
+    ECS::registerComponent<CastComponent>();
+    ECS::registerComponent<DrawComponent>();
+    ECS::registerComponent<FilterComponent>();
+    ECS::registerComponent<CollideComponent>();
+    ECS::registerComponent<ParticleComponent>();
+
+    initialized = true;
 }
 
 Entity ECS::createEntity()

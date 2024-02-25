@@ -1,9 +1,0 @@
-#pragma once
-
-#include <Engine/Framework/Core/System.hpp>
-
-struct ForceSystem : public System 
-{
-    void init();
-    void update(float dt);
-};

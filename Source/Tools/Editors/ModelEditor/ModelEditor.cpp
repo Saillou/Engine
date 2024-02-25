@@ -7,15 +7,18 @@ ModelEditor::ModelEditor(Scene& scene)
 
 void ModelEditor::onEnter()
 {
-    m_center = Model::Create(Model::Sphere);
-    m_center->localMaterial.diffuse_color = glm::vec4(1, 1, 1, 1);
+    m_menu.resetState();
 
-    m_model = Model::Create("Resources/objects/tree/tree.glb");
-    m_scene.lights() = {
+    // Lights
+    m_scene.lights = {
         { glm::vec3{ 0, -0.5f, 0.5f }, glm::vec4{ 1,1,1,1 } }
     };
 
-    m_menu.resetState();
+    // Entities
+    m_center = ManagedEntity::Create(Model::Load(Model::SimpleShape::Sphere));
+    m_center->color() = glm::vec4(1, 1, 1, 1);
+
+    m_model = ManagedEntity::Create(Model::Load("Resources/objects/tree/tree.glb"));
 }
 
 void ModelEditor::onExit()
@@ -40,35 +43,39 @@ void ModelEditor::onUpdate()
         glPolygonMode(GL_BACK, GL_FILL);
     }
 
-    Camera& camera = m_scene.camera();
+    Camera& camera = m_scene.camera;
     switch (m_menu.state.cameraType)
     {
     case 0:
-        m_scene.camera().position = glm::vec3{ 0, -1, 0 };
-        m_scene.camera().up = glm::vec3(0, 0, 1);
-        m_scene.camera().lookAt();
+        m_scene.camera.position = glm::vec3{ 0, -1, 0 };
+        m_scene.camera.up = glm::vec3(0, 0, 1);
+        m_scene.camera.lookAt();
         break;
+
     case 1:
-        m_scene.camera().position = glm::vec3{ 0,0,1 };
-        m_scene.camera().up = glm::vec3(0, 1, 0);
-        m_scene.camera().lookAt();
+        m_scene.camera.position = glm::vec3{ 0,0,1 };
+        m_scene.camera.up = glm::vec3(0, 1, 0);
+        m_scene.camera.lookAt();
         break;
+
     case 2:
-        m_scene.camera().position = glm::vec3{ -1, 0, 0 };
-        m_scene.camera().up = glm::vec3(0, 0, 1);
-        m_scene.camera().lookAt();
+        m_scene.camera.position = glm::vec3{ -1, 0, 0 };
+        m_scene.camera.up = glm::vec3(0, 0, 1);
+        m_scene.camera.lookAt();
         break;
     }
 
     if (m_menu.state.updateAsset)
     {
         m_menu.state.updateAsset = false;
-        m_model = Model::Create(m_menu.state.path);
+        m_model = ManagedEntity::Create(Model::Load(m_menu.state.path));
     }
 
-    auto& renderer = m_scene.renderer();
+    m_menu.ShowMovableOptions();
 
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
+    // Model
+    glm::mat4& model = m_model->local();
+    model = glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition);
     model = glm::rotate(model, m_menu.state.roll, glm::vec3(1, 0, 0));
     model = glm::rotate(model, m_menu.state.pitch, glm::vec3(0, 1, 0));
     model = glm::rotate(model, m_menu.state.yaw, glm::vec3(0, 0, 1));
@@ -76,11 +83,8 @@ void ModelEditor::onUpdate()
     model = glm::translate(model, m_menu.state.position);
     model = glm::scale(model, m_menu.state.scale);
 
-    glm::mat4 worldPos = glm::translate(glm::mat4(1.f), m_menu.state.worldPosition);
-    m_model->poses = { worldPos * model };
-    renderer.draw(Render::DrawType::Lights, m_model);
+    m_model->world() = glm::translate(glm::mat4(1.f), m_menu.state.worldPosition);
 
-    m_center->poses = { glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f)) };
-    renderer.draw(Render::DrawType::Basic, m_center);
-    m_menu.ShowMovableOptions();
+    // Center
+    m_center->local() = {glm::scale(glm::translate(glm::mat4(1.0f), m_menu.state.centerPosition), glm::vec3(0.015f))};
 }

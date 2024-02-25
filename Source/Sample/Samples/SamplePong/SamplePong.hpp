@@ -1,60 +1,35 @@
 #pragma once
 
 #include "../Sample.hpp"
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
+
+#include "PongActors.hpp"
 #include "UiPong.hpp"
 
-struct SamplePong : 
-    public Sample 
+struct SamplePong :
+    public Sample
 {
     SamplePong();
 
-
 private:
-    // Game elements
-    struct _Player {
-        enum class Action {
-            None, Left, Right
-        };
-
-        inline static const std::string Entity_Name = "player";
-        inline static const float MaxSpeed = 0.05f;
-
-        glm::vec3 pos = { 0, 0, 0 };
-        Action next_action = Action::None;
-    };
-
-    struct _Ball {
-        inline static const std::string Entity_Name = "ball";
-
-        glm::vec3 pos = { 0, 0, 0 };
-        glm::vec3 speed = { 0, 0, 0 };
-    };
-
-    struct _Wall {
-        inline static const std::string Entity_Name = "wall";
-
-        glm::vec3 pos = { 0, 0, 0 };
-    };
-
     // Methods
     void _init_game_elements();
     void _create_entities();
-    void _update_entities();
+    void _update_players();
+
+    ManagedEntity& _create_entity(const std::string& category, Model::Ref);
 
     void _ia();
     void _apply_actions(_Player&);
     void _physics(float dt_ms);
 
-    void _draw();
-    void _draw_hitbox();
-
     // Events
-    void _update(const SceneEvents::Draw&);
+    void _update(const CommonEvents::StateUpdated&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Scene
     Scene& m_scene;
-    std::unordered_map<std::string, Model::Ref> m_models;
+    std::unordered_map<std::string, std::vector<SharedEntity>> m_entities;
 
     _Ball   m_ball;
     _Player m_player_human;

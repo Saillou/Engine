@@ -13,7 +13,6 @@ protected:
     void _on_state_update(const CommonEvents::StateUpdated& evt);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
-    void _on_mouse_clicked(const CommonEvents::MouseButton& evt);
 
 private:
     Scene& m_scene;

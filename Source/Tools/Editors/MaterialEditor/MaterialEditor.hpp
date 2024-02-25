@@ -2,6 +2,7 @@
 
 #include "../Editor.hpp"
 #include "MaterialEditorMenu.hpp"
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 class MaterialEditor : public Editor
 {
@@ -14,6 +15,6 @@ public:
     void onUpdate() override;
 
 private:
-    Model::Ref         m_model;
+    SharedEntity m_sphere;
     MaterialEditorMenu m_menu;
 };

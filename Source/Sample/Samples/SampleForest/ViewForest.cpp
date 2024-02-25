@@ -1,13 +1,7 @@
 #include "ViewForest.hpp"
 
-#include <ctime>
 #include <random>
-#include <sstream>
 #include <algorithm>
-
-#include <glm/gtx/string_cast.hpp>
-
-#include <Engine/Utils/Physic/RayCaster.hpp>
 
 // Random engine
 static std::default_random_engine gen;
@@ -16,33 +10,24 @@ static std::uniform_real_distribution<float> dstr_half(-0.5f, +0.5f);
 
 ViewForest::ViewForest() :
     m_fireGrid({
-        glm::vec3(0, 0, 0),
-        {
-            size_t(2500),
-            Model::Create(Model::Cube)
-        }
+        Model::Load(Model::SimpleShape::Cube),
+        size_t(500)
     }),
     m_mousePos(0.0f, 0.0f)
 {
-    // Load models
-    m_timer.tic();
-    {
-        m_models[_ObjectId::Locomotive] = Model::Create("Resources/objects/train/locomotive.glb");
-        m_models[_ObjectId::Tree]       = Model::Create("Resources/objects/tree/tree.glb");
-        m_models[_ObjectId::Character]  = Model::Create("Resources/objects/character/character.glb");
-
-        m_models[_ObjectId::Grid]   = Model::Create(Model::Cube);
-        m_models[_ObjectId::Cube]   = Model::Create(Model::Cube);
-        m_models[_ObjectId::Sphere] = Model::Create(Model::Sphere);
-        m_models[_ObjectId::Target] = Model::Create(Model::Sphere);
-    }
-    std::cout << "Models loaded in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
-
     // Populate objects
     m_timer.tic();
     {
         _initObjects();
-        _initFilters();
+
+        m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
+            "Resources/textures/skybox/right.jpg",
+            "Resources/textures/skybox/left.jpg",
+            "Resources/textures/skybox/top.jpg",
+            "Resources/textures/skybox/bottom.jpg",
+            "Resources/textures/skybox/front.jpg",
+            "Resources/textures/skybox/back.jpg"
+        });
     }
     std::cout << "Objects initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
@@ -54,317 +39,156 @@ ViewForest::ViewForest() :
     std::cout << "Particules initialized in: " << m_timer.elapsed<Timer::millisecond>() << "ms." << std::endl;
 
     // Enable events
-    _subscribe(&ViewForest::_draw);
+    _subscribe(&ViewForest::_update);
     _subscribe(&ViewForest::_post_draw);
-    _subscribe(&ViewForest::_on_resize);
 }
 
-// Methods
-void ViewForest::_draw(const SceneEvents::Draw&) {
+void ViewForest::_update(const CommonEvents::StateUpdated&)
+{
     Scene& scene = Service<Window>::get().scene();
 
-    static float dt_since_last_draw = 0.0f;
+    // Give flag CastClosest to only get one
+    scene.raycaster().update(m_mousePos);
 
-    dt_since_last_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
-    m_timer.tic();
-
-    _setParticles(dt_since_last_draw);
-    _setObjects();
-
-    static float dt_draw = 0.0f;
-    m_timer.tic();
-
-    // Lights
+    for (Entity e : scene.raycaster().retrieve()) 
     {
-        m_models[_ObjectId::Sphere]->poses.clear();
-        m_models[_ObjectId::Sphere]->materials.clear();
-
-        for (auto& light : scene.lights()) {
-            const glm::mat4& Q = glm::scale(glm::translate(glm::mat4(1.0f), light.position), glm::vec3(0.1f));
-
-            m_models[_ObjectId::Sphere]->poses.push_back(Q);
-            m_models[_ObjectId::Sphere]->materials.push_back(Material{ light.color });
-        }
-        scene.renderer().draw(Render::DrawType::Basic, m_models[_ObjectId::Sphere]);
+        if (ECS::getComponent<CastComponent>(e).is_hit)
+            ECS::getComponent<DrawComponent>(e).type = DrawComponent::DrawType(DrawComponent::Geometry | DrawComponent::Solid);
+        else
+            ECS::getComponent<DrawComponent>(e).type = DrawComponent::Solid;
     }
 
-    // List of targets
-    std::vector<Pose> targets;
-
-    // Draw objects
-    for (const _Object& obj : m_objects) {
-        m_models[obj.id]->poses.clear();
-
-        for (const auto& quat : obj.quats) {
-            if (obj.id == _ObjectId::Cube) {
-                m_models[obj.id]->localMaterial.diffuse_color = glm::vec4(0.7f, 0.7f, 0.7f, 1);
-            }
-
-            m_models[obj.id]->poses.push_back(quat);
-        }
-        scene.renderer().draw(Render::DrawType::Shadows, m_models[obj.id]);
-    }
-
-    // Ray cast
-    for (const _Object& obj : m_objects) {
-        for (const auto& quat : obj.quats) {
-            auto cast_res = RayCaster::Intersect(m_mousePos, scene.camera(), m_models[obj.id], quat);
-            if (!cast_res)
-                continue;
-
-            // Highlight
-            m_models[obj.id]->localMaterial.diffuse_color = glm::vec4(0.2f, 0.7f, 0.7f, 1);
-            m_models[obj.id]->poses = { quat };
-            scene.renderer().draw(Render::DrawType::Geometry, m_models[obj.id]);
-
-            // Intersection
-            targets.push_back(
-                glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(cast_res.value())), glm::vec3(0.1f, 0.1f, 0.01f))
-            );
-        }
-    }
-
-    // Draw targets
-    if (!targets.empty()) {
-        m_models[_ObjectId::Target]->poses = targets;
-        m_models[_ObjectId::Target]->localMaterial.diffuse_color = glm::vec4(0.2f, 1.0f, 0.7f, 0.5f);
-        scene.renderer().draw(Render::DrawType::Basic, m_models[_ObjectId::Target]);
-    }
-
-    // Particles
-    {
-        scene.renderer().draw(Render::DrawType::Basic, m_fireGrid.particles.object);
-    }
-
-    // Draw ground
-    {
-        // Grid
-        {
-            m_models[_ObjectId::Grid]->localMaterial.diffuse_color = glm::vec4(0.2f, 0.2f, 0.2f, 1);
-            scene.renderer().draw(Render::DrawType::Geometry, m_models[_ObjectId::Grid]);
-        }
-
-        // Shadow
-        {
-            m_models[_ObjectId::Grid]->localMaterial.diffuse_color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-            scene.renderer().draw(Render::DrawType::Shadows, m_models[_ObjectId::Grid]);
-        }
-    }
-
-    // Prepare next
-    dt_draw = m_timer.elapsed<Timer::microsecond>() / 1'000'000.0f;
-    m_timer.tic();
+    _setParticles(0.16f);
 }
 
 void ViewForest::_post_draw(const SceneEvents::PostDraw&) {
     Scene& scene = Service<Window>::get().scene();
 
-    // Skybox
-    scene.framebuffer_main().bind();
-    {
-        m_skybox->draw(scene.camera());
-    }
-    scene.framebuffer_main().unbind();
-
-    // Apply filter
-    if (enable_filter) {
-        m_filter.apply(scene.framebuffer_main());
-        scene.drawFrame(m_filter.frame());
-    }
-    else {
-        scene.drawFrame(scene.framebuffer_main());
-    }
-
-    // Debug texts
-    scene.renderer().text("Cam: " + glm::to_string(scene.camera().position), 15.0f, scene.height() - 20.0f, 0.4f);
-    scene.renderer().text("Mouse: " + std::to_string(scene.width() * m_mousePos.x) + " x " + std::to_string(scene.height() * m_mousePos.y), 15.0f, scene.height() - 40.0f, 0.4f);
+    m_skybox->draw(scene.camera);
 }
 
 // Allocate static memory
 void ViewForest::_initObjects() {
     constexpr float hpi = glm::half_pi<float>();
 
-    // Sky
-    m_skybox = std::make_unique<Skybox>(std::array<std::string, 6> {
-        "Resources/textures/skybox/right.jpg",
-        "Resources/textures/skybox/left.jpg",
-        "Resources/textures/skybox/top.jpg",
-        "Resources/textures/skybox/bottom.jpg",
-        "Resources/textures/skybox/front.jpg",
-        "Resources/textures/skybox/back.jpg"
-    });
-
-    // Ground - Grid
-    m_grid = std::make_unique<_Grid>(_Grid{ 0.3f, 36, {} });
-    m_grid->grid_cells.resize(size_t(m_grid->n_side * m_grid->n_side));
-    std::generate(m_grid->grid_cells.begin(), m_grid->grid_cells.end(), [id = 0, S = m_grid->cell_size, N = m_grid->n_side]() mutable
-        {
-            const glm::vec2 cell_pos = glm::vec2(id % N - N / 2, id / N - N / 2);
-            const glm::vec3 T_pos = S * glm::vec3(cell_pos, -0.5f);
-            const glm::vec3 T_scale = S * glm::vec3(0.5f);
-
-            id++;
-            return glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
-        }
-    );
-
-    // Box
-    m_objects.push_back({ _ObjectId::Cube, glm::vec4(1.0f, 0.7f, 0.3f ,1.0),
-        {
-            glm::scale(
-                glm::translate(
-                    glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)),
-                glm::vec3(0.1f)
-            )
-        }
-    });
-
     // Locomotive
-    m_objects.push_back({ _ObjectId::Locomotive, glm::vec4(0),
-        {
-            glm::scale(
-                glm::translate(
-                    glm::rotate(glm::mat4(1.0f),    // Identity
-                        hpi, glm::vec3(1, 0, 0)),  // Rotation
-                    glm::vec3(1.0f, .30f, .0f)),    // Translation
-                glm::vec3(2.0f)                     // Scale
-            )
-        }
-    });
+    {
+        auto& locomotive = _create_entity(_ObjectId::Locomotive, Model::Load("Resources/objects/train/locomotive.glb"));
+        locomotive.castable(true);
+        locomotive.local() = glm::scale(
+            glm::translate(
+                glm::rotate(glm::mat4(1.0f),    // Identity
+                    hpi, glm::vec3(1, 0, 0)),   // Rotation
+                glm::vec3(1.0f, .30f, .0f)),    // Translation
+            glm::vec3(2.0f)                     // Scale
+        );
+    }
 
     // Trees
-    std::vector<Pose> forest;
-    forest.resize(100);
-    std::generate(forest.begin(), forest.end(), [id = 0, hpi]() mutable
-        {
-            float x = (float)(id % 10 - 5);
-            float y = (float)(id / 10 - 5);
+    for (int i = 0; i < 100; i++)
+    {
+        float x = (float)(i % 10 - 5);
+        float y = (float)(i / 10 - 5);
 
-            if (abs(x) < 2 && abs(y) < 2) {
-                x = (x > 0 ? 1 : -1) * std::max(3.0f, abs(x)) + x / 10.0f;
-                y = (y > 0 ? 1 : -1) * std::max(3.0f, abs(y)) + y / 10.0f;
-            }
-
-            glm::vec3 tr(-0.90f + x, 0.10f, -0.95f + y);  // Translation
-
-            auto transf = glm::scale(
-                glm::translate(
-                    glm::rotate(glm::mat4(1.0f),    // Identity
-                        hpi, glm::vec3(1, 0, 0)),  // Rotation
-                    tr),                    // Translation
-                glm::vec3(dstr_one(gen) * 3.0f)       // Scale
-            );
-
-            id++;
-            return transf;
+        if (abs(x) < 2 && abs(y) < 2) {
+            x = (x > 0 ? 1 : -1) * std::max(3.0f, abs(x)) + x / 10.0f;
+            y = (y > 0 ? 1 : -1) * std::max(3.0f, abs(y)) + y / 10.0f;
         }
-    );
-    m_objects.push_back({ _ObjectId::Tree, glm::vec4(0), forest });
+
+        glm::vec3 tr(-0.90f + x, 0.10f, -0.95f + y);  // Translation
+
+        auto& tree = _create_entity(_ObjectId::Tree, Model::Load("Resources/objects/tree/tree.glb"));
+        tree.castable(true);
+        tree.local() = glm::scale(
+            glm::translate(
+                glm::rotate(glm::mat4(1.0f),    // Identity
+                    hpi, glm::vec3(1, 0, 0)),   // Rotation
+                tr),                            // Translation
+            glm::vec3(dstr_one(gen) * 3.0f)     // Scale
+        );
+    }
 
     // Character
-    m_objects.push_back({ _ObjectId::Character, glm::vec4(0),
-        {
+    {
+        auto& tortle = _create_entity(_ObjectId::Character, Model::Load("Resources/objects/character/character.glb"));
+        tortle.castable(true);
+        tortle.local() = glm::translate(
+            glm::rotate(glm::mat4(1.0f),  // Identity
+                hpi, glm::vec3(1, 0, 0)), // Rotation
+            glm::vec3(-1, 0.2f, -1.2f)    // Translation
+        );
+    }
+
+    // Ground
+    for (int i = 0; i < 1024; i++) // 1024 = 32*32
+    {
+        const glm::vec2 cell_pos = glm::vec2(i % 32 - 16.0f, i / 32 - 16.0f);
+        const glm::vec3 T_pos = 0.3f * glm::vec3(cell_pos, 0);
+        const glm::vec3 T_scale = 0.3f * glm::vec3(0.5f);
+
+        auto& cell = _create_entity(_ObjectId::Grid, Model::Load(Model::SimpleShape::Quad));
+        cell.castable(true);
+        cell.local() = glm::scale(glm::translate(glm::mat4(1.0f), T_pos), T_scale);
+    }
+
+    // Cube
+    {
+        auto& cube = _create_entity(_ObjectId::Cube, Model::Load(Model::SimpleShape::Cube));
+        cube.castable(true);
+        cube.color() = glm::vec4(1.0f, 0.7f, 0.3f, 1);
+        cube.local() = glm::scale(
             glm::translate(
-                glm::rotate(glm::mat4(1.0f),  // Identity
-                    hpi, glm::vec3(1, 0, 0)), // Rotation
-                glm::vec3(-1, 0.2f, -1.2f)       // Translation
-            )
-        }
-    });
-}
-
-void ViewForest::_initFilters() {
-    m_filter.shader()
-        .attachSource(GL_VERTEX_SHADER, ShaderSource{}
-            .add_var("layout (location = 0) in", "vec3", "aPos")
-            .add_var("out", "vec2", "TexCoords")
-            .add_func("void", "main", "", R"_main_(
-                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-                float tx = aPos.x > 0 ? 1.0 : 0.0;
-                float ty = aPos.y > 0 ? 1.0 : 0.0;
-                TexCoords = vec2(tx, ty);
-            )_main_")
-        )
-        .attachSource(GL_FRAGMENT_SHADER, ShaderSource{}
-            .add_var("in", "vec2", "TexCoords")
-            .add_var("uniform", "sampler2D", "quadTexture")
-            .add_var("out", "vec4", "FragColor")
-            .add_func("void", "main", "", R"_main_(
-                vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
-                vec2 tex_offset = 1.0 / tex_size;
-                vec2 tex_id     = TexCoords/tex_offset;
-
-                if(int(tex_id.x) % 3 != 0 || int(tex_id.y) % 2 != 0) {
-                    FragColor = vec4(0, 0, 0, 1);
-                    return;
-                }
-
-                vec4 texture_color = texture(quadTexture, TexCoords);
-                vec3 night_color = vec3(0.0, 0.5f*texture_color.r + 0.5f*texture_color.g, texture_color.b);
-                FragColor = vec4(night_color.rgb, texture_color.a);
-            )_main_")
-        )
-        .link();
+                glm::mat4(1.0f), glm::vec3(0.3f, 0, 0.10f)),
+            glm::vec3(0.1f)
+        );
+    }
 }
 
 void ViewForest::_initParticles() {
-    // - Generate batch parameters
+    // Create entities
     const glm::vec3 color(1.0f, 0.7f, 0.3f);
 
-    // Define particles
-    m_fireGrid.particles.models.resize(m_fireGrid.particles.amount);
-    m_fireGrid.particles.speeds.resize(m_fireGrid.particles.amount);
-    m_fireGrid.particles.materials.resize(m_fireGrid.particles.amount);
+    for (size_t i = 0; i < m_fireGrid.amount; i++) 
+    {
+        auto spark = ManagedEntity::Create(m_fireGrid.model);
 
-    // Create batch
-    std::generate(m_fireGrid.particles.materials.begin(), m_fireGrid.particles.materials.end(), [&, particules_id = 0]() mutable -> Material
-        {
-            particules_id++;
-            float ratio = particules_id / float(m_fireGrid.particles.amount);
+        spark->color() = glm::min(glm::vec4(1.5f * i * color / (float)m_fireGrid.amount, 0) + glm::vec4(1,0,0,1), glm::vec4(1));
+        spark->local() = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+        spark->world() = glm::mat4(0.0f);
 
-            return Material{
-                glm::min(glm::vec4(1.5f * ratio * color, 0.0f) + glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))
-            };
-        }
-    );
+        m_fireGrid.particles.push_back({spark, glm::vec4(0.0f) });
+    }
 }
 
+ManagedEntity& ViewForest::_create_entity(_ObjectId id, Model::Ref model)
+{
+    m_entities[id].push_back(
+        ManagedEntity::Create(model)
+    );
+    return *m_entities[id].back();
+}
 
 // Update dynamic memory
-void ViewForest::_setParticles(float dt) {
-    // Move
-    for (int particules_id = 0; particules_id < m_fireGrid.particles.amount; particules_id++) {
-        glm::vec4& speed = m_fireGrid.particles.speeds[particules_id];
-        glm::mat4& model = m_fireGrid.particles.models[particules_id];
+void ViewForest::_setParticles(float dt) 
+{
+    for (int particules_id = 0; particules_id < (int)m_fireGrid.amount; particules_id++)
+    {
+        glm::vec4& speed = m_fireGrid.particles[particules_id].speed;
+        glm::mat4& model = m_fireGrid.particles[particules_id].entity->world();
 
         const bool hasEnded = model[0][0] < 1e-4f || model[1][1] < 1e-4f || model[2][2] < 1e-4f; // also true for first draw
 
         if (hasEnded) {
-            const int SIZE = (int)sqrt(m_fireGrid.particles.amount);
+            const int SIZE = (int)sqrt(m_fireGrid.amount);
             int x = particules_id % SIZE - SIZE / 2;
             int y = particules_id / SIZE - SIZE / 2;
 
-            model = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
-            model = glm::translate(model, glm::vec3(x * 0.7f, 50.0f, 25.0f + y * 0.5f));
+            model = glm::translate(glm::mat4(1.0f), 0.01f * glm::vec3(x * 0.7f, 50.0f, 25.0f + y * 0.5f));
             speed = glm::vec4(dstr_half(gen) / 2.0f, 0.0f, dstr_one(gen), 1.0f - dstr_one(gen) / 10.0f - 1e-2f);
         }
         else {
-            model = glm::scale(glm::translate(model, m_fireGrid.pos + dt * 100.0f * glm::vec3(speed)), glm::vec3(speed.a));
+            model = glm::scale(glm::translate(model, dt * glm::vec3(speed)), glm::vec3(speed.a));
         }
-    }
-
-    // Update
-    m_fireGrid.particles.object->poses     = m_fireGrid.particles.models;
-    m_fireGrid.particles.object->materials = m_fireGrid.particles.materials;
-}
-
-void ViewForest::_setObjects() {
-    // Grid
-    m_models[_ObjectId::Grid]->poses = m_grid->grid_cells;
-
-    // Objects
-    for (const _Object& obj : m_objects) {
-        m_models[obj.id]->poses = obj.quats;
     }
 }
 
@@ -376,6 +200,3 @@ void ViewForest::mouse_on(int x, int y) {
     m_mousePos.y = (float)y / scene.height();
 }
 
-void ViewForest::_on_resize(const SceneEvents::Resized& evt) {
-    m_filter.resize(evt.width, evt.height);
-}

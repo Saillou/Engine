@@ -100,13 +100,19 @@ Framebuffer::Type Framebuffer::type() const {
 	return m_type;
 }
 
+bool Framebuffer::isBound() const {
+	return m_bound;
+}
+
 void Framebuffer::bind() const {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId);
+	m_bound = true;
 }
 
 void Framebuffer::unbind() const {
 	m_texture_attached.unbind();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_bound = false;
 }
 
 void Framebuffer::clear() {

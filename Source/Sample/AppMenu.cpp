@@ -19,9 +19,11 @@ AppMenu::AppMenu()
     ImGui_ImplGlfw_InitForOpenGL(Service<Window>::get().backend(), true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
+    _prepare();
+
     // Events
-    _subscribe([=](const SceneEvents::PreDraw&)       { _prepare(); });
-    _subscribe([=](const SceneEvents::SceneFinished&) { _render();  });
+    _subscribe([=](const SceneEvents::RenderStarted&)  { _prepare(); });
+    _subscribe([=](const SceneEvents::RenderFinished&) { _render();  });
 }
 
 // Cleanup
@@ -36,9 +38,13 @@ AppMenu::~AppMenu()
 // Draw methods
 void AppMenu::_prepare()
 {
+    if (_frame_ready)
+        return;
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    _frame_ready = true;
 
     if (!ImGui::BeginMainMenuBar())
         return;
@@ -52,12 +58,6 @@ void AppMenu::_prepare()
         }
         if (ImGui::MenuItem("Trainmania - Desert track")) {
             Service<App>::get().changeSample(SampleId::Train);
-        }
-        if (ImGui::MenuItem("Another one bites the dust")) {
-            Service<App>::get().changeSample(SampleId::Particles);
-        }
-        if (ImGui::MenuItem("The sun like a Mandala")) {
-            Service<App>::get().changeSample(SampleId::Mandala);
         }
         if (ImGui::MenuItem("Pong revisited")) {
             Service<App>::get().changeSample(SampleId::Pong);
@@ -76,6 +76,11 @@ void AppMenu::_prepare()
 
 void AppMenu::_render()
 {
+    if (!_frame_ready)
+        return;
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    _frame_ready = false;
 }

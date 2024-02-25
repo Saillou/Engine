@@ -1,18 +1,20 @@
 #include "BaseFilter.hpp"
+#include <iostream>
 
-BaseFilter::BaseFilter() : _framebuffer(Framebuffer::Unique)
+BaseFilter::BaseFilter(): 
+    _entity(ECS::createEntity()),
+    _framebuffer(Framebuffer::Unique)
 {
-    // ..
-}
-BaseFilter::BaseFilter(Shader& sh) : 
-    _framebuffer(Framebuffer::Unique),
-    _shader(sh)
-{
-    // ..
+    _surface.mesh->setupVao();
+
+    FilterComponent componentFilter;
+    componentFilter.filter = this; // i hate this but i've no other idea
+    ECS::addComponent(_entity, componentFilter);
 }
 
-void BaseFilter::apply(Framebuffer& fIn, int texture_location) {
-    apply(fIn, fIn, texture_location);
+BaseFilter::~BaseFilter()
+{
+    ECS::destroyEntity(_entity);
 }
 
 void BaseFilter::apply(const Framebuffer& fIn, Framebuffer& fOut, int texture_location) {
@@ -45,6 +47,10 @@ void BaseFilter::resize(int width, int height) {
 
 Shader& BaseFilter::shader() {
     return _shader;
+}
+
+bool& BaseFilter::enabled() {
+    return ECS::getComponent<FilterComponent>(_entity).enabled;
 }
 
 const Framebuffer& BaseFilter::frame() const {

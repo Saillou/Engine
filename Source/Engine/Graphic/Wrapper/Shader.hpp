@@ -9,7 +9,7 @@
 
 struct Shader
 {
-	friend struct Cookable;
+	friend struct ShaderManager;
 
 	// Helper to not have to check glad documentation all the time
 	enum Type: unsigned int {
@@ -52,5 +52,3 @@ private:
 	bool m_linked = false;
 	std::unordered_map<unsigned int, ShaderSource> m_sources;
 };
-
-typedef std::unique_ptr<Shader> UShader;

@@ -9,7 +9,8 @@ namespace Thomas
     class GridSystem : public System
     {
     public:
-        void init(const glm::vec3& pos, const glm::vec2& size);
+        void init();
+        void start(const glm::vec3& pos, const glm::vec2& size);
         void update(float dt);
 
     private:

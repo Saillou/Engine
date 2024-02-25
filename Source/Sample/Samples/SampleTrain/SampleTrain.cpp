@@ -4,7 +4,7 @@
 static const struct _all_magic_constants_ 
 {
     // - World -
-    const int Ground_Size       = 200;
+    const int Ground_Size       = 50;
 
     const int   Grass_Number    = 500;
     const float Grass_Min_Scale = 0.1f;
@@ -28,47 +28,52 @@ using namespace HelperTrain;
 SampleTrain::SampleTrain() :
     m_scene(Service<Window>::get().scene())
 {
-    m_scene.lights() = { Light(glm::vec3{ 0, 0, 5 }, glm::vec4{ 1, 0.7, 0.3, 1 }) };
+    m_scene.lights = { 
+        Light(glm::vec3{ 0, 0, 5 }, glm::vec4{ 1, 0.7, 0.3, 1 }) 
+    };
 
     // Create entities
-    m_models["train"] = train();
-    m_models["grass"] = tile_with_texture("Resources/textures/grass.png");
-    m_models["earth"] = tile_with_rgba(glm::vec4(185, 122, 87, 255));
+    m_entities["train"].push_back(train());
+    ECS::getComponent<BodyComponent>(m_entities["train"].back()).transform.world = pose(m_player_data.position);
 
-    // - Setup world -
-    // Grid of earth
-    for (float x = -Ctx.Ground_Size /2.0f; x < Ctx.Ground_Size /2.0f; x++) {
-        for (float y = -Ctx.Ground_Size /2.0f; y < Ctx.Ground_Size /2.0f; y++) {
-            m_models["earth"]->poses.push_back(pose(glm::vec2(x, y)));
-        }
-    }
+    // Earth
+    m_entities["earth"].push_back(tile_with_rgba(glm::vec4(185, 122, 87, 255)));
+    ECS::getComponent<BodyComponent>(m_entities["earth"].back()).transform.world = pose_scale(glm::vec2(0, 0), (float)Ctx.Ground_Size);
 
     // Random grass
     for (int i = 0; i < Ctx.Grass_Number; i++) {
         float x = (rand() % (100*Ctx.Ground_Size))/100.0f - Ctx.Ground_Size /2.0f;
         float y = (rand() % (100*Ctx.Ground_Size))/100.0f - Ctx.Ground_Size /2.0f;
         float s = (Ctx.Grass_Max_Scale - Ctx.Grass_Min_Scale) * (rand() % 1000) / 1000.0f + Ctx.Grass_Min_Scale;
-        m_models["grass"]->poses.push_back(pose_scale(glm::vec2(x, y), s));
-    }
 
-    // Only one train
-    m_models["train"]->poses = {
-        pose(m_player_data.position)
-    };
+        m_entities["grass"].push_back(tile_with_texture("Resources/textures/grass.png"));
+        ECS::getComponent<BodyComponent>(m_entities["grass"].back()).transform.world = pose_scale(glm::vec2(x, y), s);
+    }
 
     // Enable events
     _subscribe(&SampleTrain::_on_update);
     _subscribe(&SampleTrain::_on_key_pressed);
+    _subscribe([=](const SceneEvents::PostDraw&) { 
+        _drawInfo();
+    });
 
     // Start
     m_timer.tic();
 }
 
+SampleTrain::~SampleTrain()
+{
+    for (auto v_entity : m_entities) {
+        for (auto entity : v_entity.second) {
+            ECS::destroyEntity(entity);
+        }
+    }
+}
+
 // Events
-void SampleTrain::_on_update(const SceneEvents::Draw&) {
+void SampleTrain::_on_update(const CommonEvents::StateUpdated&) {
     _compute_physics();
-    _drawScene();
-    _drawInfo();
+    _update_camera();
 }
 
 void SampleTrain::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
@@ -79,8 +84,8 @@ void SampleTrain::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         float val = 0.0f;
         switch (evt.key) {
-        case KeyCode::ArrowUp:   val = -1.0f; break;
-        case KeyCode::ArrowDown: val = +1.0f; break;
+            case KeyCode::ArrowUp:   val = -1.0f; break;
+            case KeyCode::ArrowDown: val = +1.0f; break;
         }
         if (std::abs(m_player_data.linear_speed) < Ctx.Speed_Linear_Max) {
             m_player_data.linear_speed += Ctx.Accel_Linear * val;
@@ -91,8 +96,8 @@ void SampleTrain::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
     {
         float val = 0.0f;
         switch (evt.key) {
-        case KeyCode::ArrowLeft:  val = -1.0f; break;
-        case KeyCode::ArrowRight: val = +1.0f; break;
+            case KeyCode::ArrowLeft:  val = -1.0f; break;
+            case KeyCode::ArrowRight: val = +1.0f; break;
         }
         m_player_data.angle_speed += m_player_data.linear_speed * Ctx.Accel_Angular * val;
     }
@@ -114,34 +119,27 @@ void SampleTrain::_compute_physics() {
     m_player_data.angle_speed  *= Ctx.Friction_Air;
 
     // Update model
-    m_models["train"]->poses.front() = pose_rot(m_player_data.position, m_player_data.angle);
+    ECS::getComponent<BodyComponent>(m_entities["train"].back()).transform.world = pose_rot(m_player_data.position, m_player_data.angle);
 
     m_timer.tic();
 }
 
-void SampleTrain::_drawScene() {
+void SampleTrain::_update_camera() {
     // Set camera
     m_camera_data.distance = 1.0f - m_player_data.linear_speed / Ctx.Speed_Linear_Max;
 
     const glm::vec3 train_pos = glm::vec3(pose(m_player_data.position)[3]);
 
-    m_scene.camera().direction = train_pos;
-    m_scene.camera().position.x = train_pos.x + m_camera_data.distance * cos(m_player_data.angle);
-    m_scene.camera().position.y = train_pos.y + m_camera_data.distance * sin(m_player_data.angle);
-    m_scene.camera().position.z = 0.25f * (1.0f - m_player_data.linear_speed/Ctx.Speed_Linear_Max);
-
-    // Draw items
-    Renderer& render = m_scene.renderer();
-
-    for (auto& entity : m_models) {
-        render.draw(Render::DrawType::Shadows, entity.second);
-    }
+    m_scene.camera.direction = train_pos;
+    m_scene.camera.position.x = train_pos.x + m_camera_data.distance * cos(m_player_data.angle);
+    m_scene.camera.position.y = train_pos.y + m_camera_data.distance * sin(m_player_data.angle);
+    m_scene.camera.position.z = 0.25f * (1.0f - m_player_data.linear_speed/Ctx.Speed_Linear_Max);
 }
 
 void SampleTrain::_drawInfo() {
     m_menu.createSection("Camera");
-    m_menu.addContent("Camera", "position",  m_scene.camera().position);
-    m_menu.addContent("Camera", "direction", m_scene.camera().direction);
+    m_menu.addContent("Camera", "position",  m_scene.camera.position);
+    m_menu.addContent("Camera", "direction", m_scene.camera.direction);
 
     m_menu.createSection("Player");
     m_menu.addContent("Player", "position", m_player_data.position);

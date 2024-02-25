@@ -1,6 +1,8 @@
 #include "Window.hpp"
 
+#include "../Framework/Core/ECS.hpp"
 #include "../Events/CommonEvents.hpp"
+#include "ShaderManager.hpp"
 
 #include <vector>
 #include <memory>
@@ -14,6 +16,17 @@ Window::Window(int width, int height, const char* title, bool start_fs) :
 {
     // Create window
     _init(title);
+
+    // Singletons
+    ECS::init();
+    ShaderManager::Init();
+
+    // Events
+    _set_events();
+
+    // Basic scene
+    m_scene = std::make_shared<Scene>();
+    _resize(m_width, m_height);
 
     // Mouse buttons
     for (unsigned int btn = 0; btn <= GLFW_MOUSE_BUTTON_LAST; btn++) {
@@ -42,11 +55,10 @@ bool Window::update() {
     if (glfwWindowShouldClose(m_window))
         return false;
 
-    // Render
+    // Render | Overlay
     if (m_scene) {
         m_scene->run();
     }
-    Event::Emit(SceneEvents::SceneFinished());
 
     glfwSwapBuffers(m_window);
 
@@ -129,11 +141,11 @@ void Window::_init(const char* title) {
     // Init GLFW
     glfwInit();
 
-    // OpenGL 3.3 (for best ratio compatibility/features)
+    // Try to use OpenGL 3.3 for best ratio compatibility/features
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 16); // AA
+    glfwWindowHint(GLFW_SAMPLES, 4); // AA
 
     m_window = glfwCreateWindow(m_width, m_height, title, m_is_fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!m_window)
@@ -144,21 +156,11 @@ void Window::_init(const char* title) {
     glfwMakeContextCurrent(m_window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress); // Load gl entry points
     glfwSwapInterval(1);                                // Enable v-sync
-
-    // Events
-    _set_events();
-
-    // Basic scene
-    m_scene = std::make_shared<Scene>();
-    _resize(m_width, m_height);
 }
 
 // Private
 void Window::_resize(int width, int height) {
-    TextEngine::SetViewport(0, 0, width, height);
-
     if (m_scene) {
-        m_scene->camera().screenSize = glm::vec2(width, height);
         m_scene->resize(width, height);
     }
 

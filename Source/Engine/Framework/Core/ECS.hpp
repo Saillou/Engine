@@ -24,13 +24,16 @@ struct ECS
     static void removeComponent(Entity entity);
 
     template<typename T>
+    static bool hasComponent(Entity entity);
+
+    template<typename T>
     static T& getComponent(Entity entity);
 
     template<typename T>
     static ComponentType getComponentType();
 
-    template<typename T>
-    static std::shared_ptr<T> registerSystem();
+    template<typename T, typename... Args>
+    static std::shared_ptr<T> registerSystem(Args&&... args);
 
     template<typename T>
     static void setSystemSignature(Signature signature);
@@ -72,6 +75,12 @@ inline void ECS::removeComponent(Entity entity)
 }
 
 template<typename T>
+inline bool ECS::hasComponent(Entity entity)
+{
+    return ComponentManager::hasComponent<T>(entity);
+}
+
+template<typename T>
 inline T& ECS::getComponent(Entity entity)
 {
     return ComponentManager::getComponent<T>(entity);
@@ -83,10 +92,10 @@ inline ComponentType ECS::getComponentType()
     return ComponentManager::getComponentType<T>();
 }
 
-template<typename T>
-inline std::shared_ptr<T> ECS::registerSystem()
+template<typename T, typename... Args>
+inline std::shared_ptr<T> ECS::registerSystem(Args&&... args)
 {
-    return SystemManager::registerSystem<T>();
+    return SystemManager::registerSystem<T>(std::forward<Args>(args)...);
 }
 
 template<typename T>

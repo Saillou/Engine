@@ -8,7 +8,9 @@
 
 Shader::Shader() : 
     m_id(glCreateProgram()) 
-{ }
+{  
+}
+
 Shader::~Shader() {
     glDeleteProgram(m_id);
 }
@@ -48,7 +50,7 @@ Shader& Shader::link() {
     // Errors
     int success;
     glGetProgramiv(m_id, GL_LINK_STATUS, &success);
-    m_linked = !!success;
+    m_linked = success != 0;
 
     char infoLog[512];
     if (!m_linked) {

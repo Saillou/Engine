@@ -11,7 +11,6 @@
 #include "../Style/StyleSheet.hpp"
 #include "../../Scene.hpp"
 #include "../../../../Events/CommonEvents.hpp"
-#include "../../../../Utils/Filter/CopyFilter.hpp"
 
 struct Layout : 
     public Widget

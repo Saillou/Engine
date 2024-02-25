@@ -12,61 +12,75 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Pose.hpp"
 #include "Mesh.hpp"
-#include "Material.hpp"
 
 struct Model
 {
-    friend struct Renderer;
+    friend struct RenderSystem;
+    friend struct ParticleSystem;
 
-    enum SimpleShape {
-        Custom,
+    enum class SimpleShape {
         Quad, Cube, Sphere
     };
 
     typedef std::shared_ptr<Model> Ref;
 public:
     // Constructors
-    static Ref Create(SimpleShape shape = SimpleShape::Custom);
-    static Ref Create(const std::string& path);
+    static Ref Create(int customId);
+    static Ref Load(int customId);
+    static Ref Load(SimpleShape shape);
+    static Ref Load(const std::string& path);
+
+    Ref Clone();
+
+    static void ClearCache();
 
     virtual ~Model() = default;
+
+    // Data tree for storing organized meshes
+    struct Node {
+        glm::mat4 transform = glm::mat4(1.0f);
+        std::vector<std::shared_ptr<Node>> children = {};
+
+        // Readonly to force the usage of 'addMesh' method (and not fuck with VAOs)
+        const std::vector<std::shared_ptr<Mesh>>& meshes() {
+            return _meshes;
+        }
+    private:
+        friend Model;
+        friend struct MeshIterator;
+
+        std::vector<std::shared_ptr<Mesh>> _meshes = {};
+    };
+
+    std::shared_ptr<Node> root = nullptr;
 
     // Methods
     void draw(Shader& shader) const;
     void drawElements(Shader& shader) const;
 
-    // Helpers
-    Ref Clone() const;
-    std::vector<glm::mat4> GetMeshesPoses() const;
+    void addMesh(std::shared_ptr<Mesh> mesh, std::shared_ptr<Node>& node);
 
-    // Data tree for storing organized meshes
-    struct Node {
-        glm::mat4 transform = glm::mat4(1.0f);
-        std::vector<std::unique_ptr<Mesh>> meshes = {};
-        std::vector<std::unique_ptr<Node>> children = {};
-    };
-
-    std::unique_ptr<Node> root = nullptr;
-
-    // Local info
-    glm::mat4 localPose = glm::mat4(1.0f);
-    Material localMaterial = {};
-
-    // World info
-    std::vector<Pose>     poses = {};
-    std::vector<Material> materials = {};
+    // Getters
+    const std::string& uuid() const;
 
 protected:
-    Model(SimpleShape shape = SimpleShape::Custom);
+    Model();
+    Model(SimpleShape shape);
     Model(const std::string& path);
 
     void _loadModel(const std::string& path);
-    void _processNode(const aiNode* inNode, const aiScene* scene, std::unique_ptr<Node>& parent);
-    void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::unique_ptr<Mesh>& mesh);
-    static void _cloneMesh(const std::unique_ptr<Mesh>& src, std::unique_ptr<Mesh>& dst);
+    void _processNode(const aiNode* inNode, const aiScene* scene, std::shared_ptr<Node>& parent);
+    void _processMesh(const aiMesh* inMesh, const aiScene* scene, std::shared_ptr<Mesh>& mesh);
 
+    void _setMeshVao(Mesh& mesh) const;
     void _setBatch(const std::vector<glm::mat4>& models, const std::vector<glm::vec4>& colors = {});
-    void _updateInternalBatch(); // _setBatch with poses and materials members
+
+    Buffer m_colors;
+    Buffer m_instances;
+
+private:
+    static std::unordered_map<std::string, Ref> _s_model_cache;
+    
+    std::string _uuid = "";
 };

@@ -17,12 +17,12 @@ void Button::draw(Scene& scene) {
 
     if (isMouseClicked())
     {
-        _surface->material.diffuse_color = style().clicked_background();
+        _surface->diffuse_color = style().clicked_background();
         content.style().foreground.setValue(style().clicked_foreground());
     }
     else
     {
-        _surface->material.diffuse_color = isMouseOver() ? style().hovered_background() : style().background();
+        _surface->diffuse_color = isMouseOver() ? style().hovered_background() : style().background();
         content.style().foreground.setValue(isMouseOver() ? style().hovered_foreground() : style().foreground());
     }
 
@@ -41,6 +41,6 @@ void Button::draw(Scene& scene) {
         content.y() += (h() - content.h()) / 2.0f;
 
     // Draw
-    scene.renderer().quad(*_surface);
+    scene.overlayer().quad(*_surface); // TODO: Use component instead
     content.draw(scene);
 }

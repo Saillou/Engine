@@ -8,20 +8,21 @@
 class SampleTrain : public Sample
 {
 public:
-    SampleTrain();
+     SampleTrain();
+    ~SampleTrain();
 
 private:
     void _compute_physics();
-    void _drawScene();
+    void _update_camera();
     void _drawInfo();
 
-    void _on_update(const SceneEvents::Draw&);
+    void _on_update(const CommonEvents::StateUpdated&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // - Members -
     Timer::Chronometre m_timer;
     UiTrain m_menu;
-    std::unordered_map<std::string, Model::Ref> m_models;
+    std::unordered_map<std::string, std::vector<Entity>> m_entities;
 
     struct {
         float distance = 1.0f;

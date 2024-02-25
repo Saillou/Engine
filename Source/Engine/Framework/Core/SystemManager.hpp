@@ -16,8 +16,8 @@ struct SystemManager
 {
     static SystemManager& get();
 
-    template<typename T>
-    static std::shared_ptr<T> registerSystem();
+    template<typename T, typename... Args>
+    static std::shared_ptr<T> registerSystem(Args&&... args);
 
     template<typename T>
     static void setSignature(Signature signature);
@@ -34,8 +34,8 @@ private:
     std::unordered_map<const char*, std::shared_ptr<System>>    m_systems{};
 };
 
-template<typename T>
-inline std::shared_ptr<T> SystemManager::registerSystem()
+template<typename T, typename... Args>
+inline std::shared_ptr<T> SystemManager::registerSystem(Args&&... args)
 {
     SystemManager& manager = get();
 
@@ -43,7 +43,7 @@ inline std::shared_ptr<T> SystemManager::registerSystem()
 
     assert(manager.m_systems.find(typeName) == manager.m_systems.end() && "System is already registered.");
 
-    auto system = std::make_shared<T>();
+    auto system = std::make_shared<T>(std::forward<Args>(args)...);
     manager.m_systems.insert({ typeName, system });
 
     return system;

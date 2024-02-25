@@ -1,4 +1,5 @@
 #include "Layout.hpp"
+#include <iostream>
 
 Layout::Layout(Scene& scene) :
     Widget(Style::Tag::Layout, EventListened::MouseMove | EventListened::MouseButton),
@@ -98,6 +99,8 @@ StyleSheet& Layout::styleSheet() {
 }
 
 void Layout::draw(Scene& scene) {
+    m_scene.overlayer().quad(*_surface);
+
     for (auto& widget : m_widgets) {
         widget->draw(m_scene);
     }

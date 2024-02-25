@@ -3,55 +3,56 @@
 #include "../../_imgui/imgui.h"
 #include "../Sample.hpp"
 
+#include <Engine/Utils/Filter/BaseFilter.hpp>   
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
+
 struct SampleSnow : 
     public Sample 
 {
-     SampleSnow();
-     ~SampleSnow();
+    SampleSnow();
+    ~SampleSnow();
 
 private:
     // Events
     void _update(const CommonEvents::StateUpdated&);
-    void _draw(const SceneEvents::Draw&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);
 
     // Methods
-    void _add_shaders(const std::string&);
-    Shader& _create_triangle_shader(Shader&);
-    void _push_triangle_mesh(std::unique_ptr<Model::Node>&, const PrimitiveHelper::Triangle&);
+    void _add_flake_shader();
+    void _init_filter();
+
+    ManagedEntity& _create_entity(const std::string& category, Model::Ref);
+    void _destroy_entity(const std::string& category, Entity);
 
     void _generate_flakes();
     void _compute_physics(float delta_time_seconds);
-    void _update_models();
 
     bool _is_flake_colliding(const glm::mat4& flake_pose, bool accurate_check) const;
-
-    void _draw_debug(const std::string& model_name);
-
 
     // Members
     Scene& m_scene;
     Timer::Chronometre m_timer;
-    std::unordered_map<std::string, Model::Ref> m_models;
-    std::unordered_map<std::string, Shader> m_shaders;
+    std::unordered_map<std::string, std::vector<SharedEntity>> m_entities;
 
     float m_cam_theta = 0.0f;
     float m_cam_distance = -4.0f;
 
     struct _Flake {
-        glm::mat4 pose = glm::mat4(1.0f);
-        size_t id      = 0;
-        bool accurate  = false;
-        bool moving    = true;
+        Entity id       = 0;
+        glm::mat4& pose = glm::mat4(1.0f);
+        bool accurate   = false;
+        bool moving     = true;
     };
     std::deque<_Flake> m_flakes;
+    glm::mat4 m_flake_local  = glm::mat4(1.0f);
+
+    BaseFilter m_filter;
 
     // -- Ui --
     struct Ui
     {
         void show();
-
-        bool show_debug = false;
+        bool gray = false;
 
 #ifdef _DEBUG 
         bool loop = false;

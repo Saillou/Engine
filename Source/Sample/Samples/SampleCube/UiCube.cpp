@@ -1,5 +1,5 @@
 #include "UiCube.hpp"
-
+#include <glm/gtx/string_cast.hpp>
 #include <Engine/Framework/Service.hpp>
 #include <Engine/Graphic/Window.hpp>
 
@@ -59,16 +59,12 @@ void UiCube::setState(UiCube::State state) {
         break;
 
     case State::InGame:
-        m_main_frame.layout().style().opacity.setValue(1.0f);
         m_main_frame.layout().style().background.setValue(Style::Transparent());
-
         m_main_frame.layout().add(m_layouts["InGame"]);
         break;
 
     case State::Pause:
-        m_main_frame.layout().style().opacity.setValue(0.9f);
         m_main_frame.layout().style().background.setValue(glm::vec4(0.1f, 0.1f, 0.15f, 0.5f));
-
         m_main_frame.layout().add(m_layouts["Pause"]);
         break;
     }
@@ -94,8 +90,8 @@ void UiCube::draw(const WidgetEvents::Draw& msg) {
 
     switch (m_state) {
     case State::InGame:
-        m_layouts["InGame"]->find<Text>("#Ig1")->at(0) = "Cam pos: " + glm::to_string(scene.camera().position);
-        m_layouts["InGame"]->find<Text>("#Ig1")->at(1) = "Cam dir: " + glm::to_string(scene.camera().direction);
+        m_layouts["InGame"]->find<Text>("#Ig1")->at(0) = "Cam pos: " + glm::to_string(scene.camera.position);
+        m_layouts["InGame"]->find<Text>("#Ig1")->at(1) = "Cam dir: " + glm::to_string(scene.camera.direction);
         break;
     }
 }
@@ -111,14 +107,13 @@ void UiCube::_updateCount(int delta) {
 // ---------- Helpers ----------
 StyleSheet UiCube::_create_style() const
 {
-    const glm::vec4 primary_color    = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+    const glm::vec4 primary_color    = glm::vec4(0.1f, 0.1f, 0.15f, 0.7f);
     const glm::vec4 secondary_color  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
     const glm::vec4 main_text_color  = glm::vec4(0.90f, 0.90f, 0.93f, 1.0f);
     const glm::vec4 foreground_color = glm::vec4(0.66f, 0.66f, 0.70f, 1.0f);
 
     return StyleSheet::CreateDefault()
         .addRule(Style::Tag::Layout, Style()
-            .opacity.setValue(0.90f)
             .background.setValue(primary_color)
         )
         .addRule(Style::Tag::Button, Style()
@@ -172,9 +167,7 @@ void UiCube::_create_widgets(
     txts["Count"]  = Text::Create(std::to_string(m_lights_count));
     txts["Ig1"]    = Text::WithClass<Info>::Create("");
     txts["Ig2"]    = Text::WithClass<Info>::Create(Text::Block{
-        "Press [space] to pause",
-        "Press [R] to dis/enable filters",
-        "Press [T] to dis/enable casters"
+        "Press [escape] to pause"
     });
 }
 

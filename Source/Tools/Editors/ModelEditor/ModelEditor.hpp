@@ -2,6 +2,7 @@
 
 #include "../Editor.hpp"
 #include "ModelEditorMenu.hpp"
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 class ModelEditor : public Editor
 {
@@ -14,7 +15,7 @@ public:
     void onUpdate() override;
 
 private:
-    Model::Ref m_center;
-    Model::Ref m_model;
+    SharedEntity m_center;
+    SharedEntity m_model;
     ModelEditorMenu m_menu;
 };

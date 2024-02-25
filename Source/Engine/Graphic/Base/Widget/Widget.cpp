@@ -1,6 +1,5 @@
 #include "Widget.hpp"
 #include "Layout/Layout.hpp"
-#include "../../../Utils/Physic/RayCaster.hpp"
 
 Widget::Widget(Style::Tag tag, int evt):
 	_tag(tag),
@@ -8,6 +7,7 @@ Widget::Widget(Style::Tag tag, int evt):
 {
 	// All screen by default
 	_surface = std::make_unique<Quad>();
+	_surface->mesh->setupVao();
 }
 
 void Widget::_setParent(Widget* child, Layout* parent) {
@@ -68,7 +68,7 @@ void Widget::_applyStyle() {
 	if(_style.hint_w.hasValue()) w() = _style.hint_w();
 	if(_style.hint_h.hasValue()) h() = _style.hint_h();
 
-	_surface->material.diffuse_color = _style.background();
+	_surface->diffuse_color = _style.background();
 }
 
 // Events propagated
@@ -116,12 +116,12 @@ Quad& Widget::surface() {
 }
 
 // Just to be shorter
-float& Widget::x() { return _surface->x(); }
-float& Widget::y() { return _surface->y(); }
-float& Widget::w() { return _surface->w(); }
-float& Widget::h() { return _surface->h(); }
+float& Widget::x() { return _surface->x; }
+float& Widget::y() { return _surface->y; }
+float& Widget::w() { return _surface->w; }
+float& Widget::h() { return _surface->h; }
 
-float Widget::x() const { return _surface->x(); }
-float Widget::y() const { return _surface->y(); }
-float Widget::w() const { return _surface->w(); }
-float Widget::h() const { return _surface->h(); }
+float Widget::x() const { return _surface->x; }
+float Widget::y() const { return _surface->y; }
+float Widget::w() const { return _surface->w; }
+float Widget::h() const { return _surface->h; }

@@ -42,7 +42,7 @@ private:
 
     Array m_vao;
     Buffer m_vbo;
-    Shader m_text_shader;
+    Shader& m_text_shader;
     std::unordered_map<GLchar, _Character> m_char_map;
 
     int m_x = 0;

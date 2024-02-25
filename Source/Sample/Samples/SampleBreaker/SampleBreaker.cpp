@@ -1,167 +1,137 @@
 #include "SampleBreaker.hpp"
 
-#include <Engine/Framework/Service.hpp>
-#include <Engine/Framework/Core/ECS.hpp>
-#include <Engine/Utils/Physic/Collider.hpp>
-
-#include "ECS/Components/Transform.h"
-#include "ECS/Components/RenderComponent.h"
-#include "ECS/Components/HumanController.h"
-#include "ECS/Components/PlayerController.h"
-#include "ECS/Components/Force.h"
-#include "ECS/Components/Bounce.h"
-#include "ECS/Components/Collider.h"
-
-#include "ECS/Systems/RenderSystem.h"
-
-#include "Objects/Player.h"
-#include "Objects/Ball.h"
-
 SampleBreaker::SampleBreaker() :
     m_scene(Service<Window>::get().scene())
 {
-    initLight();
-    initCamera();
-    initECS();
-    initGameObjects();
+    _init_scene();
 
     // Enable events
-    _subscribe(&SampleBreaker::_update);
     _subscribe(&SampleBreaker::_on_key_pressed);
+    _subscribe(&SampleBreaker::_update);
 
-    // Go
     m_timer.tic();
 }
 
-void SampleBreaker::initLight()
+void SampleBreaker::_init_scene()
 {
-    m_scene.lights() = { {glm::vec3(-1.0f, -2.0f, 2.50f), glm::vec4(1.0f) } };
-}
+    // Scene
+    m_scene.lights = { 
+        { glm::vec3(0.0f, 0.5f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) },
+        { glm::vec3(0.0f, 0.5f, -1.7f), glm::vec4(0.0f, 0.7f, 1.0f, 1.0f) },
+    };
 
-void SampleBreaker::initCamera()
-{
-    m_scene.camera().position = glm::vec3(0, -6.f, -6.f);
-    m_scene.camera().direction = glm::vec3(0, 0, 0);
-}
+    // Camera
+    m_scene.camera.position  = glm::vec3(0, 8.0f, -3.0f);
+    m_scene.camera.direction = glm::vec3(0, 0, 0);
 
-void SampleBreaker::initECS()
-{
-    ECS::registerComponent<Breaker::Transform>();
-    ECS::registerComponent<Breaker::RenderComponent>();
-    ECS::registerComponent<PlayerController>();
-    ECS::registerComponent<HumanController>();
-    ECS::registerComponent<Force>();
-    ECS::registerComponent<Bounce>();
-    ECS::registerComponent<ColliderComponent>();
+    // Game elements
+    m_ball.setPos(glm::vec3(0.0f, 0.0f, 0.0f));
+    m_player.setPos(glm::vec3(0.0f, 0.0f, -2.0f));
+    m_wall_left.setPos(glm::vec3(-2.0f, 0.0f, 0.0f));
+    m_wall_right.setPos(glm::vec3(+2.0f, 0.0f, 0.0f));
 
-    m_renderSystem              = ECS::registerSystem<RenderSystem>();
-    m_playerControllerSystem    = ECS::registerSystem<PlayerControllerSystem>();
-    m_humanControllerSystem     = ECS::registerSystem<HumanControllerSystem>();
-    m_forceSystem               = ECS::registerSystem<ForceSystem>();
-    m_bounceSystem              = ECS::registerSystem<BounceSystem>();
-    m_colliderSystem            = ECS::registerSystem<CollideSystem>();
+    m_ball.speed = glm::vec3(+1.0f, 0.0f, -2.0f) * 0.001f;
 
-    m_renderSystem->init();
-    m_playerControllerSystem->init();
-    m_humanControllerSystem->init();
-    m_forceSystem->init();
-    m_bounceSystem->init();
-    m_colliderSystem->init();
-}
+    // Bricks
+    std::vector<glm::vec4> brick_colors = {
+        glm::vec4(1,0,0,0.7f),
+        glm::vec4(0,1,0,0.7f),
+        glm::vec4(0,1,1,0.7f),
+        glm::vec4(1,1,0,0.7f),
+        glm::vec4(1,0,1,0.7f),
+    };
 
-void SampleBreaker::initGameObjects()
-{
-    m_ball = std::make_unique<Ball>(glm::vec3(0.f,0.f,1.f));
-    m_ball->setForce({ 0.0f, 0.0f, -0.5f });
+    const int n_rows = 8;
+    const int n_cols = (int)brick_colors.size();
 
-    m_player = std::make_unique<Player>(glm::vec3(0.0f, 0.0f, -2.0f));
-    m_player->enableControls();
-}
 
-// Events
-void SampleBreaker::_update(const SceneEvents::Draw&)
-{
-    const float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f / 1000.f;
+    for (int i_rows = 0; i_rows < n_rows; i_rows++) {
+        for (int i_cols = 0; i_cols < n_cols; i_cols++) {
+            glm::vec3 pos(0.0f);
+            pos.z = (i_cols - n_cols / 2.0f) * 0.15f + 1.5f;
+            pos.x = (i_rows - n_rows / 2.0f) * 0.5f + 0.25f;
 
-    if (m_playerControllerSystem) {
-        m_playerControllerSystem->update(dt_ms);
+            Brick brick(pos);
+            brick.entity().color() = brick_colors[i_cols];
+            m_bricks.emplace(brick.id(), std::move(brick));
+        }
     }
     
-    if (m_colliderSystem) {
-        m_colliderSystem->update(dt_ms);
+}
+
+// - Methods -
+void SampleBreaker::_physics(float dt_ms) 
+{
+    // Integrate speed without hindrances
+    glm::vec3 new_ball_pos = m_ball.pos() + m_ball.speed * dt_ms;
+
+    // Try to move the ball and check collision
+    m_ball.setPos(new_ball_pos);
+    m_scene.collider().check(m_ball.id());
+
+    // Nothing to change
+    if (!m_ball.entity().is_colliding())
+        return;
+
+    // Solve constraints
+    const auto& collide = ECS::getComponent<CollideComponent>(m_ball.id());
+
+    // Assuming only one interaction per frame
+    Entity hidrance(collide.hit_entities.front());
+
+    if (hidrance == m_wall_left.id() || hidrance == m_wall_right.id()) {
+        m_ball.speed.x *= -1.0f;
+    }
+    else if (hidrance != m_player.id()) { // If not wall, not player, let's assume it's a brick
+        m_ball.speed.z *= -1.0f;
+        _destroy_brick(hidrance);
+    }
+    else {
+        const BodyComponent& body(ECS::getComponent<BodyComponent>(hidrance));
+
+        glm::vec3 hindrance_pos = glm::vec3(body.transform.world[3]);
+        m_ball.speed = glm::length(m_ball.speed) * glm::normalize(m_ball.pos() - hindrance_pos);
     }
 
-    if (m_bounceSystem) {
-        m_bounceSystem->update(dt_ms);
-    }
+    // New position because of hindrances
+    m_ball.setPos(m_ball.pos() + m_ball.speed * dt_ms);
+}
 
-    if (m_forceSystem) {
-        m_forceSystem->update(dt_ms);
-    }
+void SampleBreaker::_destroy_brick(Entity entity) 
+{
+    if (m_bricks.find(entity) == m_bricks.cend())
+        return;
 
-    if (m_renderSystem) {
-        m_renderSystem->update(m_scene.renderer());
-    }
+    m_bricks.erase(entity);
+}
 
-    m_ui.show();
+
+// - Events -
+void SampleBreaker::_update(const CommonEvents::StateUpdated&)
+{
+    float dt_ms = m_timer.elapsed<Timer::microsecond>() / 1000.0f;
+
+    m_player.move();
+    m_ball.animate(dt_ms);
+
+    _physics(dt_ms);
+
+    m_scene.lights.front().position = m_ball.pos() + glm::vec3(0, 1.5f, 0);
     m_timer.tic();
 }
 
-void SampleBreaker::_on_key_pressed(const CommonEvents::KeyPressed& evt) {
-    Scene& scene = Service<Window>::get().scene();
-
+void SampleBreaker::_on_key_pressed(const CommonEvents::KeyPressed& evt) 
+{
     if (evt.action != InputAction::Pressed && evt.action != InputAction::Repeated)
         return;
 
-    // - Move player -
+    switch (evt.key) 
     {
-        if (m_humanControllerSystem) {
-            m_humanControllerSystem->update(evt.key);
-        }
-    }
+        // Player actions
+        case KeyCode::ArrowLeft:  m_player.next_action = Player::Action::Left; break;
+        case KeyCode::ArrowRight: m_player.next_action = Player::Action::Right; break;
 
-    // - Move camera -
-    {
-        glm::vec3 dir(0, 0, 0);
-
-        switch (evt.key) {
-            case 'D': dir.x = -1.0f; break;
-            case 'A': dir.x = +1.0f; break;
-
-            case 'W': dir.y = -1.0f; break;
-            case 'S': dir.y = +1.0f; break;
-
-            case 'Q': dir.z = +1.0f; break;
-            case 'E': dir.z = -1.0f; break;       
-
-            case 'Y':
-                if (m_player)
-                    m_ball->setForce({ 0.f,0.f,+0.5f });
-                break;
-            case 'U':
-                if (m_player)
-                    m_ball->setForce({0.f,0.f,0.f});
-                break;
-            case 'I':
-                if (m_player)
-                    m_ball->setForce({ 0.f,0.f,-0.5f });
-                break;
-        }
-
-        if (dir != glm::vec3(0, 0, 0)) {
-            m_theta    += 0.01f * dir.x;
-            m_distance += 0.05f * dir.y;
-
-            scene.camera().position.x = m_distance * sin(m_theta);
-            scene.camera().position.y = m_distance * cos(m_theta);
-            scene.camera().position.z += 0.05f * dir.z;
-        }
-    }
-
-    // - State -
-    {
-        switch (evt.key) {
-            case KeyCode::Escape: wantQuit = true;
-        }
+        // Game actions
+        case KeyCode::Escape: wantQuit = true;
     }
 }

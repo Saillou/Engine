@@ -6,6 +6,7 @@
 #include "TrainGame/Engine/Components/Transform.h"
 #include "TrainGame/Engine/Components/Grid.h"
 #include "TrainGame/Engine/Components/TrainController.h"
+#include "TrainGame/TrainGame/TrainGameModels.hpp"
 
 #include "TrainGame/TrainGame/Grid.hpp" // temporary, need it to place entities correctly
 
@@ -24,11 +25,10 @@ namespace Thomas
         OldGrid::initAtPosition({ 0.f,0.f,0.15f }, { 0.1f,0.1f });
 
         {
-            Entity ent = ECS::createEntity();
+            Entity ent = ECS::createEntity(); // Well ok, but where do you destroy it?
 
             Transform transform;
             transform.position = { 0.f, 0.f,1.f };
-            //transform.scale     = { 1.f,1.f,1.f };
             transform.scale = { 0.05f,0.05f,0.05f };
             transform.rotation = { 0.f, 0.f, 0.f };
             ECS::addComponent(ent, transform);
@@ -36,8 +36,18 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::CubeBasic;
             renderComponent.mobility = RenderComponent::Mobility::Dynamic;
-            renderComponent.material.diffuse_color = { 1.f,1.f,1.f,1.f };
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load(Model::SimpleShape::Cube);
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            ParticleComponent particle;
+            particle.type = ParticleComponent::Type::Solid;
+            particle.elements = { ParticleComponent::Element{glm::vec4(1.0f),glm::mat4(1.0f)} };
+            ECS::addComponent(ent, particle);
 
             TrainController trainController;
             trainController.m_points.push_back({ OldGrid::getPosition(x + 0, y + 0).x, OldGrid::getPosition(x + 0, y + 0).y, z }); // turn
@@ -78,7 +88,7 @@ namespace Thomas
 
         for (size_t i = 0; i < 1; i++)
         {
-            Entity ent = ECS::createEntity();
+            Entity ent = ECS::createEntity(); // .... memory management .... 
 
             Transform transform;
             transform.position = { 0.5f * i, 0.5f * i,1.f };
@@ -90,6 +100,16 @@ namespace Thomas
             renderComponent.modelId = ModelId::Locomotive;
             renderComponent.mobility = RenderComponent::Mobility::Dynamic;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/locomotive.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
 
             TrainController trainController;
             trainController.m_points.push_back({ OldGrid::getPosition(x + 0, y + 0).x, OldGrid::getPosition(x + 0, y + 0).y, z }); // turn
@@ -146,6 +166,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::TrackRight;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_right.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         // bottom horizontal tracks
@@ -162,6 +192,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -176,6 +216,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -190,6 +240,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -204,6 +264,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -218,6 +288,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -232,6 +312,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -246,6 +336,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         // left vertical tracks
@@ -262,6 +362,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -276,6 +386,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -290,6 +410,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -304,6 +434,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -318,6 +458,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -332,6 +482,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::TrackRight;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_right.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         // top horizontal tracks
@@ -348,6 +508,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -362,6 +532,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -376,6 +556,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -390,6 +580,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -404,6 +604,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -418,6 +628,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -432,6 +652,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -446,6 +676,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::TrackLeft;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_left.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         // right vertical tracks
@@ -462,6 +702,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -476,6 +726,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -490,6 +750,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -504,6 +774,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -518,6 +798,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::Track;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_forward.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
 
         {
@@ -532,6 +822,16 @@ namespace Thomas
             RenderComponent renderComponent;
             renderComponent.modelId = ModelId::TrackLeft;
             ECS::addComponent(ent, renderComponent);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load("Resources/objects/train/track_left.glb");
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = transform.getMat4();
+            ECS::addComponent(ent, bodyComponent);
+
+            DrawComponent drawComponent;
+            drawComponent.type = DrawComponent::Solid;
+            ECS::addComponent(ent, drawComponent);
         }
     }
 

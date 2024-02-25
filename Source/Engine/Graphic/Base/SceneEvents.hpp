@@ -5,23 +5,16 @@
 // Define events available
 struct SceneEvents : public Event {
     enum _Type {
-        Draw_ = 1024,
-        PreDraw_,
+        RenderStarted_ = 1024,
         PostDraw_,
         RenderFinished_,
-        SceneFinished_,
         Resized_,
     };
 
     // -- Inputs --
-    struct Draw : public _Base {
-        Draw():
-            _Base(_Type::Draw_)
-        {};
-    };
-    struct PreDraw : public _Base {
-        PreDraw() :
-            _Base(_Type::PreDraw_)
+    struct RenderStarted : public _Base {
+        RenderStarted() :
+            _Base(_Type::RenderStarted_)
         {};
     };
     struct PostDraw : public _Base {
@@ -40,11 +33,6 @@ struct SceneEvents : public Event {
     struct RenderFinished : public _Base {
         RenderFinished() :
             _Base(_Type::RenderFinished_)
-        {};
-    };
-    struct SceneFinished : public _Base {
-        SceneFinished() :
-            _Base(_Type::SceneFinished_)
         {};
     };
 };

@@ -8,7 +8,9 @@ int main() {
     Service<Window>::build(1600, 900, "Tools");
     App app(Service<Window>::get());
 
-    do {  } while (Service<Window>::get().update());
+    do {  
+        // Think about the lifes's meaning
+    } while (Service<Window>::get().update());
 
     Service<Window>::destroy();
     return 0;

@@ -4,23 +4,8 @@ using namespace glm;
 
 Mesh::Mesh() :
     m_vbo(GL_ARRAY_BUFFER),
-    m_ebo(GL_ELEMENT_ARRAY_BUFFER),
-    m_colors(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
-    m_instances(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+    m_ebo(GL_ELEMENT_ARRAY_BUFFER)
 {
-}
-
-void Mesh::updateBatch(const std::vector<mat4>& models, const std::vector<vec4>& colors) {
-    m_instances.bindData(models);
-
-    if (colors.size() >= models.size()) {
-        m_colors.bindData(colors);
-    }
-    else {
-        std::vector<vec4> res_colors = colors;
-        res_colors.resize(models.size());
-        m_colors.bindData(res_colors);
-    }
 }
 
 // render the mesh
@@ -41,10 +26,9 @@ void Mesh::unbindTextures() const {
     }
 }
 
-void Mesh::drawElements() const {
+void Mesh::drawElements(size_t nElements) const {
     m_vao.bind();
-    glDrawElementsInstanced(drawMode, (int)indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)m_instances.size() / sizeof(mat4));
-    m_vao.unbind();
+    glDrawElementsInstanced(drawMode, (int)indices.size(), GL_UNSIGNED_INT, 0, (GLsizei)nElements);
 }
 
 // Getters
@@ -54,15 +38,12 @@ const mat4& Mesh::obb() const {
 
 
 // initializes all the buffer objects/arrays
-void Mesh::sendToGpu() {
+void Mesh::setupVao() {
     m_vao.bind();
 
     m_ebo.bindData(indices);
     m_vbo.bindData(vertices);
-    m_colors.bindData(sizeof(vec4));
-    m_instances.bindData(sizeof(mat4));
 
-    m_vbo.bind();
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Position));
 
@@ -72,19 +53,7 @@ void Mesh::sendToGpu() {
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
-    m_colors.bind();
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
-    glVertexAttribDivisor(3, 1);
-
-    m_instances.bind();
-    for (int i = 0; i < 4; i++) {
-        glEnableVertexAttribArray(4 + i);
-        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(i * sizeof(vec4)));
-        glVertexAttribDivisor(4 + i, 1);
-    }
-
-    m_vao.unbind();
+    // not unbound, we may want to add stuff on this vao just at higher level (model)
 }
 
 void Mesh::compute_obb() {
@@ -105,4 +74,22 @@ void Mesh::compute_obb() {
 
     // Final transformation
     m_obb = scale(translate(m_obb, centroid), ext_vert * 0.5f);
+}
+
+void Mesh::Clone(const std::shared_ptr<Mesh>& src, std::shared_ptr<Mesh>& dst)
+{
+    const Mesh& inMesh = *src;
+    Mesh& outMesh = *dst;
+
+    outMesh.vertices = inMesh.vertices;
+    outMesh.indices = inMesh.indices;
+
+    for (const TextureData& inTexture : inMesh.textures) {
+        outMesh.textures.push_back(TextureData{
+            inTexture.type,
+            std::make_shared<Texture>(*inTexture.data.get())
+        });
+    }
+
+    outMesh.compute_obb();
 }

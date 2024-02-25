@@ -10,16 +10,12 @@ struct SceneFrame :
 	protected Event::Subscriber
 {
 	SceneFrame(Scene& scene, std::shared_ptr<Layout> layout = nullptr);
-	virtual ~SceneFrame() = default;
+	virtual ~SceneFrame();
 
+	virtual void draw();
 	Layout& layout();
-	Scene& scene();
 
 private:
-	void _on_draw(const SceneEvents::RenderFinished&);
-
-	Framebuffer m_frame;
-	CopyFilter m_copyFilter;
 	Scene& m_scene;
 	std::shared_ptr<Layout> m_layout;
 };
