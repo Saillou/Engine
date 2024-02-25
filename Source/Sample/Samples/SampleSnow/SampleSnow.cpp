@@ -14,7 +14,7 @@ SampleSnow::SampleSnow() :
     m_scene(Service<Window>::get().scene())
 {
     // Scene
-    m_scene.lights = { };
+    m_scene.lights = { Light(glm::vec3{ 0,   -3.0f, 3.0f }, glm::vec4{ 0.7f, 0.3f, 0.7f, 1 }) };
 
     m_scene.camera.up        = glm::vec3(0, 0, 1);
     m_scene.camera.position  = glm::vec3(0.0f, m_cam_distance, 1.5f);
@@ -72,6 +72,11 @@ void SampleSnow::_update(const CommonEvents::StateUpdated&)
     _generate_flakes();
     _compute_physics(dt_s);
     m_filter.enabled() = m_ui.gray;
+
+    // idk
+    m_scene.lights.clear();
+    if(!m_ui.gray)
+        m_scene.lights = { Light(glm::vec3{ 0,   -3.0f, 3.0f }, glm::vec4{ 0.7f, 0.3f, 0.7f, 1 }) };
 
     m_timer.tic();
 }
@@ -297,10 +302,7 @@ void SampleSnow::_init_filter()
             .add_var("uniform", "sampler2D", "quadTexture")
             .add_var("out", "vec4", "FragColor")
             .add_func("void", "main", "", R"_main_(
-                vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
-                vec2 tex_offset = 1.0 / tex_size;
-                vec2 tex_id     = TexCoords/tex_offset;
-
+                vec2 tex_size  = textureSize(quadTexture, 0);
                 vec3 seg_color = distance(texture(quadTexture, TexCoords).rgb, vec3(0,0,0)) * vec3(1,1,1);
                 FragColor = vec4(seg_color, 1.0);
             )_main_")

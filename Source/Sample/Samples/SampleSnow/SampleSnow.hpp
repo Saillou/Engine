@@ -52,7 +52,7 @@ private:
     struct Ui
     {
         void show();
-        bool gray = true;
+        bool gray = false;
 
 #ifdef _DEBUG 
         bool loop = false;
