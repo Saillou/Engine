@@ -2,6 +2,7 @@
 
 #include <glm/gtx/vector_angle.hpp>
 #include <Engine/Framework/Core/ECS.hpp>
+#include <Engine/Framework/Component/BodyComponent.hpp>
 
 #include "TrainGame/Engine/Components/Transform.h"
 #include "TrainGame/Engine/Components/TrainController.h"
@@ -22,6 +23,7 @@ namespace Thomas
         for (auto& entity : m_entities)
         {
             Transform& transform           = ECS::getComponent<Transform>(entity);
+            BodyComponent& body            = ECS::getComponent<BodyComponent>(entity);
             TrainController& controller    = ECS::getComponent<TrainController>(entity);
 
             if (controller.m_points.empty())
@@ -68,6 +70,8 @@ namespace Thomas
                 {
                 }
             }
+
+            body.transform.world = transform.getMat4();
 
             if (atPos)
             {

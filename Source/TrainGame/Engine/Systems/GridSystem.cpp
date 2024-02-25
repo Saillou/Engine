@@ -1,21 +1,27 @@
 #include "GridSystem.h"
 
 #include <Engine/Framework/Core/ECS.hpp>
+#include <Engine/Framework/Component/BodyComponent.hpp>
+#include <Engine/Framework/Component/ParticleComponent.hpp>
 
 #include "TrainGame/Engine/Components/Transform.h"
 #include "TrainGame/Engine/Components/Grid.h"
 #include "TrainGame/Engine/Components/RenderComponent.h"
+#include "TrainGame/TrainGame/TrainGameModels.hpp"
 
 namespace Thomas
 {
-    void GridSystem::init(const glm::vec3& pos, const glm::vec2& size)
+    void GridSystem::init()
     {
         Signature signature;
         signature.set(ECS::getComponentType<Transform>());
         signature.set(ECS::getComponentType<Grid>());
 
         ECS::setSystemSignature<GridSystem>(signature);
+    }
 
+    void GridSystem::start(const glm::vec3& pos, const glm::vec2& size)
+    {
         m_position = pos;
         m_size = size;
     }
@@ -83,15 +89,24 @@ namespace Thomas
                 renderComponent.material.diffuse_color = { 0.f, 0.f, 0.f, 0.f };
                 break;
             }
-            
             ECS::addComponent(ent, renderComponent);
 
             Transform transform;
             transform.position = getPosition(cell.first.first, cell.first.second);
             transform.scale = 0.15f * glm::vec3{ 0.3f,0.3f, 0.01f };
             transform.rotation = { 0.f,0.f,0.f };
-
             ECS::addComponent(ent, transform);
+
+            BodyComponent bodyComponent;
+            bodyComponent.model = Model::Load(Model::SimpleShape::Cube);
+            bodyComponent.transform.local = GameModelTable::getModelById(renderComponent.modelId).transform.model;
+            bodyComponent.transform.world = glm::mat4(1.0f);
+            ECS::addComponent(ent, bodyComponent);
+
+            ParticleComponent particle;
+            particle.type = ParticleComponent::Type::Solid;
+            particle.elements = { ParticleComponent::Element{ renderComponent.material.diffuse_color, transform.getMat4()} };
+            ECS::addComponent(ent, particle);
         }
     }
 

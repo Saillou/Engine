@@ -25,7 +25,7 @@ namespace Thomas
         void onStateUpdate(const CommonEvents::StateUpdated& evt);
         void onKeyPressed(const CommonEvents::KeyPressed& evt);
         void onMouseMoved(const CommonEvents::MouseMoved& evt);
-        void onSceneFinishedRender(const SceneEvents::SceneFinished& evt);
+        void onSceneFinishedRender(const SceneEvents::RenderFinished& evt);
 
         Timer::Chronometre      m_timer;
         std::shared_ptr<View>   m_view;

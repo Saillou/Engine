@@ -41,7 +41,7 @@ void Ui::subscribeEvents()
 
 StyleSheet Ui::_create_style() const
 {
-    const glm::vec4 primary_color = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+    const glm::vec4 primary_color = glm::vec4(0.1f, 0.1f, 0.15f, 0.7f);
     const glm::vec4 secondary_color = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
     const glm::vec4 main_text_color = glm::vec4(0.90f, 0.90f, 0.93f, 1.0f);
     const glm::vec4 foreground_color = glm::vec4(0.66f, 0.66f, 0.70f, 1.0f);
@@ -59,7 +59,6 @@ StyleSheet Ui::_create_style() const
 
     return StyleSheet::CreateDefault()
         .addRule(Style::Tag::Layout, Style()
-            .opacity.setValue(0.90f)
             .background.setValue(primary_color)
         )
         .addRule(Style::Tag::Button, Style()

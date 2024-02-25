@@ -30,7 +30,8 @@ namespace Thomas
         m_trainControllerSystem->init();
 
         m_gridSystem = ECS::registerSystem<GridSystem>();
-        m_gridSystem->init({ 0.f,0.f,0.2f }, { 0.1f,0.1f });
+        m_gridSystem->init(); 
+        m_gridSystem->start({ 0.f, 0.f, 0.2f }, { 0.1f,0.1f });
 
         Service<Window>::build(1600, 900, "Train game");
         m_view = std::make_shared<View>(Service<Window>::get().scene());
@@ -81,17 +82,22 @@ namespace Thomas
         case 'X':             scale = +1.f; break;
         }
 
-        Transform& transform = ECS::getComponent<Transform>(0);
+        // Crazy ..
+        Transform& transform = ECS::getComponent<Transform>(3);
+        BodyComponent& body = ECS::getComponent<BodyComponent>(3);
+
         transform.position += 0.05f * dir;
         transform.rotation.z += 0.05f * rot;
         transform.scale += 0.005f * scale;
+
+        body.transform.world = transform.getMat4();
     }
 
     void Game::onMouseMoved(const CommonEvents::MouseMoved& evt)
     {
 
     }
-    void Game::onSceneFinishedRender(const SceneEvents::SceneFinished& evt)
+    void Game::onSceneFinishedRender(const SceneEvents::RenderFinished& evt)
     {
         if(m_ui && m_ui->ready)
             m_ui->Render();

@@ -12,30 +12,28 @@
 #include <Engine/Graphic/Base/Model/Model.hpp>
 #include <Engine/Graphic/Base/Model/Skybox.hpp>
 
-#include "TrainGame/Engine/Systems/RenderSystem.h"
-
 struct View : private Event::Subscriber {
     View(Scene& scene);
+    ~View();
 
     Scene& scene;
 
 private:
     // Events
-    void _draw(const SceneEvents::Draw&);
+    void _draw(const CommonEvents::StateUpdated&);
     void _post_process(const SceneEvents::PostDraw&);
     void _on_resize(const SceneEvents::Resized&);
     void _on_mouse_moved(const CommonEvents::MouseMoved& evt);
 
     void _initObjects();
 
-    Model::Ref m_model_sphere;
-    Model::Ref m_target;
-    Model::Ref m_ground;
+    Entity m_model_sphere;
+    Entity m_target;
+    Entity m_ground;
     std::unique_ptr<Skybox> m_skybox;
 
     // Other members
     Timer::Chronometre m_timer;
 
     glm::vec2 m_mousePos;
-    std::shared_ptr<RenderSystem> m_renderSystem;
 };
