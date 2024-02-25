@@ -197,7 +197,7 @@ void SampleSnow::Ui::show() {
 #ifdef _DEBUG
     #define MAX_FLAKES 500
 #else
-    #define MAX_FLAKES 2500
+    #define MAX_FLAKES 5000
 #endif
 
     ImGui::Begin("Actions");
@@ -243,8 +243,8 @@ void SampleSnow::_add_flake_shader()
         .attachSource(Shader::Geometry,
             Initializator::geometry()
 
-            .add_var("in", "layout", "(triangles)")
-            .add_var("out", "layout", "(line_strip, max_vertices = 6)")
+            .add_var("layout", "(triangles)", "in")
+            .add_var("layout", "(line_strip, max_vertices = 6)", "out")
             .add_var("out", "vec4", "Color")
 
             .add_func("void", "main", "", R"_main_(
