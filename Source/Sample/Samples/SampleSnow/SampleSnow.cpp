@@ -35,6 +35,9 @@ SampleSnow::SampleSnow() :
     // Create custom shader
     _add_flake_shader();
 
+    // Filter
+    _init_filter();
+
     // Entities
     auto& socle = _create_entity("socle", Model::Load(Model::SimpleShape::Cube));
     socle.local() = glm::scale(glm::mat4(1.0f), glm::vec3(1.f, 1.f, 0.05f));
@@ -48,12 +51,17 @@ SampleSnow::SampleSnow() :
     // Enable events
     _subscribe(&SampleSnow::_update);
     _subscribe(&SampleSnow::_on_key_pressed);
-    _subscribe([=](const SceneEvents::PostDraw&) { 
-        m_ui.show(); 
+    _subscribe([&](const SceneEvents::PostDraw&) {
+        m_ui.show();
     });
 
     // Go
     m_timer.tic();
+}
+
+SampleSnow::~SampleSnow()
+{
+    ShaderManager::Release((CookType::_tag_)Id_shader_flake);
 }
 
 // Events
@@ -63,6 +71,7 @@ void SampleSnow::_update(const CommonEvents::StateUpdated&)
 
     _generate_flakes();
     _compute_physics(dt_s);
+    m_filter.enabled() = m_ui.gray;
 
     m_timer.tic();
 }
@@ -189,6 +198,7 @@ void SampleSnow::Ui::show() {
     ImGui::Begin("Actions");
     ImGui::Separator();
 
+    ImGui::Checkbox("Gray", &gray);
     ImGui::Checkbox("Loop", &loop);
     ImGui::SliderInt("Flakes", &flakes_number, 1, MAX_FLAKES);
 
@@ -257,10 +267,43 @@ void SampleSnow::_add_flake_shader()
     ;
 
     // Callback to set uniforms
-    ShaderManager::UniformSetter setter = [&]() {
-        std::cerr << "plop" << std::endl;
+    ShaderManager::UniformSetter setter = [&]() 
+    {
+        ShaderManager::Get((CookType::_tag_)Id_shader_flake)
+            .use()
+            .set("Projection",  m_scene.camera.projection)
+            .set("View",        m_scene.camera.modelview);
     };
 
     // Populate
     ShaderManager::Provide((CookType::_tag_)Id_shader_flake, shader, setter);
+}
+
+void SampleSnow::_init_filter()
+{
+    m_filter.shader()
+        .attachSource(Shader::Vertex, ShaderSource{}
+            .add_var("layout (location = 0) in", "vec3", "aPos")
+            .add_var("out", "vec2", "TexCoords")
+            .add_func("void", "main", "", R"_main_(
+                gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+                float tx = aPos.x > 0 ? 1.0 : 0.0;
+                float ty = aPos.y > 0 ? 1.0 : 0.0;
+                TexCoords = vec2(tx, ty);
+            )_main_")
+        )
+        .attachSource(Shader::Fragment, ShaderSource{}
+            .add_var("in", "vec2", "TexCoords")
+            .add_var("uniform", "sampler2D", "quadTexture")
+            .add_var("out", "vec4", "FragColor")
+            .add_func("void", "main", "", R"_main_(
+                vec2 tex_size   = textureSize(quadTexture, 0); // default -> [1600 x 900]
+                vec2 tex_offset = 1.0 / tex_size;
+                vec2 tex_id     = TexCoords/tex_offset;
+
+                vec3 seg_color = distance(texture(quadTexture, TexCoords).rgb, vec3(0,0,0)) * vec3(1,1,1);
+                FragColor = vec4(seg_color, 1.0);
+            )_main_")
+        )
+        .link();
 }

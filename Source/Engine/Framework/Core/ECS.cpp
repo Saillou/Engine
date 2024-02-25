@@ -3,6 +3,7 @@
 #include "../Component/BodyComponent.hpp"
 #include "../Component/CastComponent.hpp"
 #include "../Component/DrawComponent.hpp"
+#include "../Component/FilterComponent.hpp"
 #include "../Component/CollideComponent.hpp"
 
 static bool initialized = false;
@@ -15,6 +16,7 @@ void ECS::init()
     ECS::registerComponent<BodyComponent>();
     ECS::registerComponent<CastComponent>();
     ECS::registerComponent<DrawComponent>();
+    ECS::registerComponent<FilterComponent>();
     ECS::registerComponent<CollideComponent>();
 
     initialized = true;

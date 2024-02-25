@@ -167,8 +167,7 @@ void UiCube::_create_widgets(
     txts["Count"]  = Text::Create(std::to_string(m_lights_count));
     txts["Ig1"]    = Text::WithClass<Info>::Create("");
     txts["Ig2"]    = Text::WithClass<Info>::Create(Text::Block{
-        "Press [space] to pause",
-        "Press [R] to dis/enable filters"
+        "Press [escape] to pause"
     });
 }
 

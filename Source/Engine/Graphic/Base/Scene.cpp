@@ -15,36 +15,30 @@ Scene::Scene(int widthHint, int heightHint):
     m_overlay_system  = ECS::registerSystem<OverlaySystem>(camera);
     m_caster_system   = ECS::registerSystem<CasterSystem>(camera);
     m_collider_system = ECS::registerSystem<ColliderSystem>();
+    m_filter_system   = ECS::registerSystem<FilterSystem>(camera);
 
     m_render_system->init();
     m_overlay_system->init();
     m_caster_system->init();
     m_collider_system->init();
-}
-
-void Scene::clear() {
-    // Cleanup previous draws
-    glClearColor(0.05f, 0.05f, 0.06f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_filter_system->init();
 }
 
 void Scene::run() {
     // Setup
     _update_camera();
-    clear();
-
-    Viewport(width(), height());
 
     Event::Emit(SceneEvents::RenderStarted());
     {
-        // - Draw 3D-Scene
-        m_render_system->update();
+        m_filter_system->start();
+        {
+            m_render_system->update(); // Draw 3D-Scene
+        }
+        m_filter_system->apply();
 
-        // - Apply filters
         Event::Emit(SceneEvents::PostDraw());
 
-        // - Draw UI
-        m_overlay_system->update();
+        m_overlay_system->update(); // Draw UI
     }
     Event::Emit(SceneEvents::RenderFinished());
 }

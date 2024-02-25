@@ -31,6 +31,7 @@ public:
 	unsigned int height() const;
 	Type type() const;
 
+	bool isBound() const;
 	void bind() const;
 	void unbind() const;
 	virtual void clear();
@@ -43,6 +44,11 @@ protected:
 	unsigned int	m_framebufferId;
 	unsigned int	m_renderbufferId;
 	Texture			m_texture_attached;
+
+	// Mutable for semantic reason:
+	//   we want bind / unbind to stay constant
+	//   to indicate when the content of the buffer is changed or not 
+	mutable bool m_bound = false;
 
 private:
 	void _createRenderBufferObject(unsigned int width, unsigned int height);

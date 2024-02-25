@@ -2,12 +2,15 @@
 
 #include "../../_imgui/imgui.h"
 #include "../Sample.hpp"
+
+#include <Engine/Utils/Filter/BaseFilter.hpp>   
 #include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 struct SampleSnow : 
     public Sample 
 {
     SampleSnow();
+    ~SampleSnow();
 
 private:
     // Events
@@ -16,6 +19,8 @@ private:
 
     // Methods
     void _add_flake_shader();
+    void _init_filter();
+
     ManagedEntity& _create_entity(const std::string& category, Model::Ref);
     void _destroy_entity(const std::string& category, Entity);
 
@@ -41,10 +46,13 @@ private:
     std::deque<_Flake> m_flakes;
     glm::mat4 m_flake_local  = glm::mat4(1.0f);
 
+    BaseFilter m_filter;
+
     // -- Ui --
     struct Ui
     {
         void show();
+        bool gray = true;
 
 #ifdef _DEBUG 
         bool loop = false;

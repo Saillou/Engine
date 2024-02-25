@@ -25,6 +25,7 @@ void RenderSystem::init()
 
 void RenderSystem::update()
 {
+    _clear();
     _compute();
 
     Scene::Viewport(_shadower.width(), _shadower.height());
@@ -32,6 +33,12 @@ void RenderSystem::update()
 
     Scene::Viewport((int)_camera.screenSize.x, (int)_camera.screenSize.y);
     _drawEntities();
+}
+
+void RenderSystem::_clear()
+{
+    glClearColor(0.05f, 0.05f, 0.06f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 // Prepare draw

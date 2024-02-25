@@ -4,6 +4,7 @@
 #include "../Wrapper/Framebuffer.hpp"
 #include "../../Framework/Core/ECS.hpp"
 #include "../../Framework/System/CasterSystem.hpp"
+#include "../../Framework/System/FilterSystem.hpp"
 #include "../../Framework/System/RenderSystem.hpp"
 #include "../../Framework/System/OverlaySystem.hpp"
 #include "../../Framework/System/ColliderSystem.hpp"
@@ -14,7 +15,6 @@ struct Scene {
 
     Scene(int widthHint = 0, int heightHint = 0);
 
-    static void clear();
     void run();                       
     void resize(int width, int height);
 
@@ -46,4 +46,5 @@ private:
     std::shared_ptr<OverlaySystem>  m_overlay_system;
     std::shared_ptr<CasterSystem>   m_caster_system;
     std::shared_ptr<ColliderSystem> m_collider_system;
+    std::shared_ptr<FilterSystem>   m_filter_system;
 };

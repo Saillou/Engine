@@ -44,10 +44,11 @@ void ShaderManager::Provide(CookType::_tag_ identifier, std::shared_ptr<Shader> 
 }
 
 void ShaderManager::Release(CookType::_tag_ identifier) {
-	if (!Has(identifier))
-		return;
+	if (_s_manager->_shaders.find(identifier) != _s_manager->_shaders.cend())
+		_s_manager->_shaders.erase(identifier);
 
-	_s_manager->_shaders.erase(identifier);
+	if (_s_manager->_shadersSetters.find(identifier) != _s_manager->_shadersSetters.cend())
+		_s_manager->_shadersSetters.erase(identifier);
 }
 
 bool ShaderManager::Has(CookType::_tag_ identifier)

@@ -42,6 +42,7 @@ private:
 	std::vector<CookType::_tag_> _custom_tags_apply;
 
 	// Prepare draw
+	void _clear();
 	void _compute();
 	void _reorder(Model::Ref, _Batch&);
 
