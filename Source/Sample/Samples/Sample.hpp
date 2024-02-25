@@ -10,7 +10,6 @@ enum class SampleId {
 	Cube,		
 	Train,		
 	Forest,
-	Pong,
 	Snow,
 	Breaker
 };
