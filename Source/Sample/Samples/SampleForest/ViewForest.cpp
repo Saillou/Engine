@@ -47,7 +47,9 @@ void ViewForest::_update(const CommonEvents::StateUpdated&)
 {
     Scene& scene = Service<Window>::get().scene();
 
+    // Give flag CastClosest to only get one
     scene.raycaster().update(m_mousePos);
+
     for (Entity e : scene.raycaster().retrieve()) 
     {
         if (ECS::getComponent<CastComponent>(e).is_hit)

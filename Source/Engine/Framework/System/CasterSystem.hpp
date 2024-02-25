@@ -13,13 +13,22 @@
 
 #include "../../Graphic/Camera.hpp"
 
-struct CasterSystem : public System {
+struct CasterSystem : public System 
+{
+	// Just to piss of my mate
+	enum class CastClosest {
+		No, Yes
+	};
+
 	CasterSystem(const Camera&);
 	~CasterSystem() = default;
 
 	void init() override;
-	void update(const glm::vec2& mousePos);
+	void update(const glm::vec2& mousePos, CastClosest = CastClosest::No);
 
 private:
 	const Camera& m_camera;
+
+	void _flag_all(const glm::vec2& mousePos);
+	void _flag_one(const glm::vec2& mousePos);
 };
