@@ -18,9 +18,7 @@ void SampleBreaker::_init_scene()
 {
     // Scene
     m_scene.lights = { 
-        { glm::vec3(0.0f, 3.0f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) },
-        { glm::vec3(0.0f, 1.5f, +1.7f), glm::vec4(1.0f, 0.7f, 0.0f, 1.0f) },
-        { glm::vec3(0.0f, 1.5f, -1.7f), glm::vec4(0.0f, 0.7f, 1.0f, 1.0f) },
+        { glm::vec3(0.0f, 3.0f, +0.0f), glm::vec4(1.0f, 0.7f, 0.6f, 1.0f) }
     };
 
     // Camera
