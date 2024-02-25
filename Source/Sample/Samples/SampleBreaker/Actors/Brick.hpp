@@ -13,7 +13,7 @@ struct Brick : public Actor {
         setPos(pos);
 
         _entity.color() = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
-        _entity.local() = glm::scale(glm::mat4(1.0f), 0.25f * glm::vec3(0.5f, 0.1f, 0.1f));
+        _entity.local() = glm::scale(glm::mat4(1.0f), 0.3f * glm::vec3(0.5f, 0.1f, 0.1f));
         _entity.world() = glm::translate(glm::mat4(1.0f), pos);
         _entity.collidable(true);
     }

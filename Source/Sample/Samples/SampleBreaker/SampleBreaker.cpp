@@ -33,16 +33,26 @@ void SampleBreaker::_init_scene()
     m_ball.speed = glm::vec3(+1.0f, 0.0f, -2.0f) * 0.001f;
 
     // Bricks
+    std::vector<glm::vec4> brick_colors = {
+        glm::vec4(1,0,0,0.7f),
+        glm::vec4(0,1,0,0.7f),
+        glm::vec4(0,1,1,0.7f),
+        glm::vec4(1,1,0,0.7f),
+        glm::vec4(1,0,1,0.7f),
+    };
+
     const int n_rows = 8;
-    const int n_cols = 5;
+    const int n_cols = (int)brick_colors.size();
+
 
     for (int i_rows = 0; i_rows < n_rows; i_rows++) {
         for (int i_cols = 0; i_cols < n_cols; i_cols++) {
             glm::vec3 pos(0.0f);
-            pos.x = (i_rows - n_rows / 2.0f) * 0.5f + 0.25f;
             pos.z = (i_cols - n_cols / 2.0f) * 0.15f + 1.5f;
+            pos.x = (i_rows - n_rows / 2.0f) * 0.5f + 0.25f;
 
             Brick brick(pos);
+            brick.entity().color() = brick_colors[i_cols];
             m_bricks.emplace(brick.id(), std::move(brick));
         }
     }
