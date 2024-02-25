@@ -6,10 +6,11 @@
 #include "Samples/SampleTrain/SampleTrain.hpp"
 #include "Samples/SampleForest/SampleForest.hpp"
 #include "Samples/SampleSnow/SampleSnow.hpp"
+#include "Samples/SampleBreaker/SampleBreaker.hpp"
 
 // App
 App::App():
-    m_curr_sample(std::make_unique<SampleSnow>())
+    m_curr_sample(std::make_unique<SampleBreaker>())
 {
 }
 
@@ -23,6 +24,7 @@ void App::changeSample(const SampleId& sample_id) {
 		case SampleId::Train:	m_curr_sample = std::make_unique<SampleTrain>();	break;
 		case SampleId::Forest:	m_curr_sample = std::make_unique<SampleForest>();	break;
 		case SampleId::Snow:	m_curr_sample = std::make_unique<SampleSnow>();		break;
+		case SampleId::Breaker:	m_curr_sample = std::make_unique<SampleBreaker>();  break;
 	}
 }
 
