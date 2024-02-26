@@ -11,7 +11,8 @@ enum class SampleId {
 	Train,		
 	Forest,
 	Snow,
-	Breaker
+	Breaker,
+	Canvas
 };
 
 struct Sample : Event::Subscriber {
