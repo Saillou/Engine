@@ -34,6 +34,10 @@ void ParticleSystem::update()
                 type = CookType::Solid; 
                 break;
 
+            case ParticleComponent::Type::Geometry:
+                type = CookType::Geometry;
+                break;
+
             case ParticleComponent::Type::Particle: 
                 type = CookType::Particle; 
                 break;
@@ -55,6 +59,7 @@ void ParticleSystem::update()
 
     // Prepare shading
     _setSolidShader();
+    _setGeometryShader();
     _setParticleShader();
 
     // Draw
@@ -95,4 +100,12 @@ void ParticleSystem::_setParticleShader()
         .set("Projection", _camera.projection)
         .set("View",       _camera.modelview)
     ;
+}
+
+void ParticleSystem::_setGeometryShader() {
+    ShaderManager::Get(CookType::Geometry)
+        .use()
+        .set("Projection",  _camera.projection)
+        .set("View",        _camera.modelview)
+        .set("n_lines",     2);
 }

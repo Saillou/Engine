@@ -11,6 +11,7 @@ struct ParticleComponent
 	// Data
 	enum class Type {
 		Solid,
+		Geometry,
 		Particle
 	};
 

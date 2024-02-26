@@ -2,6 +2,10 @@
 
 #include "../Sample.hpp"
 
+#include "SceneElements/Grid.hpp"
+#include "SceneElements/Food.hpp"
+#include "SceneElements/Monster.hpp"
+
 struct SampleCanvas :
     public Sample
 {
@@ -14,6 +18,9 @@ private:
 
     // Scene
     Scene& m_scene;
+
+    Grid    m_grid;
+    Monster m_monster;
 
     // State
     Timer::Chronometre m_timer;

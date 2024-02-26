@@ -22,5 +22,6 @@ private:
 	std::unordered_map<CookType::_tag_, Batch> _batches;
 
 	void _setSolidShader();
+	void _setGeometryShader();
 	void _setParticleShader();
 };

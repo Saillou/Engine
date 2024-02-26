@@ -64,6 +64,9 @@ void AppMenu::_prepare()
         }
         if (ImGui::MenuItem("Is it snow?")) {
             Service<App>::get().changeSample(SampleId::Snow);
+        }        
+        if (ImGui::MenuItem("Feed me, now !")) {
+            Service<App>::get().changeSample(SampleId::Canvas);
         }
         ImGui::EndMenu();
     }
