@@ -2,8 +2,9 @@
 
 #include <glm/gtc/noise.hpp>
 
-FireBall::FireBall(glm::vec4 color, float pixel_size) :
+FireBall::FireBall(glm::vec4 color, float sphere_radius, float pixel_size) :
     color(color),
+    radius(sphere_radius),
     entity(ManagedEntity::Create(Model::Load(Model::SimpleShape::Cube))),
     pix_size(pixel_size),
     pos(glm::vec3(0.0f))
@@ -73,11 +74,10 @@ glm::vec3 FireBall::_getParticulePos(size_t particule_id) const
 {
     int s = int(particule_id % SIDE - SIDE / 2);
     int t = int(particule_id / SIDE - SIDE / 2);
-    float r = 6.0f;
 
-    double x = r * cos(s) * sin(t);
-    double y = r * sin(s) * sin(t);
-    double z = r * cos(t);
+    double x = radius * cos(s) * sin(t);
+    double y = radius * sin(s) * sin(t);
+    double z = radius * cos(t);
 
     return 1.5f * pix_size * glm::vec3(x, y, z);
 }

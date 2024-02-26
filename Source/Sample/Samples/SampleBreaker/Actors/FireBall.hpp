@@ -9,6 +9,7 @@
 struct FireBall {
     FireBall(
         glm::vec4 color = glm::vec4(1.0f, 0.7f, 0.3f, 0.7f),
+        float sphere_radius = 6.0f,
         float pixel_size = 0.012f
     );
 
@@ -34,6 +35,7 @@ private:
     const size_t SIDE = 50;
 
     glm::vec4 color;
+    float radius;
     float pix_size;
     std::vector<glm::vec4> speeds;
     std::vector<int> life_cycles;
