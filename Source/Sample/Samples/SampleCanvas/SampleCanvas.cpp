@@ -5,7 +5,7 @@
 SampleCanvas::SampleCanvas() :
     m_scene(Service<Window>::get().scene())
 {
-    m_scene.camera.direction = glm::vec3(0, 2, 0);
+    m_scene.camera.direction = glm::vec3(0, +2, 0);
     m_scene.camera.position  = glm::vec3(0, -5, 3);
 
     // Enable events

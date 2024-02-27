@@ -4,17 +4,15 @@
 #include <memory>
 #include <unordered_set>
 
+#include "CanvasSystem.hpp"
 #include "../Core/ECS.hpp"
 #include "../Core/System.hpp"
 #include "../Component/BodyComponent.hpp"
 #include "../Component/DrawComponent.hpp"
 
 #include "Render/ShadowRender.hpp"
-#include "../../Graphic/TextEngine.hpp"
-#include "../../Graphic/Camera.hpp"
 #include "../../Graphic/Light.hpp"
 #include "../../Graphic/ShaderManager.hpp"
-#include "../../Graphic/Base/Model/Primitive/Quad.hpp"
 
 struct SceneFrame;
 
@@ -39,5 +37,6 @@ private:
 	const Camera& m_camera;
 
 	// frames to render
+	std::shared_ptr<CanvasSystem> _canvas_system;
 	std::unordered_set<SceneFrame*> _frames;
 };

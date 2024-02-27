@@ -1,0 +1,7 @@
+#pragma once
+
+
+struct CanvasComponent
+{
+	// ..
+};

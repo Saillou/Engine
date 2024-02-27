@@ -14,7 +14,6 @@ RenderSystem::RenderSystem(const Camera& camera, const std::vector<Light>& light
 
 void RenderSystem::init() 
 {
-    // System requirements
     Signature signature;
 
     signature.set(ECS::getComponentType<BodyComponent>());

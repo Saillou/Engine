@@ -8,13 +8,12 @@
 OverlaySystem::OverlaySystem(const Camera& camera) : 
     m_camera(camera)
 {
-
+    _canvas_system = ECS::registerSystem<CanvasSystem>(camera);
 }
 
 void OverlaySystem::init() 
 {
-    // System requirements
-    // ..
+    _canvas_system->init();
 }
 void OverlaySystem::update() 
 {
@@ -24,6 +23,7 @@ void OverlaySystem::update()
     for (SceneFrame* frame : _frames) {
         frame->draw();
     }
+    _canvas_system->draw();
 
     glEnable(GL_DEPTH_TEST);
 }
