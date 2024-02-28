@@ -86,10 +86,10 @@ void FilterSystem::_drawFrame() {
     _screenQuad.texture_location = 0;
     Texture::activate(GL_TEXTURE0 + _screenQuad.texture_location);
     
-    ShaderManager::Get(CookType::Shape)
+    ShaderManager::Get(CookType::Surface)
         .use()
         .set("LocalModel", _screenQuad.transform())
-        .set("projection", glm::mat4(1.0f))
+        .set("Projection", glm::mat4(1.0f))
         .set("quadTexture", _screenQuad.texture_location)
         .set("background_color", glm::vec4(0.7f, 0.0f, 0.7f, 1.0f)) // fallback color when texture is empty
     ;

@@ -39,7 +39,7 @@ void OverlaySystem::remove_frame(SceneFrame* frame) {
 // Drawing methods
 void OverlaySystem::quad(const Quad& surface) 
 {
-    ShaderManager::Get(CookType::Shape)
+    ShaderManager::Get(CookType::Surface)
         .use()
         .set("LocalModel", surface.absolute_dimensions ?
             glm::translate(glm::scale(glm::mat4(1.0f),

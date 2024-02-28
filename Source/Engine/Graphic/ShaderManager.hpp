@@ -13,10 +13,11 @@ struct CookType {
         Geometry    = -9,
         Shadow      = -8,
         Shape       = -7,
-        Solid       = -6,
-        Skybox      = -5,
-        Particle    = -4,
-        Text        = -3,
+        Surface     = -6,
+        Solid       = -5,
+        Skybox      = -4,
+        Particle    = -3,
+        Text        = -2,
 
         // Custom tags are positives
         Custom      = 0,

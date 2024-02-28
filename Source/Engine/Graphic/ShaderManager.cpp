@@ -4,6 +4,7 @@
 #include "Shaders/ShaderParticle.hpp"
 #include "Shaders/ShaderShadow.hpp"
 #include "Shaders/ShaderShape.hpp"
+#include "Shaders/ShaderSurface.hpp"
 #include "Shaders/ShaderSkybox.hpp"
 #include "Shaders/ShaderSolid.hpp"
 #include "Shaders/ShaderText.hpp"
@@ -99,6 +100,7 @@ void ShaderManager::_create_default_shaders()
 	Provide(CookType::Geometry,	ShaderGeometry::Create());
 	Provide(CookType::Particle,	ShaderParticle::Create());
 	Provide(CookType::Shadow,	ShaderShadow::Create());
+	Provide(CookType::Surface,	ShaderSurface::Create());
 	Provide(CookType::Shape,	ShaderShape::Create());
 	Provide(CookType::Solid,	ShaderSolid::Create());
 	Provide(CookType::Skybox,	ShaderSkybox::Create());
