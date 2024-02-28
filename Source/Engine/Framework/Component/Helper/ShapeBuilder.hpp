@@ -10,6 +10,7 @@ struct ShapeBuilder
 
 	// Chained methods
 	ShapeBuilder& rect(float x, float y, float w, float h);
+	ShapeBuilder& circle(float x, float y, float r);
 	ShapeBuilder& moveTo(float x, float y);
 	ShapeBuilder& lineTo(float x, float y);
 	ShapeBuilder& fill(const CanvasShape::Color& color);
