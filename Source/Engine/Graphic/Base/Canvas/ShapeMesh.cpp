@@ -32,6 +32,12 @@ ShapeMesh::ShapeMesh():
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 }
 
+void ShapeMesh::_draw()
+{
+	m_vao.bind();
+	glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)m_vbo.size() / sizeof(Vertex));
+}
+
 void ShapeMesh::_update_buffer(const CanvasShape::Points& points)
 {
 	std::vector<Vertex> vertices;
@@ -40,10 +46,4 @@ void ShapeMesh::_update_buffer(const CanvasShape::Points& points)
 		vertices.push_back(Vertex{ point.x, point.y });
 	}
 	_s_mesh->m_vbo.bindData(vertices);
-}
-
-void ShapeMesh::_draw()
-{
-	m_vao.bind();
-	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m_vbo.size());
 }

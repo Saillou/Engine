@@ -19,8 +19,8 @@ struct ShapeMesh {
 protected:
 	ShapeMesh();
 
-	void _update_buffer(const CanvasShape::Points& points);
 	void _draw();
+	void _update_buffer(const CanvasShape::Points& points);
 
 private:
 	static void Create();

@@ -7,6 +7,8 @@ std::shared_ptr<ShapeBuilder> ShapeBuilder::_s_instance = std::make_shared<Shape
 
 ShapeBuilder& ShapeBuilder::Start(std::vector<CanvasShape>* shapes) 
 {
+	Reset();
+
 	_s_instance->_current_container = shapes;
 	return *_s_instance;
 }
@@ -48,6 +50,7 @@ ShapeBuilder& ShapeBuilder::fill(const CanvasShape::Color& color)
 	assert(_current_container && "No container");
 
 	_current_shape.type = CanvasShape::DrawType::Fill;
+	_current_shape.color = color;
 	_current_container->push_back(_current_shape);
 	return *this;
 }
@@ -56,6 +59,7 @@ ShapeBuilder& ShapeBuilder::stroke(const CanvasShape::Color& color)
 	assert(_current_container && "No container");
 
 	_current_shape.type = CanvasShape::DrawType::Stroke;
+	_current_shape.color = color;
 	_current_container->push_back(_current_shape);
 	return *this;
 }

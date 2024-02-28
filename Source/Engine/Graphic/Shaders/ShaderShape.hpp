@@ -15,10 +15,9 @@ inline std::shared_ptr<Shader> ShaderShape::Create()
     (*shader)
         .attachSource(Shader::Vertex, ShaderSource{}
             .add_var("layout (location = 0) in", "vec2", "aPos")
-            .add_var("uniform", "vec2", "Ratio")
             .add_var("uniform", "mat4", "Projection")
             .add_func("void", "main", "", R"_main_(
-                gl_Position = Projection * vec4(aPos.x/Ratio.x, aPos.y/Ratio.y, 0.0, 1.0);
+                gl_Position = Projection * vec4(aPos.x, aPos.y, 0.0, 1.0);
             )_main_")
         )
         .attachSource(Shader::Fragment, ShaderSource{}
