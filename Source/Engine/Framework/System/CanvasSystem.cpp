@@ -20,7 +20,10 @@ void CanvasSystem::draw()
 {
     for (Entity entity : m_entities) 
     {
-        const CanvasComponent& cnvComponent = ECS::getComponent<CanvasComponent>(entity);
-
+        const CanvasComponent& canvas = ECS::getComponent<CanvasComponent>(entity);
+        const CanvasContext& context = canvas.context;
+        for (const CanvasShape& shape : canvas.shapes) {
+            // .. draw ..
+        }
     }
 }

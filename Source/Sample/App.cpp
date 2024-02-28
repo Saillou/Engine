@@ -19,12 +19,12 @@ void App::changeSample(const SampleId& sample_id) {
 
 	switch (sample_id)
 	{
-		case SampleId::Cube:	m_curr_sample = std::make_unique<SampleCube>();		break;
-		case SampleId::Train:	m_curr_sample = std::make_unique<SampleTrain>();	break;
-		case SampleId::Forest:	m_curr_sample = std::make_unique<SampleForest>();	break;
-		case SampleId::Snow:	m_curr_sample = std::make_unique<SampleSnow>();		break;
-		case SampleId::Breaker:	m_curr_sample = std::make_unique<SampleBreaker>();  break;
-		case SampleId::Canvas:	m_curr_sample = std::make_unique<SampleCanvas>();   break;
+		case SampleId::Cube:	m_curr_sample = std::make_unique<SampleCube>();		break; // Layout UI, Opacity reorder, Multi lights
+		case SampleId::Train:	m_curr_sample = std::make_unique<SampleTrain>();	break; // Textured quads, Camera movement
+		case SampleId::Forest:	m_curr_sample = std::make_unique<SampleForest>();	break; // Ray caster
+		case SampleId::Snow:	m_curr_sample = std::make_unique<SampleSnow>();		break; // Custom filter, shader, model
+		case SampleId::Breaker:	m_curr_sample = std::make_unique<SampleBreaker>();  break; // Collisions, Particles
+		case SampleId::Canvas:	m_curr_sample = std::make_unique<SampleCanvas>();   break; // 2D drawing
 	}
 }
 
