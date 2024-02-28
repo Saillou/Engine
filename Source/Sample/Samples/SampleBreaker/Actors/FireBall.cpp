@@ -21,6 +21,7 @@ FireBall::FireBall(glm::vec4 color, float sphere_radius, float pixel_size) :
         life_cycles[i] = (int)(i / 10);
 
     ParticleComponent particleComponent;
+    particleComponent.type = ParticleComponent::Type::Particle;
     particleComponent.elements.resize(amount());
 
     ECS::addComponent(id(), particleComponent);

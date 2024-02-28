@@ -95,7 +95,7 @@ void ParticleSystem::_setSolidShader()
 
 void ParticleSystem::_setParticleShader() 
 {
-    ShaderManager::Get(CookType::Geometry)
+    ShaderManager::Get(CookType::Particle)
         .use()
         .set("Projection", _camera.projection)
         .set("View",       _camera.modelview)

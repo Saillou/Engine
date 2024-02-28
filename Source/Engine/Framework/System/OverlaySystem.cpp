@@ -48,7 +48,7 @@ void OverlaySystem::quad(const Quad& surface)
                     +1.0f + surface.x / (surface.w / 2.0f),
                     -1.0f + (m_camera.screenSize.y - surface.y) / (surface.h / 2.0f),
                     0)) : surface.transform())
-        .set("projection", surface.absolute_dimensions ?
+        .set("Projection", surface.absolute_dimensions ?
             glm::ortho(0.0f, m_camera.screenSize.x, 0.0f, m_camera.screenSize.y) :
             glm::mat4(1.0f))
         .set("quadTexture", surface.texture_location)

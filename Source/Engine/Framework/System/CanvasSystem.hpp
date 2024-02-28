@@ -23,4 +23,6 @@ struct CanvasSystem :
 
 private:
 	const Camera& m_camera;
+
+	void _setShapeShader();
 };
