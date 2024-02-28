@@ -25,4 +25,5 @@ private:
 	const Camera& m_camera;
 
 	void _setShapeShader(const CanvasContext& context);
+	void _drawFromComponent(const CanvasComponent& component);
 };

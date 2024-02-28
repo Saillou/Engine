@@ -20,15 +20,22 @@ void CanvasSystem::init()
 
 void CanvasSystem::draw()
 {
-    for (Entity entity : m_entities) 
-    {
-        const CanvasComponent& canvas = ECS::getComponent<CanvasComponent>(entity);
-        
-        _setShapeShader(canvas.context);
+    for (Entity entity : m_entities) {
+        _drawFromComponent(ECS::getComponent<CanvasComponent>(entity));
+    }
+}
 
-        for (const CanvasShape& shape : canvas.shapes) {
-            ShapeMesh::Draw(shape);
-        }
+// Private
+void CanvasSystem::_drawFromComponent(const CanvasComponent& component)
+{
+    _setShapeShader(component.context);
+
+    for (const CanvasShape& shape : component.shapes)
+    {
+        ShaderManager::Get(CookType::Shape)
+            .set("Color", shape.color);
+
+        ShapeMesh::Draw(shape);
     }
 }
 
@@ -36,12 +43,11 @@ void CanvasSystem::_setShapeShader(const CanvasContext& context)
 {
     ShaderManager::Get(CookType::Shape)
         .use()
-        .set("LocalModel", context.dimensionsFormat == CanvasContext::Dimensions::Absolute ?
-            glm::mat4(1.0f): 
-            glm::mat4(1.0f)
+        .set("Ratio", context.dimensionsFormat == CanvasContext::Dimensions::Absolute ?
+            glm::vec2(1.0f):
+            glm::vec2(1.0f)
         )
-        .set("Projection", context.dimensionsFormat == CanvasContext::Dimensions::Absolute ?
-            glm::ortho(0.0f, m_camera.screenSize.x, 0.0f, m_camera.screenSize.y):
-            glm::mat4(1.0f)
-        );
+        .set("Projection", glm::vec4(0.0f, m_camera.screenSize.x, 0.0f, m_camera.screenSize.y))
+    ;
 }
+

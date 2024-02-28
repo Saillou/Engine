@@ -1,6 +1,49 @@
 #include "ShapeMesh.hpp"
 
+// Statics
+std::unique_ptr<ShapeMesh> ShapeMesh::_s_mesh = nullptr;
+
+void ShapeMesh::Create() 
+{
+	struct _ShapeMesh_: ShapeMesh {
+		_ShapeMesh_() : ShapeMesh() { }
+	};
+
+	_s_mesh = std::make_unique<_ShapeMesh_>();
+}
+
 void ShapeMesh::Draw(const CanvasShape& shape)
 {
-	// .. magic ..
+	if (!_s_mesh)
+		Create();
+
+	_s_mesh->_update_buffer(shape.points);
+	_s_mesh->_draw();
+}
+
+// Instance
+ShapeMesh::ShapeMesh():
+	m_vbo(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+{
+	m_vao.bind();
+	m_vbo.bindData(std::vector<Vertex>());
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+}
+
+void ShapeMesh::_update_buffer(const CanvasShape::Points& points)
+{
+	std::vector<Vertex> vertices;
+	for (const CanvasShape::Point& point : points)
+	{
+		vertices.push_back(Vertex{ point.x, point.y });
+	}
+	_s_mesh->m_vbo.bindData(vertices);
+}
+
+void ShapeMesh::_draw()
+{
+	m_vao.bind();
+	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m_vbo.size());
 }

@@ -43,8 +43,8 @@ struct Mesh {
     // Gpu instructions
     enum DrawMode : unsigned int
     {
-        Point = GL_POINTS,
-        Line = GL_LINES,
+        Point    = GL_POINTS,
+        Line     = GL_LINES,
         Triangle = GL_TRIANGLES,
     } drawMode = Triangle;
 

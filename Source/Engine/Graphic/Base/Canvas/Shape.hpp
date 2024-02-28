@@ -16,6 +16,6 @@ struct CanvasShape
 		Stroke	// Draw contours
 	} type = DrawType::Fill;
 
-	Color  colors = Color(1.0f);
+	Color  color  = Color(1.0f);
 	Points points = {};
 };

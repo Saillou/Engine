@@ -33,6 +33,7 @@ struct Shader
 	Shader& set(const std::string& name, int v);
 	Shader& set(const std::string& name, bool b);
 
+	Shader& set(const std::string& name, const glm::vec2& vec);
 	Shader& set(const std::string& name, const glm::vec3& vec);
 	Shader& set(const std::string& name, const glm::vec4& vec);
 
