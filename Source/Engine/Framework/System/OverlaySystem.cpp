@@ -2,9 +2,6 @@
 
 #include "../../Graphic/Base/SceneFrame.hpp"
 
-// TODO: do a real system with component, this is just a placebo
-
-
 OverlaySystem::OverlaySystem(const Camera& camera) : 
     m_camera(camera)
 {
@@ -20,10 +17,14 @@ void OverlaySystem::update()
     glDisable(GL_DEPTH_TEST);
     TextEngine::SetViewport(0, 0, (int)m_camera.screenSize.x, (int)m_camera.screenSize.y);
 
+    _canvas_system->draw();
+
+    // --- Todo: remove this and use entities instead --------
+    // Current blocker: how to access the "draw" method ? 
     for (SceneFrame* frame : _frames) {
         frame->draw();
     }
-    _canvas_system->draw();
+    // --------------------------------------------------------
 
     glEnable(GL_DEPTH_TEST);
 }

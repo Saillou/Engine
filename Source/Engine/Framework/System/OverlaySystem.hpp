@@ -25,10 +25,10 @@ struct OverlaySystem :
 	void init() override;
 	void update();
 
-	// Todo: remove these 2 methods and use entities
+	// --- Todo: remove these 2 methods and use entities ---
 	void add_frame(SceneFrame*);
 	void remove_frame(SceneFrame*);
-	// --
+	// -----------------------------------------------------
 
 	void quad(const Quad& surface);
 	void text(const std::string& text, float x, float y, float scale, const glm::vec4& color);
@@ -36,7 +36,6 @@ struct OverlaySystem :
 private:
 	const Camera& m_camera;
 
-	// frames to render
 	std::shared_ptr<CanvasSystem> _canvas_system;
-	std::unordered_set<SceneFrame*> _frames;
+	std::unordered_set<SceneFrame*> _frames; // Todo: --> Shall be entities instead
 };

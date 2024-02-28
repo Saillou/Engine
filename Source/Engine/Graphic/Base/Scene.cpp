@@ -44,7 +44,7 @@ void Scene::run() {
 
         Event::Emit(SceneEvents::PostDraw());
 
-        m_overlay_system->update(); // Draw UI
+        m_overlay_system->update(); // Draw UI (and canvas)
     }
     Event::Emit(SceneEvents::RenderFinished());
 
