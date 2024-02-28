@@ -37,7 +37,21 @@ void CanvasSystem::_drawFromComponent(const CanvasComponent& component)
         ShaderManager::Get(CookType::Shape)
             .set("Color", r * shape.color)
         ;
-        ShapeMesh::Draw(shape);
+
+        if (shape.type == CanvasShape::DrawType::Fill) {
+            ShapeMesh::Draw(shape);
+        }
+
+        // TODO: use a geometrie shader instead
+        if (shape.type == CanvasShape::DrawType::Stroke) {
+            glPolygonMode(GL_FRONT, GL_LINE);
+            glPolygonMode(GL_BACK, GL_LINE);
+
+            ShapeMesh::Draw(shape);
+
+            glPolygonMode(GL_FRONT, GL_FILL);
+            glPolygonMode(GL_BACK, GL_FILL);
+        }
     }
 }
 
