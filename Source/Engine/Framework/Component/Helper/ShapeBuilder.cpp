@@ -66,12 +66,13 @@ ShapeBuilder& ShapeBuilder::fill(const CanvasShape::Color& color)
 	_current_container->push_back(_current_shape);
 	return *this;
 }
-ShapeBuilder& ShapeBuilder::stroke(const CanvasShape::Color& color) 
+ShapeBuilder& ShapeBuilder::stroke(const CanvasShape::Color& color, float thickness) 
 {
 	assert(_current_container && "No container");
 
 	_current_shape.type = CanvasShape::DrawType::Stroke;
 	_current_shape.color = color;
+	_current_shape.thickness = thickness;
 	_current_container->push_back(_current_shape);
 	return *this;
 }

@@ -18,4 +18,5 @@ struct CanvasShape
 
 	Color  color  = Color(1.0f);
 	Points points = {};
+	float thickness = 1.0f;
 };

@@ -14,7 +14,7 @@ struct ShapeBuilder
 	ShapeBuilder& moveTo(float x, float y);
 	ShapeBuilder& lineTo(float x, float y);
 	ShapeBuilder& fill(const CanvasShape::Color& color);
-	ShapeBuilder& stroke(const CanvasShape::Color& color);
+	ShapeBuilder& stroke(const CanvasShape::Color& color, float thickness);
 
 private:
 	static std::shared_ptr<ShapeBuilder> _s_instance;

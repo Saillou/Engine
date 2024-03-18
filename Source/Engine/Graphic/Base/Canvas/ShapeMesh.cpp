@@ -26,6 +26,8 @@ void ShapeMesh::Stroke(const CanvasShape& shape)
 	if (!_s_mesh)
 		Create();
 
+	glLineWidth(shape.thickness);
+
 	_s_mesh->_update_buffer(shape.points);
 	_s_mesh->_draw_lines();
 }
