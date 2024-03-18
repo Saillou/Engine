@@ -22,9 +22,10 @@ inline std::shared_ptr<Shader> ShaderShape::Create()
         )
         .attachSource(Shader::Fragment, ShaderSource{}
             .add_var("uniform", "vec4", "Color")
+            .add_var("uniform", "float", "ColorUnit")
             .add_var("out", "vec4", "FragColor")
             .add_func("void", "main", "", R"_main_(
-                FragColor = Color;
+                FragColor = ColorUnit * Color;
             )_main_")
         )
     ;

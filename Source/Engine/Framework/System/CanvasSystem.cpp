@@ -29,28 +29,24 @@ void CanvasSystem::draw()
 // Private
 void CanvasSystem::_drawFromComponent(const CanvasComponent& component)
 {
-    float r = component.context.colorFormat == CanvasContext::ColorFormat::Uint8 ? 1.0f / 255.0f : 1.0f;
     _setShapeShader(component.context);
 
     for (const CanvasShape& shape : component.shapes)
     {
-        ShaderManager::Get(CookType::Shape)
-            .set("Color", r * shape.color)
-        ;
+        switch (shape.type)
+        {
+        case CanvasShape::DrawType::Fill:
+            ShaderManager::Get(CookType::Shape).set("Color", shape.color);
+            ShapeMesh::Fill(shape);
+            break;
 
-        if (shape.type == CanvasShape::DrawType::Fill) {
-            ShapeMesh::Draw(shape);
-        }
+        case CanvasShape::DrawType::Stroke:
+            ShaderManager::Get(CookType::Shape).set("Color", shape.color);
+            ShapeMesh::Stroke(shape);
+            break;
 
-        // TODO: use a geometrie shader instead
-        if (shape.type == CanvasShape::DrawType::Stroke) {
-            glPolygonMode(GL_FRONT, GL_LINE);
-            glPolygonMode(GL_BACK, GL_LINE);
-
-            ShapeMesh::Draw(shape);
-
-            glPolygonMode(GL_FRONT, GL_FILL);
-            glPolygonMode(GL_BACK, GL_FILL);
+        default:
+            continue;
         }
     }
 }
@@ -59,6 +55,10 @@ void CanvasSystem::_setShapeShader(const CanvasContext& context)
 {
     ShaderManager::Get(CookType::Shape)
         .use()
+        .set("ColorUnit", context.colorFormat == CanvasContext::ColorFormat::Uint8 ? 
+            1.0f / 255.0f : 
+            1.0f
+        )
         .set("Projection", context.dimensionsFormat == CanvasContext::Dimensions::Absolute ?
             glm::ortho(0.0f, m_camera.screenSize.x, 0.0f, m_camera.screenSize.y): 
             glm::mat4(1.0f)

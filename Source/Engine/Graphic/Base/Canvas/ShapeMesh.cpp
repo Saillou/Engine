@@ -12,13 +12,22 @@ void ShapeMesh::Create()
 	_s_mesh = std::make_unique<_ShapeMesh_>();
 }
 
-void ShapeMesh::Draw(const CanvasShape& shape)
+void ShapeMesh::Fill(const CanvasShape& shape)
 {
 	if (!_s_mesh)
 		Create();
 
 	_s_mesh->_update_buffer(shape.points);
-	_s_mesh->_draw();
+	_s_mesh->_draw_triangles();
+}
+
+void ShapeMesh::Stroke(const CanvasShape& shape)
+{
+	if (!_s_mesh)
+		Create();
+
+	_s_mesh->_update_buffer(shape.points);
+	_s_mesh->_draw_lines();
 }
 
 // Instance
@@ -32,10 +41,16 @@ ShapeMesh::ShapeMesh():
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 }
 
-void ShapeMesh::_draw()
+void ShapeMesh::_draw_triangles()
 {
 	m_vao.bind();
 	glDrawArrays(GL_TRIANGLE_FAN, 0, (GLsizei)m_vbo.size() / sizeof(Vertex));
+}
+
+void ShapeMesh::_draw_lines() 
+{
+	m_vao.bind();
+	glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)m_vbo.size() / sizeof(Vertex));
 }
 
 void ShapeMesh::_update_buffer(const CanvasShape::Points& points)

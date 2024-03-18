@@ -14,12 +14,14 @@ struct ShapeMesh {
 		float y = 0.0f;
 	};
 
-	static void Draw(const CanvasShape& shape);
+	static void Fill(const CanvasShape& shape);
+	static void Stroke(const CanvasShape& shape);
 
 protected:
 	ShapeMesh();
 
-	void _draw();
+	void _draw_triangles();
+	void _draw_lines();
 	void _update_buffer(const CanvasShape::Points& points);
 
 private:

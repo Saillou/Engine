@@ -36,7 +36,6 @@ ShapeBuilder& ShapeBuilder::circle(float x, float y, float r)
 {
 	assert(_current_container && "No container");
 
-	_current_shape.points.push_back(CanvasShape::Point(x, y));
 	for (int i = 0; i <= 50; i++) {
 		float theta = i * glm::two_pi<float>() / 50.0f;
 		_current_shape.points.push_back(CanvasShape::Point(x + r * glm::cos(theta), y + r * glm::sin(theta)));
