@@ -14,13 +14,14 @@ struct Monster {
 	Monster():
 		_entity(ECS::createEntity()),
 		_experience(0),
-		_level(1)
+		_level(1),
+		_position(glm::vec3(0, 2, 0))
 	{
 		BodyComponent body;
 		body.model = Model::Load("Resources/objects/character/character.glb");
 		body.transform.local = glm::rotate(glm::mat4(1.0f), glm::half_pi<float>(), glm::vec3(1, 0, 0));
 		body.transform.local = glm::translate(body.transform.local, glm::vec3(0, 0.2f, 0));
-		body.transform.world = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, 0));
+		body.transform.world = glm::translate(glm::mat4(1.0f), _position);
 		ECS::addComponent(_entity, body);
 
 		DrawComponent draw;
@@ -41,6 +42,10 @@ struct Monster {
 		_maybe_level_up(); // lol
 	}
 
+	const glm::vec3& get_position() const {
+		return _position;
+	}
+
 private:
 	void _maybe_level_up() {
 		if (_experience < 10)
@@ -57,4 +62,5 @@ private:
 	Entity _entity;
 	int _experience;
 	int _level;
+	glm::vec3 _position;
 };

@@ -1,4 +1,5 @@
 #include "SampleCanvas.hpp"
+#include <Engine/Framework/System/Physic/RayTracer.hpp>
 
 #include <algorithm>
 
@@ -57,31 +58,47 @@ void SampleCanvas::_update(const CommonEvents::StateUpdated&)
     for (Entity foodId : food_to_consume) {
         _consumeFood(foodId);
     }
+
+    // Update ui
+    m_level_info.set_position(RayTracer::GetScreenPosition(m_scene.camera, m_monster.get_position()));
 }
 
 void SampleCanvas::_on_key_pressed(const CommonEvents::KeyPressed& evt) 
 {
+    // Keyboard mode
+    static bool shift_key_on = false;
+    if (evt.key == KeyCode::ShiftLeft)
+        shift_key_on = evt.action != InputAction::Released;
+
     // -------------------- Repeated ---------------------
     if (evt.action != InputAction::Pressed && evt.action != InputAction::Repeated)
         return;
 
-    const float MIN_CAM_X = -5.0f;
-    const float MAX_CAM_X = +5.0f;
-
-    float move_x  = 0.0f;
-    float speed_x = 0.01f;
+    glm::vec2 arrow_move(0.0f, 0.0f);
 
     switch (evt.key)
     {
-        case KeyCode::ArrowLeft:  move_x = -1.0f; break;
-        case KeyCode::ArrowRight: move_x = +1.0f; break;
+        case KeyCode::ArrowLeft:  arrow_move.x = -1.0f; break;
+        case KeyCode::ArrowRight: arrow_move.x = +1.0f; break;
+
+        case KeyCode::ArrowUp:   arrow_move.y = -1.0f; break;
+        case KeyCode::ArrowDown: arrow_move.y = +1.0f; break;
     }
 
-    float next_x = m_scene.camera.direction.x + speed_x * move_x;
-    if (next_x < MAX_CAM_X && next_x > MIN_CAM_X)
-    {
-        m_scene.camera.direction.x = next_x;
-        m_scene.camera.position.x  = next_x;
+    // apply
+    const float speed = 0.01f;
+
+    glm::vec2 delta = speed * arrow_move;
+    m_scene.camera.direction.x += delta.x;
+    m_scene.camera.position.x  += delta.x;
+
+    if (shift_key_on) {
+        m_scene.camera.direction.y += delta.y;
+        m_scene.camera.position.y  += delta.y;
+    }
+    else {
+        m_scene.camera.direction.z += delta.y;
+        m_scene.camera.position.z  += delta.y;
     }
 
     // -------------------- Pressed ---------------------

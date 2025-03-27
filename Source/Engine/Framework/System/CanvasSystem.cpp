@@ -31,22 +31,14 @@ void CanvasSystem::_drawFromComponent(const CanvasComponent& component)
 {
     _setShapeShader(component.context);
 
-    for (const CanvasShape& shape : component.shapes)
-    {
-        switch (shape.type)
-        {
-        case CanvasShape::DrawType::Fill:
-            ShaderManager::Get(CookType::Shape).set("Color", shape.color);
-            ShapeMesh::Fill(shape);
-            break;
+    for (const CanvasShape& shape : component.shapes) {
+        ShaderManager::Get(CookType::Shape).set("Color", shape.color);
 
-        case CanvasShape::DrawType::Stroke:
-            ShaderManager::Get(CookType::Shape).set("Color", shape.color);
-            ShapeMesh::Stroke(shape);
-            break;
+        switch (shape.type) {
+            case CanvasShape::DrawType::Fill:   ShapeMesh::Fill(shape);   break;
+            case CanvasShape::DrawType::Stroke: ShapeMesh::Stroke(shape); break;
 
-        default:
-            continue;
+            default: continue;
         }
     }
 }
@@ -56,7 +48,7 @@ void CanvasSystem::_setShapeShader(const CanvasContext& context)
     ShaderManager::Get(CookType::Shape)
         .use()
         .set("ColorUnit", context.colorFormat == CanvasContext::ColorFormat::Uint8 ? 
-            1.0f / 255.0f : 
+            (1.0f/255.0f): 
             1.0f
         )
         .set("Projection", context.dimensionsFormat == CanvasContext::Dimensions::Absolute ?
@@ -65,4 +57,3 @@ void CanvasSystem::_setShapeShader(const CanvasContext& context)
         )
     ;
 }
-

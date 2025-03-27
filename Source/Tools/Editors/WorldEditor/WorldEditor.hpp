@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <Engine/Events/CommonEvents.hpp>
+#include <Engine/Framework/Helper/ManagedEntity.hpp>
 
 #include "WorldEditorMenu.hpp"
 #include "../Editor.hpp"
@@ -24,4 +25,5 @@ private:
 
     // - Members -
     WorldEditorMenu m_menu;
+    std::unordered_map<std::string, SharedEntity> m_entities;
 };

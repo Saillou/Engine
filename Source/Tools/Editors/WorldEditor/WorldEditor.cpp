@@ -9,14 +9,20 @@ void WorldEditor::onEnter() {
     m_menu.reset();
 
     m_scene.lights = { };
-    m_scene.camera.position = glm::vec3(0, -4.0f, 0);
+    m_scene.camera.position  = glm::vec3(0, -30, 0);
     m_scene.camera.direction = glm::vec3(0, 0, 0);
 
-    // ..
+    m_entities["cube1"] = ManagedEntity::Create(Model::Load(Model::SimpleShape::Cube));
+    m_entities["cube1"]->local() = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+    m_entities["cube1"]->color() = glm::vec4(1.0f, 0, 0, 1.0f);
+
+    m_entities["cube2"] = ManagedEntity::Create(Model::Load(Model::SimpleShape::Cube));
+    m_entities["cube2"]->local() = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0));
+    m_entities["cube2"]->color() = glm::vec4(0, 1.0f, 0, 1.0f);
 }
 
 void WorldEditor::onExit() { 
-    // ..
+    m_entities.clear();
 }
 
 void WorldEditor::onUpdate() {
