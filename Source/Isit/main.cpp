@@ -1,27 +1,25 @@
-#include <iostream>
-
+#include <Engine/Graphic/Window.hpp>
 #include <Engine/Events/CommonEvents.hpp>
 #include <Engine/Framework/Service.hpp>
-#include <Engine/Graphic/Window.hpp>
 
 #include "Game.hpp"
 
 int main() {
-    Service<Window>::build(1600, 900, "Isit");
-    Service<Game>::build();
+    Window& window = Service<Window>::build(1600, 900, "Isit");
+    Game game;
 
     do {
         // Check stuff
-        if (Service<Game>::get().wantQuit())
+        if (game.wantQuit())
         {
-            Service<Window>::get().close();
+            window.close();
         }
 
         // States, Physics ..
         {
             Event::Emit(CommonEvents::StateUpdated());
         }
-    } while (Service<Window>::get().update());
+    } while (window.update());
 
     return 0;
 }

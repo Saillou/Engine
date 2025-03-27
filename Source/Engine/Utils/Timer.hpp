@@ -79,7 +79,7 @@ public:
 
 		// Get elapsed time since last tic
 		template <typename TimePolicy> inline
-			int64_t elapsed() {
+			int64_t elapsed() const {
 			static_assert(std::is_base_of<_time_policy, TimePolicy>(), "Bad time policy");
 
 			return TimePolicy::GetDiff<int64_t>(Timer::Now(), m_last_tic);

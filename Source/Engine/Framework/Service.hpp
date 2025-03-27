@@ -8,8 +8,9 @@ class Service {
 
 public:
     template<typename... Args>
-    static void build(Args&&... args) {
+    static T& build(Args&&... args) {
         provide(new T(std::forward<Args>(args)...));
+        return get();
     }
 
     static void provide(T* ptr) {
