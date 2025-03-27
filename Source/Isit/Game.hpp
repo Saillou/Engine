@@ -45,6 +45,7 @@ private:
         Animator::Tweet tweet_load;
         Animator::Tweet tweet_fade;
         int tweet_playing = 0;
+        float load_time = 2.0f;
 
     } m_square_animation;
 };

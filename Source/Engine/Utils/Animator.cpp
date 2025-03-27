@@ -8,11 +8,6 @@ Animator::Tweet::Tweet(const float start_offset, const float duration_sec, const
 	reset();
 }
 
-Animator::Tweet& Animator::Tweet::operator=(const Animator::Tweet& src)
-{
-	return Animator::Tweet(src.m_offset, src.m_duration, src.m_type);
-}
-
 void Animator::Tweet::reset() {
 	m_time.tic();
 }

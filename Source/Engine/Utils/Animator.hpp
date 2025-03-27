@@ -13,7 +13,6 @@ struct Animator {
 		};
 
 		Tweet(const float start_offset = 0.0f, const float duration_sec = 1.0f, const Type type = Type::Linear);
-		Tweet& Tweet::operator =(const Animator::Tweet&);
 
 		void reset();
 		bool ended() const;
@@ -27,9 +26,9 @@ struct Animator {
 		float _get_rel_time() const;
 
 		Timer::Chronometre m_time;
-		const float m_offset;
-		const float m_duration;
-		const Type m_type;
+		float m_offset;
+		float m_duration;
+		Type m_type;
 	};
 };
 

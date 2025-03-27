@@ -22,8 +22,8 @@ Game::Game() :
         .colors(CanvasContext::ColorFormat::Uint8);
 
     m_button_counter = CircleButton { 300, 300, 50 };
-    m_square_animation.tweet_load = Animator::Tweet( 0.0f, 0.5f, Animator::Tweet::Type::Quadratic );
-    m_square_animation.tweet_fade = Animator::Tweet( 0.0f, 0.1f, Animator::Tweet::Type::Quadratic );
+    m_square_animation.tweet_load = Animator::Tweet( 0.0f, m_square_animation.load_time, Animator::Tweet::Type::Quadratic );
+    m_square_animation.tweet_fade = Animator::Tweet( 0.0f, 0.3f, Animator::Tweet::Type::Quadratic );
 
     // Draw
     m_frame.layout().add(Text::Create(std::to_string(G_data_test.count)), 300.0f/ m_scene.width(), 300.0f / m_scene.height(), "#counter");
@@ -69,13 +69,21 @@ void Game::_on_click(const CommonEvents::MouseButton& btn)
         
         if (btn.action == InputAction::Released) {
             if (m_button_counter.is_pressed) {
-                auto text_count = m_frame.layout().find<Text>("#counter");
-                if (text_count) {
-                    text_count->setText(std::to_string(++G_data_test.count));
-                }
+                if (m_square_animation.tweet_playing != 1) {
+                    G_data_test.count++;
 
-                m_square_animation.tweet_load.reset();
-                m_square_animation.tweet_playing = 1;
+                    auto text_count = m_frame.layout().find<Text>("#counter");
+                    if (text_count) {
+                        text_count->setText(std::to_string(G_data_test.count));
+                    }
+
+                    if (m_square_animation.load_time > 0.1f) {
+                        m_square_animation.load_time -= 0.1f;
+                    }
+
+                    m_square_animation.tweet_load = Animator::Tweet(0.0f, m_square_animation.load_time, Animator::Tweet::Type::Quadratic);
+                    m_square_animation.tweet_playing = 1;
+                }
             }
 
             m_button_counter.is_pressed = false;
@@ -92,13 +100,13 @@ void Game::_redraw_canvas()
 
     m_canvas.canvas()
         .begin()
-        .circle(m_button_counter.x, HEIGHT - m_button_counter.y, m_button_counter.r)
+        .circle(m_button_counter.x, (float)HEIGHT - m_button_counter.y, m_button_counter.r)
         .fill(m_button_counter.is_pressed ? glm::vec4(42, 142, 42, 255) : glm::vec4(42, 42, 42, 255))
         .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
 
     m_canvas.canvas()
         .begin()
-        .rect(75, HEIGHT - 350, 150, 100)
+        .rect(75, (float)HEIGHT - 350, 150, 100)
         .fill(glm::vec4(42, 42, 42, 255))
         .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
 
