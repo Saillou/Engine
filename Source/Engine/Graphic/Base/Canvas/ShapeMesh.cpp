@@ -17,7 +17,7 @@ void ShapeMesh::Fill(const CanvasShape& shape)
 	if (!_s_mesh)
 		Create();
 
-	_s_mesh->_update_buffer(shape.points);
+	_s_mesh->_update_buffer(shape.dataShape.points);
 	_s_mesh->_draw_triangles();
 }
 
@@ -28,7 +28,7 @@ void ShapeMesh::Stroke(const CanvasShape& shape)
 
 	glLineWidth(shape.thickness);
 
-	_s_mesh->_update_buffer(shape.points);
+	_s_mesh->_update_buffer(shape.dataShape.points);
 	_s_mesh->_draw_lines();
 }
 

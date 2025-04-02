@@ -3,15 +3,14 @@
 #include <Engine/Framework/Core/ECS.hpp>
 #include <Engine/Framework/Component/CanvasComponent.hpp>
 
-struct CanvasElement {
-	CanvasElement() :
+struct CanvasEntity {
+	CanvasEntity() :
 		_entity(ECS::createEntity())
 	{
-		CanvasComponent canvas;
-		ECS::addComponent(_entity, canvas);
+		ECS::addComponent(_entity, CanvasComponent());
 	}
 
-	virtual ~CanvasElement() {
+	virtual ~CanvasEntity() {
 		ECS::destroyEntity(_entity);
 	}
 
@@ -19,7 +18,7 @@ struct CanvasElement {
 		return _entity;
 	}
 
-	CanvasComponent& canvas() {
+	CanvasComponent& get() {
 		return ECS::getComponent<CanvasComponent>(_entity);
 	}
 

@@ -10,13 +10,9 @@ struct DataTest {
 
 Game::Game() :
     m_scene(Service<Window>::get().scene()),
-    m_canvas(CanvasElement()),
-    m_frame(SceneFrame(m_scene))
+    m_canvas(CanvasEntity())
 {
-    // Setup
-    m_frame.layout().style().background.setValue(Style::Transparent());
-
-    m_canvas.canvas()
+    m_canvas.get()
         .ctx()
         .dimensions(CanvasContext::Dimensions::Absolute)
         .colors(CanvasContext::ColorFormat::Uint8);
@@ -26,8 +22,6 @@ Game::Game() :
     m_square_animation.tweet_fade = Animator::Tweet( 0.0f, 0.3f, Animator::Tweet::Type::Quadratic );
 
     // Draw
-    m_frame.layout().add(Text::Create(std::to_string(G_data_test.count)), 300.0f/ m_scene.width(), 300.0f / m_scene.height(), "#counter");
-
     _redraw_canvas();
 
     // Events
@@ -72,11 +66,6 @@ void Game::_on_click(const CommonEvents::MouseButton& btn)
                 if (m_square_animation.tweet_playing != 1) {
                     G_data_test.count++;
 
-                    auto text_count = m_frame.layout().find<Text>("#counter");
-                    if (text_count) {
-                        text_count->setText(std::to_string(G_data_test.count));
-                    }
-
                     if (m_square_animation.load_time > 0.1f) {
                         m_square_animation.load_time -= 0.1f;
                     }
@@ -96,19 +85,25 @@ void Game::_redraw_canvas()
     const int WIDTH = m_scene.width();
     const int HEIGHT = m_scene.height();
 
-    m_canvas.canvas().clear();
+    m_canvas.get()
+        .clear();
 
-    m_canvas.canvas()
+    m_canvas.get()
         .begin()
         .circle(m_button_counter.x, (float)HEIGHT - m_button_counter.y, m_button_counter.r)
         .fill(m_button_counter.is_pressed ? glm::vec4(42, 142, 42, 255) : glm::vec4(42, 42, 42, 255))
         .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
 
-    m_canvas.canvas()
+    m_canvas.get()
         .begin()
         .rect(75, (float)HEIGHT - 350, 150, 100)
         .fill(glm::vec4(42, 42, 42, 255))
         .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
+
+    m_canvas.get()
+        .begin()
+        .text(std::to_string(G_data_test.count), m_button_counter.x, (float)HEIGHT - m_button_counter.y, 0.5f)
+        .fill(glm::vec4(142, 142, 142, 255));
 
     // Animations
     switch (m_square_animation.tweet_playing) 
@@ -117,7 +112,7 @@ void Game::_redraw_canvas()
         int green = m_square_animation.tweet_load.update(42, 255);
         int width = m_square_animation.tweet_load.update(0, 150);
 
-        m_canvas.canvas().begin()
+        m_canvas.get().begin()
             .rect(75, HEIGHT - 350, width, 100)
             .fill(glm::vec4(42, green, 42, 255))
             .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
@@ -130,7 +125,7 @@ void Game::_redraw_canvas()
     case 2: {
         int green = m_square_animation.tweet_fade.update(255, 42);
 
-        m_canvas.canvas().begin()
+        m_canvas.get().begin()
             .rect(75, HEIGHT - 350, 150, 100)
             .fill(glm::vec4(42, green, 42, 255))
             .stroke(glm::vec4(255, 255, 255, 127), 2.0f);

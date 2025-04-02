@@ -1,5 +1,6 @@
 #pragma once
 
+#include<string>
 #include "../../../Graphic/Base/Canvas/Shape.hpp"
 
 // It's a bad idea to construct this object, use CanvasComponent helper instead.
@@ -13,6 +14,7 @@ struct ShapeBuilder
 	ShapeBuilder& circle(float x, float y, float r);
 	ShapeBuilder& moveTo(float x, float y);
 	ShapeBuilder& lineTo(float x, float y);
+	ShapeBuilder& text(const std::string& t, float x, float y, float size = 1.0f);
 	ShapeBuilder& fill(const CanvasShape::Color& color);
 	ShapeBuilder& stroke(const CanvasShape::Color& color, float thickness);
 

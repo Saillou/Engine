@@ -2,13 +2,10 @@
 
 #include <Engine/Events/Events.hpp>
 #include <Engine/Events/CommonEvents.hpp>
-
 #include <Engine/Graphic/Base/Scene.hpp>
-#include <Engine/Graphic/Base/SceneFrame.hpp>
-
 #include <Engine/Utils/Animator.hpp>
 
-#include "CanvasElement.hpp"
+#include "CanvasEntity.hpp"
 
 struct Game : Event::Subscriber
 {
@@ -26,16 +23,15 @@ private:
 
     // Members
     Scene& m_scene;
-    CanvasElement m_canvas;
-    SceneFrame m_frame;
+    CanvasEntity m_canvas;
 
     bool _want_quit = false;
 
     // UI
     struct CircleButton {
-        float x;
-        float y;
-        float r;
+        float x = 0.0f;
+        float y = 0.0f;
+        float r = 0.0f;
 
         bool is_pressed = false;
     } m_button_counter;
