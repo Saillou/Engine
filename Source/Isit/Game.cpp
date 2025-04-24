@@ -1,12 +1,14 @@
 #include "Game.hpp"
 
-#include <Engine/Framework/Service.hpp>
-#include <Engine/Graphic/Window.hpp>
-#include <Engine/Graphic/Base/Widget/Text.hpp>
+#include "Panels/PanelStory.hpp"
+#include "Panels/PanelFight.hpp"
+#include "Panels/PanelIdle.hpp"
 
-struct DataTest {
-    int count;
-} G_data_test;
+/*
+    histoire:   une balade en foret to eternity 
+    idle:       cultivation,  elevage de pets
+    fight:      tower defence
+*/
 
 Game::Game() :
     m_scene(Service<Window>::get().scene()),
@@ -17,17 +19,53 @@ Game::Game() :
         .dimensions(CanvasContext::Dimensions::Absolute)
         .colors(CanvasContext::ColorFormat::Uint8);
 
-    m_button_counter = CircleButton { 300, 300, 50 };
-    m_square_animation.tweet_load = Animator::Tweet( 0.0f, m_square_animation.load_time, Animator::Tweet::Type::Quadratic );
-    m_square_animation.tweet_fade = Animator::Tweet( 0.0f, 0.3f, Animator::Tweet::Type::Quadratic );
-
-    // Draw
-    _redraw_canvas();
+    m_panels[StepGame::Story] = std::make_shared<PanelStory>(m_scene);
+    m_panels[StepGame::Fight] = std::make_shared<PanelFight>(m_scene);
+    m_panels[StepGame::Idle]  = std::make_shared<PanelIdle>(m_scene);
 
     // Events
     _subscribe(&Game::_on_key_pressed);
     _subscribe(&Game::_on_click);
+    _subscribe(&Game::_on_move);
     _subscribe(&Game::_state_updated);
+
+    _subscribe(m_panels[StepGame::Fight], [&](const FightEvents::Result& fe) {
+        m_panels[StepGame::Fight]->reset();
+
+        switch (fe._result) {
+        case FightEvents::Result::Win:
+            break;
+
+        case FightEvents::Result::Lose:
+            break;
+        }
+
+        _current_step = StepGame::Story;
+        m_panels[_current_step]->reset();
+    });
+
+    _subscribe(m_panels[StepGame::Story], [&](const StoryEvents::Choice& c) {
+        m_panels[StepGame::Story]->reset();
+
+        switch (c._choice) {
+        case StoryEvents::Choice::Idle:
+            _current_step = StepGame::Idle;
+            break;
+
+        case StoryEvents::Choice::Fight:
+            _current_step = StepGame::Fight;
+            break;
+        }
+
+        m_panels[_current_step]->reset();
+    });
+
+    _subscribe(m_panels[StepGame::Idle], [&](const IdleEvents::Back&) {
+        m_panels[StepGame::Idle]->reset();
+
+        _current_step = StepGame::Story;
+        m_panels[_current_step]->reset();
+    });
 }
 Game::~Game() {
     _unsubscribeAll();
@@ -40,9 +78,10 @@ bool Game::wantQuit() const
 
 void Game::_state_updated(const CommonEvents::StateUpdated&)
 {
-    _redraw_canvas();
-}
+    m_canvas.get().clear();
 
+    m_panels[_current_step]->draw(m_canvas, m_scene);
+}
 void Game::_on_key_pressed(const CommonEvents::KeyPressed& evt) 
 {
     switch (evt.key)
@@ -50,89 +89,12 @@ void Game::_on_key_pressed(const CommonEvents::KeyPressed& evt)
         case KeyCode::Escape: _want_quit = true; break;
     }
 }
-
 void Game::_on_click(const CommonEvents::MouseButton& btn)
 {
-    if (btn.button == MouseButton::Left) {
-        if (btn.action == InputAction::Pressed) {
-            m_button_counter.is_pressed =
-                (btn.x - m_button_counter.x) * (btn.x - m_button_counter.x) +
-                (btn.y - m_button_counter.y) * (btn.y - m_button_counter.y)
-                <= m_button_counter.r * m_button_counter.r;
-        }
-        
-        if (btn.action == InputAction::Released) {
-            if (m_button_counter.is_pressed) {
-                if (m_square_animation.tweet_playing != 1) {
-                    G_data_test.count++;
-
-                    if (m_square_animation.load_time > 0.1f) {
-                        m_square_animation.load_time -= 0.1f;
-                    }
-
-                    m_square_animation.tweet_load = Animator::Tweet(0.0f, m_square_animation.load_time, Animator::Tweet::Type::Quadratic);
-                    m_square_animation.tweet_playing = 1;
-                }
-            }
-
-            m_button_counter.is_pressed = false;
-        }
-    }
+    m_panels[_current_step]->mouse_clicked(btn);
 }
 
-void Game::_redraw_canvas()
+void Game::_on_move(const CommonEvents::MouseMoved& btn)
 {
-    const int WIDTH = m_scene.width();
-    const int HEIGHT = m_scene.height();
-
-    m_canvas.get()
-        .clear();
-
-    m_canvas.get()
-        .begin()
-        .circle(m_button_counter.x, (float)HEIGHT - m_button_counter.y, m_button_counter.r)
-        .fill(m_button_counter.is_pressed ? glm::vec4(42, 142, 42, 255) : glm::vec4(42, 42, 42, 255))
-        .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
-
-    m_canvas.get()
-        .begin()
-        .rect(75, (float)HEIGHT - 350, 150, 100)
-        .fill(glm::vec4(42, 42, 42, 255))
-        .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
-
-    m_canvas.get()
-        .begin()
-        .text(std::to_string(G_data_test.count), m_button_counter.x, (float)HEIGHT - m_button_counter.y, 0.5f)
-        .fill(glm::vec4(142, 142, 142, 255));
-
-    // Animations
-    switch (m_square_animation.tweet_playing) 
-    {
-    case 1: {
-        int green = m_square_animation.tweet_load.update(42, 255);
-        int width = m_square_animation.tweet_load.update(0, 150);
-
-        m_canvas.get().begin()
-            .rect(75, HEIGHT - 350, width, 100)
-            .fill(glm::vec4(42, green, 42, 255))
-            .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
-
-        if (m_square_animation.tweet_load.ended()) {
-            m_square_animation.tweet_playing = 2;
-            m_square_animation.tweet_fade.reset();
-        }
-    } break;
-    case 2: {
-        int green = m_square_animation.tweet_fade.update(255, 42);
-
-        m_canvas.get().begin()
-            .rect(75, HEIGHT - 350, 150, 100)
-            .fill(glm::vec4(42, green, 42, 255))
-            .stroke(glm::vec4(255, 255, 255, 127), 2.0f);
-
-        if (m_square_animation.tweet_fade.ended()) {
-            m_square_animation.tweet_playing = 0;
-        }
-    } break;
-    }
+    m_panels[_current_step]->mouse_moved(btn);
 }

@@ -67,8 +67,10 @@ ShapeBuilder& ShapeBuilder::text(const std::string& t, float x, float y, float s
 {
 	assert(_current_container && "No container");
 
-	_current_shape.clear();
-	_current_shape.shapeType		 = CanvasShape::ShapeType::Text;
+	if (_current_shape.shapeType != CanvasShape::ShapeType::Text) {
+		_current_shape.clear(); // Not compatible with shapes
+		_current_shape.shapeType = CanvasShape::ShapeType::Text;
+	}
 	_current_shape.dataText.start	 = CanvasShape::Point(x, y);
 	_current_shape.dataText.text	 = t;
 	_current_shape.dataText.fontSize = size;

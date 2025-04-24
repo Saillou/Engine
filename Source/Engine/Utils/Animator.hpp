@@ -41,8 +41,8 @@ inline T Animator::Tweet::update(const T& start, const T& end)
 	const float a = _get_rel_time();
 
 	switch (m_type) {
-		case Type::Linear:		return end * a     + start * (1.0f - a);
-		case Type::Quadratic:	return end * (a*a) + start * (1.0f - a*a);
+		case Type::Linear:		return T(end * a     + start * (1.0f - a));
+		case Type::Quadratic:	return T(end * (a*a) + start * (1.0f - a*a));
 	}
 	return end;
 }
