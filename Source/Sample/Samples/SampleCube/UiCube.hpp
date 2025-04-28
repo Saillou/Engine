@@ -9,6 +9,7 @@
 #include <Engine/Graphic/Base/Widget/Layout/VerticalLayout.hpp>
 #include <Engine/Graphic/Base/Widget/Layout/HorizontalLayout.hpp>
 
+using namespace Widgets;
 
 struct UiCube : Event::Subscriber {
     UiCube();

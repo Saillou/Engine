@@ -16,6 +16,11 @@ ShapeBuilder& ShapeBuilder::Start(std::vector<CanvasShape>* shapes)
 	return *_s_instance;
 }
 
+ShapeBuilder& ShapeBuilder::Last()
+{
+	return *_s_instance;
+}
+
 void ShapeBuilder::Reset()
 {
 	_s_instance->_current_shape.clear();

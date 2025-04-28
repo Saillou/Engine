@@ -1,34 +1,51 @@
 #include "Button.hpp"
 
 Button::Button(const Rectangle& r, const std::string& text, const CanvasShape::Color& primary) :
-    _x(r.x), _y(r.y), _w(r.w), _h(r.h), 
+    _rect(r),
     _text(text), 
     _primaryColor(primary.b, primary.g, primary.r, 32),
-    _secondaryColor(primary.b, primary.g, primary.r, 255)
+    _secondaryColor(primary.b, primary.g, primary.r, 255),
+    _type(_Type::_rectangle)
+{
+}
+
+Button::Button(const Circle& c, const std::string& text, const CanvasShape::Color& primary):
+    _rect({ c.x, c.y, c.r, c.r }),
+    _text(text),
+    _primaryColor(primary.b, primary.g, primary.r, 32),
+    _secondaryColor(primary.b, primary.g, primary.r, 255),
+    _type(_Type::_circle)
 {
 }
 
 void Button::draw() {
     clear();
 
-    _canvas.get()
-        .begin()
-        .rect(_x, _scene.height() - _y - _h, _w, _h)
-        .fill(_primaryColor)
-        .stroke(_is_over ? _secondaryColor : _primaryColor, 1.0f);
+    switch(_type) 
+    {
+    case _rectangle:
+        _canvas.get()
+            .begin()
+            .rect(_rect.x, _scene.height() - _rect.y - _rect.h, _rect.w, _rect.h)
+            .fill(_primaryColor)
+            .stroke(_is_mouse_over() ? _secondaryColor : _primaryColor, 1.0f);
+        break;
+
+    case _circle:
+        _canvas.get()
+            .begin()
+            .circle(_rect.x, _scene.height() - _rect.y - _rect.h, _rect.w/2.0f)
+            .fill(_primaryColor)
+            .stroke(_is_mouse_over() ? _secondaryColor : _primaryColor, 1.0f);
+        break;
+    }
 
     _canvas.get()
         .begin()
-        .text(_text, _x + 10.0f, _scene.height() - _y - _h + 50.0f, 0.5f)
-        .fill(_is_over ? _secondaryColor : _primaryColor);
+        .text(_text, _rect.x + 2.0f, _scene.height() - _rect.y - _rect.h + 17.0f, 0.5f)
+        .fill(_is_mouse_over() ? _secondaryColor : _primaryColor);
 }
 
-void Button::onMouseOver() {
-    _is_over = true;
-}
-void Button::onMouseOut() {
-    _is_over = false;
-}
 void Button::onMouseReleased() {
     Event::Emit(CommonEvents::MouseButton(MouseButton::Left, InputAction::Released), this);
 }
@@ -37,5 +54,5 @@ void Button::onMousePressed() {
 }
 
 bool Button::_hitArea(int mx, int my) {
-    return (mx > _x && mx < _x + _w) && (my > _y && my < _y + _h);
+    return _rect.is_in(mx, my);
 }

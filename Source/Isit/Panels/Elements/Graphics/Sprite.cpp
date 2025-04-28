@@ -29,16 +29,54 @@ Sprite::Sprite() :
     });
 
     _subscribe([&](const CommonEvents::MouseMoved& mouse) { 
-        if (__is_mouse_over == _hitArea(mouse.x, mouse.y))
-            return; // nothing's changed
+        // State changed
+        if (__is_mouse_over != _hitArea(mouse.x, mouse.y)) {
+            __is_mouse_over ^= true;
+            __is_mouse_over ? onMouseOver() : onMouseOut();
+        }
 
-        __is_mouse_over ^= true;
-
-        return __is_mouse_over ? onMouseOver() : onMouseOut();
+        if (__is_mouse_over) {
+            return onMouseMoved(mouse.x, mouse.y);
+        }
     });
 }
 
+Sprite::~Sprite() {
+    clear();
+    _children.clear();
+    _unsubscribeAll();
+}
+
+void Sprite::draw() {
+    clear();
+
+    for (const auto& [name, sprite] : _children) {
+        sprite->draw();
+    }
+}
+
 void Sprite::clear() {
-    _canvas.get()
-        .clear();
+    for (const auto& [name, sprite] : _children) {
+        sprite->clear();
+    }
+    _canvas.get().clear();
+}
+
+std::shared_ptr<Sprite> Sprite::get(const std::string& name) const {
+    return _children.at(name);
+}
+
+void Sprite::add(const std::string& name, std::shared_ptr<Sprite> sprite) {
+    _children.emplace(name, move(sprite));
+}
+
+float Sprite::width() const {
+    return (float)_scene.width();
+}
+float Sprite::height() const {
+    return (float)_scene.height();
+}
+
+bool Sprite::_hitArea(int /*x*/, int /*y*/) {
+    return true;
 }

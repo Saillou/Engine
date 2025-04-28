@@ -22,4 +22,8 @@ struct CanvasComponent
 	ShapeBuilder& begin() {
 		return ShapeBuilder::Start(&shapes);
 	}
+
+	ShapeBuilder& last() {
+		return ShapeBuilder::Last();
+	}
 };

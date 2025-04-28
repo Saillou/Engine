@@ -3,6 +3,8 @@
 #include "Timer.hpp"
 
 #include <memory>
+#include <vector>
+#include <unordered_map>
 #include <glm/glm.hpp>
 #include <iostream>
 
@@ -13,12 +15,13 @@ struct Animator {
 		};
 
 		Tweet(const float start_offset = 0.0f, const float duration_sec = 1.0f, const Type type = Type::Linear);
+		virtual ~Tweet() = default;
 
 		void reset();
 		bool ended() const;
 
 		template <typename T> inline
-			T update(const T& start, const T& end);
+			T update(const T& start, const T& end) const;
 
 		float duration() const;
 
@@ -30,10 +33,36 @@ struct Animator {
 		float m_duration;
 		Type m_type;
 	};
+
+	// An helper to serialize tweet
+	struct Tweets 
+	{
+		void add(const std::string& name, const Tweet& tweet);
+		void reset();
+		bool ended() const;
+
+		const std::string& current() const;
+		template <typename T> inline
+			T update(const T& start, const T& end);
+
+		float duration() const;
+
+	private:
+		struct NamedTweet : public Tweet {
+			NamedTweet(const Tweet& _tweet, std::string _name) :
+				Tweet(_tweet), name(_name)
+			{ };
+
+			std::string name;
+		};
+
+		std::vector<NamedTweet> _tweets = {};
+		size_t _current_tweet_id = 0;
+	};
 };
 
 template<typename T>
-inline T Animator::Tweet::update(const T& start, const T& end) 
+inline T Animator::Tweet::update(const T& start, const T& end) const
 {
 	if (start == end)
 		return end;
@@ -47,8 +76,19 @@ inline T Animator::Tweet::update(const T& start, const T& end)
 	return end;
 }
 
-template <>
-inline std::string Animator::Tweet::update(const std::string& start, const std::string& end)
+template<typename T>
+inline T Animator::Tweets::update(const T& start, const T& end)
 {
-	return end;
+	if (ended() || _tweets.empty())
+		return end;
+
+	if (_tweets[_current_tweet_id].ended()) {
+		_current_tweet_id++;
+		if (ended())
+			return end;
+
+		_tweets[_current_tweet_id].reset();
+	}
+	
+	return _tweets[_current_tweet_id].update(start, end);
 }

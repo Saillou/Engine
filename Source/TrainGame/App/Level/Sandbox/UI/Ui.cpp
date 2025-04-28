@@ -25,14 +25,14 @@ void Ui::showPauseMenu()
 void Ui::createLayouts()
 {
     m_layoutMain = Layout::Create<VerticalLayout>(Service<Window>::get().scene());
-    m_layoutMain->add(Button::Create("Play"), "#btnPlay");
-    m_layoutMain->add(Button::Create("Options"), "#btnOptions");
-    m_layoutMain->add(Button::Create("Exit"), "#btnExit");
+    m_layoutMain->add(Widgets::Button::Create("Play"), "#btnPlay");
+    m_layoutMain->add(Widgets::Button::Create("Options"), "#btnOptions");
+    m_layoutMain->add(Widgets::Button::Create("Exit"), "#btnExit");
 }
 
 void Ui::subscribeEvents()
 {
-    _subscribe(m_layoutMain->find<Button>("#btnPlay"), [=](const WidgetEvents::MouseClick&) 
+    _subscribe(m_layoutMain->find<Widgets::Button>("#btnPlay"), [=](const WidgetEvents::MouseClick&)
         {
             m_frame.layout().clean();
             m_frame.layout().style().background.setValue(Style::Transparent());

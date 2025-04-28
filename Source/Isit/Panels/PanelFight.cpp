@@ -3,8 +3,7 @@
 #include "PanelFight.hpp"
 #include <algorithm>
 
-PanelFight::PanelFight(const Scene& scene) : 
-    Panel(),
+PanelFight::PanelFight() :
     _hit_tween(Animator::Tweet(0.0f, 0.3f, Animator::Tweet::Type::Quadratic))
 {
     reset();
@@ -31,29 +30,29 @@ void PanelFight::reset()
     _particles.clear();
     _enemies.clear();
 }
-void PanelFight::draw(CanvasEntity& canvas, const Scene& scene)
+void PanelFight::draw()
 {
     const ModelFight& data = shared_data().fight;
-    const float WIDTH = (float)scene.width();
-    const float HEIGHT = (float)scene.height();
+    const float WIDTH = (float)_scene.width();
+    const float HEIGHT = (float)_scene.height();
 
     _generate_ennemies();
     if (_enemies.empty() && _n_enemies == data.enemies_total) {
-        Event::Emit(FightEvents::Result(FightEvents::Result::Win), this);
-        return reset();
+        Event::Emit(PanelFight::Events::Result(PanelFight::Events::Result::Win), this);
+        return clear();
     }    
     _evolve_particles();
     _compute_current_pos();
     _compute_collisions();
     if (_current_damage >= data.total_life) {
-        Event::Emit(FightEvents::Result(FightEvents::Result::Lose), this);
-        return reset();
+        Event::Emit(PanelFight::Events::Result(PanelFight::Events::Result::Lose), this);
+        return clear();
     }
 
     float k = _hit_tween.update(0.f, 1.f);
 
     const auto size = data.size;
-    canvas.get()
+    _canvas.get()
         .begin()
         .rect(_current_pos_x - size/2.0f, HEIGHT - _current_pos_y - size/2.0f, size, size)
         .fill(CanvasShape::Color(42, 42, 42, 255))
@@ -63,7 +62,7 @@ void PanelFight::draw(CanvasEntity& canvas, const Scene& scene)
     float l = std::max(data.total_life - _current_damage, 0.0f) / data.total_life;
     float a = 1.0f - std::exp(-_expe_gain / ((data.time_reload / data.enemies_reload) * (data.enemies_total / data.exp_enemies)));
 
-    canvas.get()
+    _canvas.get()
         .begin()
         .rect(_current_pos_x - size / 2.0f, HEIGHT - _current_pos_y - size / 2.0f - 15.0f, size + size * r, 10.0f)
         .fill(CanvasShape::Color(142, 42, 42, 255))
@@ -71,7 +70,7 @@ void PanelFight::draw(CanvasEntity& canvas, const Scene& scene)
         .rect(_current_pos_x - size / 2.0f, HEIGHT - _current_pos_y - size / 2.0f - 15.0f, size, 10.0f)
         .stroke(CanvasShape::Color(255, 255, 255, 127), 2.0f);
 
-    canvas.get()
+    _canvas.get()
         .begin()
         .rect(_current_pos_x - size / 2.0f, HEIGHT - _current_pos_y - size/2.0f  - 25.0f, size * l, 10.0f)
         .fill(CanvasShape::Color(42, 142, 42, 255))
@@ -79,7 +78,7 @@ void PanelFight::draw(CanvasEntity& canvas, const Scene& scene)
         .rect(_current_pos_x - size / 2.0f, HEIGHT - _current_pos_y - size / 2.0f - 25.0f, size, 10.0f)
         .stroke(CanvasShape::Color(255, 255, 255, 127), 2.0f);
 
-    canvas.get()
+    _canvas.get()
         .begin()
         .rect(_current_pos_x - size / 2.0f, HEIGHT - _current_pos_y - size / 2.0f - 35.0f, size * a, 10.0f)
         .fill(CanvasShape::Color(142, 42, 142, 255))
@@ -88,7 +87,7 @@ void PanelFight::draw(CanvasEntity& canvas, const Scene& scene)
         .stroke(CanvasShape::Color(255, 255, 255, 127), 2.0f);
 
     for (const Particle& p : _particles) {
-        canvas.get()
+        _canvas.get()
             .begin()
             .circle(p.x, HEIGHT - p.y, size/10.0f)
             .fill(p.color)
@@ -96,27 +95,27 @@ void PanelFight::draw(CanvasEntity& canvas, const Scene& scene)
     }
 
     for (const Particle& p : _enemies) {
-        canvas.get()
+        _canvas.get()
             .begin()
             .circle(p.x, HEIGHT - p.y, data.size_enemies/10.f)
             .fill(p.color)
             .stroke(CanvasShape::Color(255, 255, 255, 127), 2.0f);
     }
 
-    canvas.get()
+    _canvas.get()
         .begin()
         .rect(WIDTH - 250.0f - 50.0f, HEIGHT - 50.0f, 250.0f * (1.0f - _n_enemies / (float)data.enemies_total), 20.0f)
         .fill(CanvasShape::Color(150, 150, 160, 255))
         .rect(WIDTH - 250.0f - 50.0f, HEIGHT - 50.0f, 250.0f, 20.0f)
         .stroke(CanvasShape::Color(255, 255, 255, 127), 2.0f);
 }
-void PanelFight::mouse_clicked(const CommonEvents::MouseButton& btn) 
+void PanelFight::onMousePressed()
 {
     _generateParticle(_current_pos_x, _current_pos_y);
 }
-void PanelFight::mouse_moved(const CommonEvents::MouseMoved& evt) {
-    _current_mouse_x = evt.x;
-    _current_mouse_y = evt.y;
+void PanelFight::onMouseMoved(int x, int y) {
+    _current_mouse_x = (float)x;
+    _current_mouse_y = (float)y;
 }
 
 void PanelFight::_compute_current_pos() {
@@ -188,13 +187,13 @@ void PanelFight::_compute_collisions() {
     }), _enemies.end());
 }
 
-void PanelFight::_generateParticle(int x, int y) 
+void PanelFight::_generateParticle(float x, float y)
 {
     const ModelFight& data = shared_data().fight;
 
-    if (_particle_timer.elapsed<Timer::millisecond>() > (int)data.time_reload - shared_data().idle.count) {
+    if (_particle_timer.elapsed<Timer::millisecond>() > (int)data.time_reload) {
         _particle_timer.tic();
-        _particles.push_back({ (float)x + data.size/2.0f, (float)y, CanvasShape::Color(42, 42, 50, 255) });
+        _particles.push_back({ x + data.size/2.0f, y, CanvasShape::Color(42, 42, 50, 255) });
     }
 }
 

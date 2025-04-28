@@ -16,11 +16,12 @@ struct ShapeBuilder
 	ShapeBuilder& lineTo(float x, float y);
 	ShapeBuilder& text(const std::string& t, float x, float y, float size = 1.0f);
 	ShapeBuilder& fill(const CanvasShape::Color& color);
-	ShapeBuilder& stroke(const CanvasShape::Color& color, float thickness);
+	ShapeBuilder& stroke(const CanvasShape::Color& color, float thickness = 1.0f);
 
 private:
 	static std::shared_ptr<ShapeBuilder> _s_instance;
 	static ShapeBuilder& Start(std::vector<CanvasShape>* shapes);
+	static ShapeBuilder& Last();
 	static void Reset();
 
 	CanvasShape _current_shape;
