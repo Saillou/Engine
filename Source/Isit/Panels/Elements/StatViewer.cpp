@@ -2,7 +2,6 @@
 #include "Button.hpp"
 #include "Text.hpp"
 #include "Jauge.hpp"
-#include "../Panel.hpp"
 
 StatViewer::StatViewer(const Point& topLeft, const std::string& text, const CanvasShape::Color& filled) :
     _topLeft(topLeft),
@@ -30,11 +29,13 @@ StatViewer::StatViewer(const Point& topLeft, const std::string& text, const Canv
         CanvasShape::Color(255, 255, 255, 255)
     ));
 
-    add("count_qi", std::make_shared<Text>(
+    add("count_stat", std::make_shared<Text>(
         Point{ _topLeft.x + 240.f, _topLeft.y }, 0.3f,
-        "0",
+        "",
         CanvasShape::Color(255, 255, 255, 255)
     ));
+
+    _apply_model();
 
     // Events
     _subscribe(get("button_push"), [=](const CommonEvents::MouseButton& btn) {
@@ -51,6 +52,16 @@ StatViewer::StatViewer(const Point& topLeft, const std::string& text, const Canv
     });
 
     _subscribe(&StatViewer::_state_updated);
+    _subscribe(&StatViewer::_on_model_changed);
+}
+
+int& StatViewer::stat() {
+    return _current_stat;
+}
+
+void StatViewer::_apply_model()
+{
+    auto& stat_text = std::dynamic_pointer_cast<Text>(get("count_stat"))->text() = std::to_string(_current_stat);
 }
 
 bool StatViewer::_hitArea(int x, int y) {
@@ -64,13 +75,18 @@ void StatViewer::_state_updated(const CommonEvents::StateUpdated&) {
     float quotient = 1e-3f;
     if (qi > quotient) {
         qi -= quotient;
+        Events::Emit(Panel::Events::IdleModelUpdated());
 
         if (stat < 1) {
-            stat += quotient;
+            stat = std::min(stat + quotient, 1.0f);
         }
         else {
             stat = 0;
-            // +1
+            Events::Emit(Events::StatUp(), this);
         }
     }
+}
+
+void StatViewer::_on_model_changed(const Panel::Events::IdleModelUpdated&) {
+    _apply_model();
 }

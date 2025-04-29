@@ -72,4 +72,19 @@ PanelIdle::PanelIdle()
         );
         Events::Emit(Panel::Events::IdleModelUpdated());
     });
+
+    _subscribe(get("focus_jauge"), [=](const StatViewer::Events::StatUp&) {
+        std::dynamic_pointer_cast<StatViewer>(get("focus_jauge"))->stat() = ++shared_data().idle.focus;
+        Events::Emit(Panel::Events::IdleModelUpdated());
+    });
+
+    _subscribe(get("speed_jauge"), [=](const StatViewer::Events::StatUp&) {
+        std::dynamic_pointer_cast<StatViewer>(get("speed_jauge"))->stat() = ++shared_data().idle.speed;
+        Events::Emit(Panel::Events::IdleModelUpdated());
+    });
+
+    _subscribe(get("quantity_jauge"), [=](const StatViewer::Events::StatUp&) {
+        std::dynamic_pointer_cast<StatViewer>(get("quantity_jauge"))->stat() = ++shared_data().idle.quantity;
+        Events::Emit(Panel::Events::IdleModelUpdated());
+    });
 }

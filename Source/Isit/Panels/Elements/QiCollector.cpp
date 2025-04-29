@@ -123,8 +123,7 @@ void QiCollector::onMouseReleased() {
     _anim_collect.reset();
 }
 
-void QiCollector::onMouseOut()
-{
+void QiCollector::onMouseOut() {
     onMouseReleased();
 }
 
