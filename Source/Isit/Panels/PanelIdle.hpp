@@ -19,4 +19,7 @@ struct PanelIdle : public Panel
     };
 
     PanelIdle();
+
+private:
+    void _apply_model();
 };

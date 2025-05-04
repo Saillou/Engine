@@ -24,6 +24,7 @@ struct Animator {
 			T update(const T& start, const T& end) const;
 
 		float duration() const;
+		void set_duration(float);
 
 	private:
 		float _get_rel_time() const;
@@ -46,6 +47,7 @@ struct Animator {
 			T update(const T& start, const T& end);
 
 		float duration() const;
+		Tweet& get(const std::string& name);
 
 	private:
 		struct NamedTweet : public Tweet {

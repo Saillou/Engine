@@ -121,7 +121,7 @@ glm::vec2 TextEngine::_measure(const std::string& text, float scale)
         float h = ch.size.y * scale;
 
         left   = std::min(left,   xpos);
-        right  = std::max(right,  xpos + ch.size.x * scale);
+        right  = std::max(right,  xpos + (ch.advance.x >> 6) * scale);
         top    = std::min(top,    ypos);
         bottom = std::max(bottom, ypos + ch.size.y * scale);
 

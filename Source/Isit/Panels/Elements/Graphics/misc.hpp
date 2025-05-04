@@ -23,7 +23,7 @@ struct Rectangle {
     float w = 0.0f;
     float h = 0.0f;
 
-    bool is_in(int mx, int my) {
+    bool is_in(int mx, int my) const {
         return (mx > x && mx < x + w) && (my > y && my < y + h);
     }
 };

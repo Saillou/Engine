@@ -18,6 +18,8 @@ QiCollector::QiCollector(const Circle& c) :
 
     _anim_collect.add(tag::collect_qi, Animator::Tweet(0.0f, 0.15f, Animator::Tweet::Type::Linear));
     _anim_collect.add(tag::decrease_qi, Animator::Tweet(0.0f, 0.3f, Animator::Tweet::Type::Quadratic));
+
+    _subscribe(&QiCollector::_on_model_changed);
 }
 
 void QiCollector::draw() {
@@ -27,7 +29,7 @@ void QiCollector::draw() {
     float center_x = _area.x + max_radius / 2.0f;
     float center_y = _scene.height() - (_area.y + _area.r) + max_radius / 2.0f;
 
-    float main_circle_unit = (_model.base_qi / 100.0f) * (_model.quantity + 1.f);
+    float main_circle_unit = (_model.base_qi + _model.quantity) / 100.0f;
     float main_circle_size = 50.0f;
     float unit_circle_size = main_circle_size / main_circle_unit;
     
@@ -125,6 +127,15 @@ void QiCollector::onMouseReleased() {
 
 void QiCollector::onMouseOut() {
     onMouseReleased();
+}
+
+void QiCollector::_on_model_changed(const Panel::Events::IdleModelUpdated&) 
+{
+    float current_duration = _anim_qi.get(tag::rotation_qi).duration();
+    float expected_duration = glm::max(0.3f, 3.0f - _model.speed / 10.0f);
+    if (expected_duration != current_duration) {
+        _anim_qi.get(tag::rotation_qi).set_duration(expected_duration);
+    }
 }
 
 bool QiCollector::_hitArea(int x, int y) {

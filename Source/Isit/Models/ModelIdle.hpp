@@ -1,7 +1,7 @@
 #pragma once
 
 struct ModelIdle {
-    enum CultivationStage {
+    enum class CultivationStage {
         Mortal,            // 0: Ordinary being
         Neophyte,          // 1: Beginner cultivator
         QiPractitioner,    // 2: Gathering and refining Qi
@@ -16,6 +16,27 @@ struct ModelIdle {
         DaoLord,           // 11: True understanding of universal principles
         WorldCreator,      // 12: Able to create small worlds
         EternalOne         // 13: Beyond space and time
+    };
+
+    static std::string StageToString(CultivationStage s) {
+        switch (s)
+        {
+        case ModelIdle::CultivationStage::Mortal:               return "Mortal";
+        case ModelIdle::CultivationStage::Neophyte:             return "Neophyte";
+        case ModelIdle::CultivationStage::QiPractitioner:       return "QiPractitioner";
+        case ModelIdle::CultivationStage::FoundationBuilder:    return "FoundationBuilder";
+        case ModelIdle::CultivationStage::CoreBuilder:          return "CoreBuilder";
+        case ModelIdle::CultivationStage::NascentSoul:          return "NascentSoul";
+        case ModelIdle::CultivationStage::SpiritAwakening:      return "SpiritAwakening";
+        case ModelIdle::CultivationStage::NirvanaRebirth:       return "NirvanaRebirth";
+        case ModelIdle::CultivationStage::Ascendant:            return "Ascendant";
+        case ModelIdle::CultivationStage::Immortal:             return "Immortal";
+        case ModelIdle::CultivationStage::CelestialSage:        return "CelestialSage";
+        case ModelIdle::CultivationStage::DaoLord:              return "DaoLord";
+        case ModelIdle::CultivationStage::WorldCreator:         return "WorldCreator";
+        case ModelIdle::CultivationStage::EternalOne:           return "EternalOne";
+        }
+        return "<unknown>";
     };
 
     CultivationStage stage = CultivationStage::Mortal;

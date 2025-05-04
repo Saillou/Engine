@@ -34,11 +34,11 @@ bool QiViewer::_hitArea(int x, int y) {
 }
 
 void QiViewer::_apply_model() {
-    float ratio_jauge   = _model.curr_qi / _model.base_qi;
+    float ratio_jauge   = _model.curr_qi / (_model.base_qi + _model.quantity);
 
     std::ostringstream out;
     out.precision(1);
-    out << std::fixed << _model.curr_qi << " / " << _model.base_qi;
+    out << std::fixed << _model.curr_qi << " / " << (_model.base_qi + _model.quantity);
 
     std::dynamic_pointer_cast<Jauge>(get("jauge_qi"))->ratio() = ratio_jauge;
     std::dynamic_pointer_cast<Text>(get("count_qi"))->text() = out.str();

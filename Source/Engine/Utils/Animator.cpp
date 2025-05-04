@@ -21,6 +21,11 @@ float Animator::Tweet::duration() const {
 	return m_duration;
 }
 
+void Animator::Tweet::set_duration(float d)
+{
+	m_duration = d;
+}
+
 float Animator::Tweet::_get_rel_time() const {
 	return glm::clamp(
 		(m_time.elapsed<Timer::millisecond>() / 1000.0f - m_offset) / m_duration,
@@ -30,6 +35,16 @@ float Animator::Tweet::_get_rel_time() const {
 
 void Animator::Tweets::add(const std::string& name, const Tweet& tweet) {
 	_tweets.push_back({ tweet, name });
+}
+Animator::Tweet& Animator::Tweets::get(const std::string& name) {
+	for (auto& t : _tweets) {
+		if (t.name == name)
+			return t;
+	}
+
+	// Failure
+	static Tweet empty_tweet;
+	return empty_tweet;
 }
 void Animator::Tweets::reset() {
 	_current_tweet_id = 0;

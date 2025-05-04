@@ -18,8 +18,10 @@ struct Sprite : Event::Subscriber {
     virtual void draw();
     virtual void clear();
 
-    void add(const std::string& name, std::shared_ptr<Sprite> sprite);
     std::shared_ptr<Sprite> get(const std::string& name) const;
+    std::shared_ptr<Sprite> add(const std::string& name, std::shared_ptr<Sprite> sprite = nullptr);
+    void remove(const std::string& name);
+    void remove_all();
 
     float width() const;
     float height() const;

@@ -63,11 +63,32 @@ void Sprite::clear() {
 }
 
 std::shared_ptr<Sprite> Sprite::get(const std::string& name) const {
-    return _children.at(name);
+    auto it = _children.find(name);
+    if (it == _children.cend())
+        return nullptr;
+
+    return it->second;
 }
 
-void Sprite::add(const std::string& name, std::shared_ptr<Sprite> sprite) {
-    _children.emplace(name, move(sprite));
+std::shared_ptr<Sprite> Sprite::add(const std::string& name, std::shared_ptr<Sprite> sprite) {
+    if (!sprite) {
+        sprite = std::make_shared<Sprite>();
+    }
+    _children.emplace(name, sprite);
+    return sprite;
+}
+
+void Sprite::remove(const std::string& name) {
+    if (!get(name))
+        return;
+
+    get(name)->clear();
+    _children.erase(name);
+}
+
+void Sprite::remove_all() {
+    clear();
+    _children.clear();
 }
 
 float Sprite::width() const {

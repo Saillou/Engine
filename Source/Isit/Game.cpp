@@ -1,5 +1,6 @@
 #include "Game.hpp"
 
+#include "Panels/Story/AnimationManager.hpp"
 #include "Panels/PanelStory.hpp"
 #include "Panels/PanelFight.hpp"
 #include "Panels/PanelIdle.hpp"
@@ -10,9 +11,19 @@
     fight:      tower defence
 */
 
+/*
+    TODO:
+     - convert qi to elemental energy
+     - use element energy to grow pets
+     - create puzzles for tribulation
+     - better fight
+*/
+
 Game::Game() :
     m_scene(Service<Window>::get().scene())
 {
+    AnimationManager::Instance().RegisterAll();
+
     m_panels[StepGame::Story] = std::make_shared<PanelStory>();
     m_panels[StepGame::Fight] = std::make_shared<PanelFight>();
     m_panels[StepGame::Idle]  = std::make_shared<PanelIdle>();
@@ -51,6 +62,8 @@ Game::Game() :
     });
 }
 Game::~Game() {
+    AnimationManager::Instance().UnregisterAll();
+
     _unsubscribeAll();
 }
 

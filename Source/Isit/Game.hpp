@@ -15,7 +15,7 @@ private:
         Story,
         Idle,
         Fight,
-    } _current_step = StepGame::Idle;
+    } _current_step = StepGame::Story;
 
     void _state_updated(const CommonEvents::StateUpdated&);
     void _on_key_pressed(const CommonEvents::KeyPressed& evt);

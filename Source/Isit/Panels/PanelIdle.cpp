@@ -22,7 +22,7 @@ PanelIdle::PanelIdle()
     {
         add("text_cultivation_title", std::make_shared<Text>(
             Point{ 100.0f, 100.0f }, 0.5f,
-            "Mortal (level 0)",
+            "",
             CanvasShape::Color(255, 255, 255, 255)
         ));
         add("qi_collector", std::make_shared<QiCollector>(
@@ -66,25 +66,44 @@ PanelIdle::PanelIdle()
     });
 
     _subscribe(get("qi_collector"), [=](const QiCollector::Events::Collected& qi) {
-        shared_data().idle.curr_qi = glm::min(
-            shared_data().idle.base_qi, 
-            shared_data().idle.curr_qi + qi.quantity
+        auto& model = shared_data().idle;
+        model.curr_qi = glm::min(
+            (model.base_qi + model.quantity),
+            model.curr_qi + (qi.quantity * (1.0f + shared_data().idle.focus / 10.0f))
         );
         Events::Emit(Panel::Events::IdleModelUpdated());
     });
 
     _subscribe(get("focus_jauge"), [=](const StatViewer::Events::StatUp&) {
-        std::dynamic_pointer_cast<StatViewer>(get("focus_jauge"))->stat() = ++shared_data().idle.focus;
+        std::dynamic_pointer_cast<StatViewer>(get("focus_jauge"))->stat() = (int)++shared_data().idle.focus;
         Events::Emit(Panel::Events::IdleModelUpdated());
     });
 
     _subscribe(get("speed_jauge"), [=](const StatViewer::Events::StatUp&) {
-        std::dynamic_pointer_cast<StatViewer>(get("speed_jauge"))->stat() = ++shared_data().idle.speed;
+        std::dynamic_pointer_cast<StatViewer>(get("speed_jauge"))->stat() = (int)++shared_data().idle.speed;
         Events::Emit(Panel::Events::IdleModelUpdated());
     });
 
     _subscribe(get("quantity_jauge"), [=](const StatViewer::Events::StatUp&) {
-        std::dynamic_pointer_cast<StatViewer>(get("quantity_jauge"))->stat() = ++shared_data().idle.quantity;
+        std::dynamic_pointer_cast<StatViewer>(get("quantity_jauge"))->stat() = (int)++shared_data().idle.quantity;
         Events::Emit(Panel::Events::IdleModelUpdated());
     });
+
+    // Start
+    _apply_model();
+}
+
+void PanelIdle::_apply_model() 
+{
+    std::dynamic_pointer_cast<Text>(get("text_cultivation_title"))->text() = 
+        ModelIdle::StageToString(shared_data().idle.stage) + " (level "+std::to_string(shared_data().idle.level) + ")";
+
+    std::dynamic_pointer_cast<StatViewer>(get("focus_jauge"))->stat()    = 
+        (int)shared_data().idle.focus;
+
+    std::dynamic_pointer_cast<StatViewer>(get("speed_jauge"))->stat()    = 
+        (int)shared_data().idle.speed;
+
+    std::dynamic_pointer_cast<StatViewer>(get("quantity_jauge"))->stat() = 
+        (int)shared_data().idle.quantity;
 }

@@ -1,9 +1,19 @@
 #include "Button.hpp"
 
+Button::Button(const Text& text):
+    _rect(text.bounding_rect()),
+    _text(text.text()),
+    _primaryColor(text.color().b, text.color().g, text.color().r, 64),
+    _secondaryColor(text.color().b, text.color().g, text.color().r, 255),
+    _type(_Type::_rectangle)
+{
+
+}
+
 Button::Button(const Rectangle& r, const std::string& text, const CanvasShape::Color& primary) :
     _rect(r),
     _text(text), 
-    _primaryColor(primary.b, primary.g, primary.r, 32),
+    _primaryColor(primary.b, primary.g, primary.r, 64),
     _secondaryColor(primary.b, primary.g, primary.r, 255),
     _type(_Type::_rectangle)
 {
@@ -12,7 +22,7 @@ Button::Button(const Rectangle& r, const std::string& text, const CanvasShape::C
 Button::Button(const Circle& c, const std::string& text, const CanvasShape::Color& primary):
     _rect({ c.x, c.y, c.r, c.r }),
     _text(text),
-    _primaryColor(primary.b, primary.g, primary.r, 32),
+    _primaryColor(primary.b, primary.g, primary.r, 64),
     _secondaryColor(primary.b, primary.g, primary.r, 255),
     _type(_Type::_circle)
 {

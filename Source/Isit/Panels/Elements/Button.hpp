@@ -2,11 +2,13 @@
 
 #include "Graphics/Sprite.hpp"
 #include "Graphics/misc.hpp"
+#include "Text.hpp"
 
 struct Button : public Sprite
 {
     Button(const Rectangle& rectangle, const std::string& text, const CanvasShape::Color& primary);
     Button(const Circle& circle, const std::string& text, const CanvasShape::Color& primary);
+    Button(const Text& text);
 
     virtual void draw() override;
 

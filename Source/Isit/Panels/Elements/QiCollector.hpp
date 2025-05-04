@@ -29,6 +29,7 @@ protected:
     virtual void onMousePressed() override;
     virtual void onMouseReleased() override;
     virtual void onMouseOut() override;
+    void _on_model_changed(const Panel::Events::IdleModelUpdated&);
 
     virtual bool _hitArea(int x, int y) override;
 
